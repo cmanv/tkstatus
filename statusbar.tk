@@ -1,0 +1,541 @@
+#!/usr/bin/env wish8.6
+package require SysInfo
+package require SharedMem
+package require MPD
+package require XLib
+
+namespace eval fileutils {
+	proc cat {filename} {
+		set result {}
+		if {![file exists $filename]} { return $result }
+		set file [open $filename r]
+		while {[gets $file line] >= 0} {
+			lappend result $line
+		}
+		close $file
+		return $result
+	}
+
+	proc grep1 {pattern {files {}}} {
+		set result "" 
+		foreach filename $files {
+			set file [open $filename r]
+			while {[gets $file line] >= 0} {
+				if {[regexp -- $pattern $line]} {
+					set result $line
+					break
+				}
+			}
+			close $file
+		}
+		return $result
+	}
+}
+
+namespace eval theme {
+	# Nord theme
+	array set nord [ list \
+		polar1	{#2e3440}	polar2	{#3b4252} \
+		polar3	{#434c5e}	polar4	{#4c566a} \
+		snow1	{#d8dee9}	snow2	{#e5e9f0} \
+		snow3	{#eceff4}	frost1	{#5e81ac} \
+		frost2	{#81a1c1}	frost3	{#88c0d0} \
+		frost4	{#8fbcbb}	aurora1	{#b48ead} \
+		aurora2	{#a3be8c}	aurora3	{#ebcb8b} \
+		aurora4	{#d08770}	aurora5	{#bf616a} ]
+
+	# Switch to dark theme
+	proc nuit {} {
+		variable nord
+		set colortable [ list \
+			acpitemp	$nord(aurora2) \
+			bar		$nord(polar2) \
+			b2b2c		$nord(aurora3) \
+			datetime	$nord(snow1) \
+			desktop		$nord(aurora2) \
+			devices		$nord(frost2) \
+			gmail		$nord(aurora5) \
+			loadavg		$nord(frost4) \
+			mailinfo	$nord(snow1) \
+			metar		$nord(aurora3) \
+			mixer		$nord(frost4) \
+			musicpd		$nord(frost4) \
+			netin		$nord(frost4) \
+			netout		$nord(aurora1) \
+			separator	{#2c8c2c} \
+			unix		$nord(aurora2) \
+			usedmem		$nord(frost4) \
+			windowname	$nord(aurora2) ]
+	}
+
+	# Switch to light theme
+	proc jour {} {
+		set colortable [ list \
+			acpitemp	MediumBlue \
+			bar		gray90 \
+			b2b2c		SteelBlue \
+			datetime	black \
+			desktop		DarkBlue \
+			devices		DarkGreen \
+			gmail		purple \
+			loadavg		black \
+			mailinfo	black \
+			metar		DarkGreen \
+			mixer		black \
+			musicpd		DarkBlue \
+			netin		DarkGreen \
+			netout		purple \
+			separator	black \
+			unix		DarkGreen \
+			usedmem		black \
+			windowname	black ]
+	}
+}
+
+namespace eval statusbar {
+	variable mailpopup 0
+	variable themefile "$::env(HOME)/.cache/theme/default"
+
+	# Unicode icons from remixicon
+	array set remix [ list	down 	\uea4a	up 	\uea74 \
+				disk	\ueba9	printer	\uefd2 \
+				sdcard	\uf066	udisk	\uf1cc \
+				mail	\ueec0	mixer	\uf229 ]
+
+	# List of fixed items in the bar
+	set baritems [ list desktop sep0 loadavg usedmem acpitemp \
+			netin netout sep1 windowname datetime \
+			metar sep2 mixer sep3 ]
+
+	# Array describing items in the bar
+	array set widgetarray [ list \
+		desktop [ list type var side left text statusbar::desktops font normal ] \
+		sep0 [ list type vseparator side left ] \
+		loadavg [ list type var side left text statusbar::loadavg font normal ] \
+		usedmem [ list type var side left text statusbar::usedmem font normal ] \
+		acpitemp [ list type var side left text statusbar::acpitemp font normal ] \
+		netin [ list type var side left text statusbar::netin font normal ] \
+		netout [ list type var side left text statusbar::netout font normal ] \
+		sep1 [ list type vseparator side left ] \
+		windowname [ list type xvar side left text statusbar::windowname font normal ] \
+		datetime [ list type var side right text statusbar::datetime font normal ] \
+		metar [ list type var side right text statusbar::metar font normal ] \
+		sep2 [ list type vseparator side right ] \
+		mixer [ list type var side right text statusbar::mixer font normal ] \
+		sep3 [ list type vseparator side right ] ]
+
+	# Setup the fixed items in the bar
+	proc setup_bar {} {
+		variable baritems
+		variable widgetarray
+
+		frame .bar
+		pack .bar -fill both -expand 1
+		foreach item $baritems {
+			array set widget $widgetarray($item)
+			switch $widget(type) {
+				label {
+					pack [label .bar.$item -font $widget(font) \
+						-text $widget(text)] -side $widget(side)
+				}
+				var {
+					pack [label .bar.$item -font $widget(font) \
+						-textvar $widget(text)] -side $widget(side)
+				}
+				xvar {
+					pack [label .bar.$item -font $widget(font) \
+						-textvar $widget(text)] -side $widget(side) \
+						-expand 1
+				}
+				vseparator {
+					pack [frame .bar.$item -width 1] -fill y -padx 5 \
+						-side $widget(side)
+				}
+			}
+		}
+
+		bind .bar.loadavg <1> { exec xterm +sb -class top -e top & }
+		bind .bar.mixer <4> {
+			exec mixer vol +5
+			statusbar::update_mixer
+		}
+		bind .bar.mixer <5> {
+			exec mixer vol -5
+			statusbar::update_mixer
+		}
+		bind .bar.metar <1> { exec xmeteo -p }
+		bind .bar.metar <2> { exec xmeteo -u }
+	}
+
+	# Setup the removable devices
+	proc setup_devices {} {
+		variable devicelist
+		variable devicearray
+		variable remix
+
+		frame .bar.devices
+		frame .bar.devicessep -width 1
+
+		set devicelist [ list ada1 da0 da1 mmcsd0 ulpt0 ]
+		set deviceicons [ list $remix(disk) $remix(udisk) $remix(udisk) \
+				$remix(sdcard) $remix(printer) ]
+
+		array set devicearray {}
+		foreach devid $devicelist icon $deviceicons {
+			array set device {}
+			set device(path) "/dev/$devid"
+			set device(visible) 0
+			set devicearray($devid) [array get device]
+
+			label .bar.devices.$devid
+			.bar.devices.$devid configure -font normal -text "$icon $devid"
+		}
+	}
+
+	# Check the presence of removable devices.
+	proc update_devices {} {
+		variable devicelist
+		variable devicearray
+
+		foreach devid $devicelist {
+			array set device $devicearray($devid)
+			if {[file exists $device(path)]} {
+				if {!$device(visible)} {
+					if {![string length [pack slaves .bar.devices]]} {
+						pack .bar.devices -after .bar.sep1 -side left
+						pack .bar.devicessep -after .bar.devices -fill y \
+							-padx 5 -side left
+					}
+					pack .bar.devices.$devid -in .bar.devices -side left
+					set device(visible) 1
+					set devicearray($devid) [array get device]
+				}
+			} else {
+				if {$device(visible)} {
+					pack forget .bar.devices.$devid
+					if {![string length [pack slaves .bar.devices]]} {
+						pack forget .bar.devices .bar.devicessep
+					}
+					set device(visible) 0
+					set devicearray($devid) [array get device]
+				}
+			}
+		}
+
+	}
+
+	# Setup the mailboxes
+	proc setup_mailboxes {} {
+		variable accountlist
+		variable mailboxes
+
+		frame .bar.mailboxes
+		frame .bar.mailsep -width 1
+
+		set accountlist [ list unix b2b2c gmail ]
+		set maildir "$::env(HOME)/.maildir"
+
+		array set mailboxes {}
+		foreach account $accountlist {
+			array set mailbox {}
+			set mailbox(path) "$maildir/$account/inbox/new"
+			set mailbox(visible) 0
+			set mailbox(newmail) 0
+			set mailboxes($account) [array get mailbox]
+
+			label .bar.mailboxes.$account -font normal -text ""
+			bind .bar.mailboxes.$account <1>  "statusbar::newmailpopup $account"
+			bind .bar.mailboxes.$account <2> {
+				exec emacsclient -c -e -F "((width . 120) (height . 30))" \
+					"(mu4e)" > /dev/null 2>@1 &
+			}
+		}
+	}
+
+	# Look for new messages in the mailboxes
+	proc update_mailboxes {} {
+		variable remix
+		variable accountlist
+		variable mailboxes
+
+		foreach account $accountlist {
+			array set mailbox $mailboxes($account)
+			set newmail [llength [glob -nocomplain -dir "$mailbox(path)" *]]
+			if {$newmail && $newmail != $mailbox(newmail)} {
+				.bar.mailboxes.$account configure -text "$remix(mail) ($newmail)"
+				set mailbox(newmail) $newmail
+				if {!$mailbox(visible)} {
+					if {![string length [pack slaves .bar.mailboxes]]} {
+						pack .bar.mailboxes -after .bar.sep2 -side right
+						pack .bar.mailsep -after .bar.mailboxes -fill y \
+							-padx 5 -side right
+					}
+					pack .bar.mailboxes.$account -side left
+					set mailbox(visible) 1
+				}
+				set mailboxes($account) [array get mailbox]
+			} else {
+				if {!$newmail && $mailbox(visible)} {
+					pack forget .bar.mailboxes.$account
+					if {![string length [pack slaves .bar.mailboxes]]} {
+						pack forget .bar.mailboxes .bar.mailsep
+					}
+					set mailbox(newmail) 0
+					set mailbox(visible) 0
+					set mailboxes($account) [array get mailbox]
+				}
+			}
+		}
+
+	}
+
+	# Popup after button event on mail icon
+	proc newmailpopup { account } {
+		variable currenttheme
+		variable mailboxes
+		variable mailpopup
+
+		if {$mailpopup} {
+			destroy .popup
+			set mailpopup 0
+			return
+		}
+		set mailpopup 1
+		array set color [theme::$currenttheme]
+
+		toplevel .popup -background $color(bar) -class Newmail
+		wm attributes .popup -type dialog
+		wm resizable .popup 0 0
+
+		pack [frame .popup.$account -background $color(bar)] \
+			-expand 1 -fill x -side top
+		pack [label .popup.$account.label -font bold -bg $color(bar) \
+			-fg $color($account) -text "-- $account --"] \
+			-expand 1 -side left
+		pack [frame .popup.sep$account -background $color(separator) \
+			-height 1] -fill x -side top
+
+		set count 0
+		array set mailbox $mailboxes($account)
+		foreach file [glob -nocomplain -dir "$mailbox(path)" *] {
+			set date [fileutils::grep1 ^Date: $file]
+			set from [fileutils:::grep1 ^From: $file]
+			set subject [fileutils::grep1 ^Subject: $file]
+
+			pack [frame .popup.date$count -background $color(bar)] \
+				-expand 1 -fill x
+			pack [label .popup.date$count.label -text $date \
+				-font normal -bg $color(bar) -fg $color(mailinfo)] \
+				-side left -padx 5
+			pack [frame .popup.from$count -background $color(bar)] \
+				-expand 1 -fill x
+			pack [label .popup.from$count.label -text $from \
+				-font normal -bg $color(bar) -fg $color(mailinfo)] \
+				-side left -padx 5
+			pack [frame .popup.subject$count -background $color(bar)] \
+				-expand 1 -fill x
+			pack [label .popup.subject$count.label -text $subject \
+				-font normal -bg $color(bar) -fg $color(mailinfo)] \
+				-side left -padx 5
+
+			pack [frame .popup.sep$count -background $color(separator) \
+				-height 1] -side top -fill x
+			incr count
+		}
+		wm title .popup "$account - $count message(s) non lu(s)."
+		bind .popup <Button> {
+			destroy .popup
+			set statusbar::mailpopup 0
+		}
+		if {!$count} {
+			destroy .popup
+			set mailpopup 0
+		}
+	}
+
+	# Setup widget for MPD
+	proc setup_musicpd {} {
+		variable musicpd_visible
+		set musicpd_visible 0
+
+		frame .bar.musicsep -width 1
+		label .bar.musicpd -font italic -textvar statusbar::musicpd
+
+		bind .bar.musicpd <1> {
+			if {![catch {exec mpc toggle}]} { statusbar::update_musicpd }
+		}
+		bind .bar.musicpd <2> {
+			exec xterm +sb -class ncmpcpp -e ncmpcpp &
+		}
+		bind .bar.musicpd <3> {
+			if {![catch {exec mpc stop}]} { statusbar::update_musicpd }
+		}
+		bind .bar.musicpd <4> {
+			if {![catch {exec mpc prev}]} { statusbar::update_musicpd }
+		}
+		bind .bar.musicpd <5> {
+			if {![catch {exec mpc next}]} { statusbar::update_musicpd }
+		}
+	}
+
+	# Show what is currently playing on MPD
+	proc update_musicpd {} {
+		variable musicpd
+		variable musicpd_visible
+
+		set title [join [mpd::currenttitle]]
+		if {[string length $title]} {
+			set musicpd $title
+			if {!$musicpd_visible} {
+				pack .bar.musicpd -after .bar.sep3 -side right
+				pack .bar.musicsep -after .bar.musicpd -fill y -padx 5 -side right
+				set musicpd_visible 1
+			}
+
+		} else {
+			if {$musicpd_visible} {
+				pack forget .bar.musicpd .bar.musicsep
+				set musicpd_visible 0
+				set musicpd ""
+			}
+		}
+	}
+
+	# Set the theme on the alements of the bar
+	proc set_theme { theme } {
+		variable currenttheme
+		variable baritems
+		variable widgetarray
+		variable devicelist
+		variable accountlist
+
+		switch $theme {
+			jour { 
+				set currenttheme jour
+				array set color [theme::jour] 
+			}
+			nuit { 
+				set currenttheme nuit
+				array set color [theme::nuit] 
+			}
+			default { 
+				set currenttheme jour
+				array set color [theme::jour] 
+			}
+		}
+
+		.bar configure -background $color(bar)
+		foreach item $baritems {
+			array set widget $widgetarray($item)
+			switch $widget(type) {
+				vseparator {
+					.bar.$item configure -background $color(separator)
+				}
+				default {
+					.bar.$item configure -bg $color(bar) -fg $color($item)
+				}
+			}
+		}
+
+		.bar.devices configure -background $color(bar)
+		.bar.devicessep configure -background $color(separator)
+		foreach device $devicelist {
+			.bar.devices.$device configure -bg $color(bar) -fg $color(devices)
+		}
+
+		.bar.mailboxes configure -background $color(bar)
+		.bar.mailsep configure -background $color(separator)
+		foreach account $accountlist {
+			.bar.mailboxes.$account configure -bg $color(bar) -fg $color($account)
+		}
+
+		.bar.musicpd configure -bg $color(bar) -fg $color(musicpd)
+		.bar.musicsep configure -background $color(separator)
+	}
+
+	# Update mixer after button event
+	proc update_mixer {} {
+		variable mixer
+		variable remix
+		set mixer "$remix(mixer) [sysinfo::getmixervol]"
+	}
+
+	# Update some status bar items every 2 seconds
+	proc normal_update {} {
+		variable currenttheme
+		variable themefile
+		variable remix
+		variable loadavg
+		variable usedmem
+		variable acpitemp
+		variable netin
+		variable netout
+		variable datetime
+		variable metar
+
+		set theme [fileutils::cat $themefile]
+		if {$theme ne $currenttheme && [string length $theme]} { set_theme $theme } 
+
+		set loadavg "[sysinfo::getloadavg] "
+		set usedmem "[join [sysinfo::getusedmemswap]] "
+		set acpitemp "T [sysinfo::getacpitemp]"
+		set netstats [sysinfo::getnetstats em0]
+		set netin "$remix(down)[join [lindex $netstats 0]]"
+		set netout "$remix(up)[join [lindex $netstats 1]]"
+
+		set datetime [clock format [clock seconds] \
+			-locale $::env(LANG) -format {%d %b %H:%M }]
+		set metar "[join [shmem::read /metar/report]] "
+
+		update_devices
+		update_mailboxes
+		update_musicpd
+	}
+
+	# Update som status bar items every 0.5 seconds
+	proc fast_update {} {
+		variable remix
+		variable desktops
+		variable windowname
+		variable mixer
+
+		set desktops [join [xlib::getlistuseddesktop]]
+		set windowname [string range [join [xlib::getactivewindowname]] 0 120]
+		set mixer "$remix(mixer) [sysinfo::getmixervol]"
+	}
+
+	# Launch command periodically
+	proc every {ms cmd} {
+		after $ms [namespace code [info level 0]]
+		{*}$cmd
+	}
+
+	proc init {} {
+		variable themefile
+
+		setup_bar
+		setup_devices
+		setup_mailboxes
+		setup_musicpd
+
+		set_theme [fileutils::cat $themefile]
+		mpd::connect $::env(MPD_HOST)
+		xlib::init
+		xlib::setdesktops 1 9
+
+		every 2000 normal_update
+		every 600 fast_update
+	}
+}
+
+tk appname "statusbar"
+font create normal -family NotoSans -size 11
+font create italic -family NotoSans -size 11 -slant italic
+font create bold -family NotoSans -size 11 -weight bold
+
+wm attributes . -topmost 1 -type dock
+wm geometry . "[winfo vrootwidth .]x26+0+0"
+wm resizable . 0 0
+wm title . "statusbar.tk version 20230613"
+
+statusbar::init
