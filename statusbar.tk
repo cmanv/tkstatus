@@ -528,7 +528,7 @@ namespace eval statusbar {
 	}
 }
 
-tk appname "statusbar"
+tk appname "tkstatus"
 font create normal -family NotoSans -size 11
 font create italic -family NotoSans -size 11 -slant italic
 font create bold -family NotoSans -size 11 -weight bold
@@ -536,6 +536,6 @@ font create bold -family NotoSans -size 11 -weight bold
 wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
 wm resizable . 0 0
-wm title . "statusbar.tk version 20230613"
+wm title . "statusbar.tk version 20230908"
 
 statusbar::init
