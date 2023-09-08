@@ -81,7 +81,8 @@ Removes the shared memory address.
 
 The bar has a light and dark theme built-in. (the dark theme being based on Nord)
 The theme is auto-selected based on the content of the file ~/.cache/theme/default. The content of this file can be controlled by a script for switching between a dark or light theme.
-
+![Light theme](img/statusbar-light.png)
+![Dark theme](img/statusbar-dark.png)
 
 ## Unicode font
 
