@@ -2,7 +2,7 @@
 Status bar for minimalist X11 window managers written in C and tcl/tk. 
 
 ## Introduction
-This is a personal project specifically designed to run on my FreeBSD desktop with the cwm window manager. The main script uses tk/tcl 8.6.
+This is a personal project specifically designed to run on my FreeBSD desktop with the cwm window manager. The main script uses tcl/tk 8.6.
 
 The tcl language lacks the functions to access system information. But this is circumvented by using packages which are collections of C functions.
 For my own use, I've written these 4 small packages to provide all the functionnality I need for a status bar. These packages can be build with cmake and the relevant libraries and header files installed.
