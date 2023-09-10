@@ -7,11 +7,11 @@ This is a personal project specifically designed to run on my FreeBSD desktop wi
 The tcl language lacks the functions to access system information. But this is circumvented by using packages which are collections of C functions.
 For my own use, I've written these 4 small packages to provide all the functionnality I need for a status bar. These packages can be build with cmake and the relevant libraries and header files installed.
 
-The resulting shared libraries should be installed under TCLLIBPATH. The path of the relevant external libraries such as libX11.so or libmpdclient.so should be defined in LD_PRELOAD. In my case, this is done in the calling shell script statusbar.sh.
+The resulting shared libraries should be installed under **TCLLIBPATH**. The path of the relevant external libraries such as __libX11.so__ or __libmpdclient.so__ should be defined in **LD_PRELOAD**. In my case, this is done in the calling shell script __statusbar.sh__.
 
 ## Files
 ### statusbar.sh
-This shell script should be called at startup in .xinitrc or .xsession.
+This shell script should be called at startup in __.xinitrc__ or __.xsession__.
 
 ### statusbar.tk
 This is the main script. It's highly likely tha you'll want to modify it for your own system.
@@ -28,7 +28,7 @@ Load average for the last minute.
 Returns the used memory defined as active memory + wired memory. The amount of swap used is provided within parenthesis if any.
 
 * sysinfo::getacpitemp :
-Returns the content of hw.acpi.thermal.tz0.temperature in celcius.
+Returns the content of __hw.acpi.thermal.tz0.temperature__ in celcius.
 
 * sysinfo::getnetstats(if) :
 Returns the amount data downloaded end uploaded on the given interface.
@@ -56,7 +56,7 @@ Name of the selected desktop
 List of active desktops spectrwm style. A desktop is considered active if a window is opened in it. A star marks the selected desktop.
  
 ### tclmpd
-This package is used to return the currently playing song on the Music Player Daemon. It requires libmpdclient and corresponding header files to build.
+This package is used to return the currently playing song on the Music Player Daemon. It requires the __libmpdclient__ package and corresponding header files to build.
 
 * mpd::connect(host) :
 Connects to the currently running Music Player Daemon. The host can be a Unix socket or a resolvable internet address.
@@ -78,8 +78,8 @@ Removes the shared memory address.
 
 ## Themes
 
-The bar has a light and dark theme built-in. (the dark theme being based on Nord)
-The theme is auto-selected based on the content of the file ~/.cache/theme/default. The content of this file can be controlled by a script for switching between a dark or light theme.
+The bar has a light and dark theme built-in. (the dark theme being based on **Nord**)
+The theme is auto-selected based on the content of the file __~/.cache/theme/default__. The content of this file can be controlled by a script for switching between a dark or light theme.
 
 ![Light theme](png/statusbar-light.png)
 
@@ -87,15 +87,9 @@ The theme is auto-selected based on the content of the file ~/.cache/theme/defau
 
 ## Unicode font
 
-The script uses some icons from the remixicon unicode font to be displayed next to some devices names. Theses need to be adjusted if you're using a different unicode font.
-
-array set remix [ list	
-	down 	\uea4a	up 	\uea74
-	disk	\ueba9	printer	\uefd2
-	sdcard	\uf066	udisk	\uf1cc
-	mail	\ueec0	mixer	\uf229 ]
+The script uses some icons from the __remixicon__ unicode font to be displayed next to some devices names. Theses need to be adjusted if you're using a different unicode font.
 
 ## Maildir
 
-The function mailboxes_setup of the tcl/tk script looks for maildirs under the maildir root folder $HOME/.maildir (variable maildir)
-The accounts available under this root folder can be defined in accountlist. These should be actual folder in maildir format.
+The function mailboxes_setup of the tcl/tk script looks for maildirs under the maildir root folder __$HOME/.maildir__ (variable __maildir__)
+The accounts available under this root folder can be defined in __accountlist__. These should be actual folder in maildir format.
