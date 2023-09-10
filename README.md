@@ -18,14 +18,14 @@ This is the main script. It's highly likely tha you'll want to modify it for you
 
 ## Packages
 ### tclsysinfo
-This package is system specific. The provided version was written for FreeBSD.
+This package is system specific. The provided version was written for FreeBSD 13.x.
 The following functions are provided:
 
 * sysinfo::getloadavg :
 Load average for the last minute.
 
 * sysinfo::getusedmemswap :
-Returns the used memory defined as active + wired. The amount of swap used is provided within parenthesis if any.
+Returns the used memory defined as active memory + wired memory. The amount of swap used is provided within parenthesis if any.
 
 * sysinfo::getacpitemp :
 Returns the content of hw.acpi.thermal.tz0.temperature in celcius.
@@ -56,10 +56,10 @@ Name of the selected desktop
 List of active desktops spectrwm style. A desktop is considered active if a window is opened in it. A star marks the selected desktop.
  
 ### tclmpd
-This package is used to return the currently playing song on the Music Player Daemon. Requires libmpdcclient and corresponding header files to build.
+This package is used to return the currently playing song on the Music Player Daemon. It requires libmpdclient and corresponding header files to build.
 
 * mpd::connect(host) :
-Connects to the currently running Music Player Daemon. The host can be a Unix socket or a resolvable ip address.
+Connects to the currently running Music Player Daemon. The host can be a Unix socket or a resolvable internet address.
 
 * mpd::currenttitle :
 Returns the title of the song currently playing.
@@ -76,7 +76,6 @@ Writes content to the shared memory address.
 * shmem::delete(address) :
 Removes the shared memory address.
 
-
 ## Themes
 
 The bar has a light and dark theme built-in. (the dark theme being based on Nord)
@@ -89,3 +88,14 @@ The theme is auto-selected based on the content of the file ~/.cache/theme/defau
 ## Unicode font
 
 The script uses some icons from the remixicon unicode font to be displayed next to some devices names. Theses need to be adjusted if you're using a different unicode font.
+
+array set remix [ list	
+	down 	\uea4a	up 	\uea74
+	disk	\ueba9	printer	\uefd2
+	sdcard	\uf066	udisk	\uf1cc
+	mail	\ueec0	mixer	\uf229 ]
+
+## Maildir
+
+The function mailboxes_setup of the tcl/tk script looks for maildirs under the maildir root folder $HOME/.maildir (variable maildir)
+The accounts available under this root folder can be defined in accountlist. These should be actual folder in maildir format.
