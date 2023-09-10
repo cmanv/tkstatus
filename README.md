@@ -14,7 +14,7 @@ The resulting shared libraries should be installed under **TCLLIBPATH**. The pat
 This shell script should be called at startup in __.xinitrc__ or __.xsession__.
 
 ### statusbar.tk
-This is the main script. It's highly likely tha you'll want to modify it for your own system.
+This is the main script. It's highly likely that you'll want to modify it for your own system.
 
 ## Packages
 ### tclsysinfo
@@ -91,5 +91,5 @@ The script uses some icons from the __remixicon__ unicode font to be displayed n
 
 ## Maildir
 
-The function mailboxes_setup of the tcl/tk script looks for maildirs under the maildir root folder __$HOME/.maildir__ (variable __maildir__)
+The function __mailboxes_setup__ of the tcl/tk script looks for maildirs under the maildir root folder __$HOME/.maildir__ (variable __maildir__)
 The accounts available under this root folder can be defined in __accountlist__. These should be actual folder in maildir format.
