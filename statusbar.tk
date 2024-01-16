@@ -515,7 +515,7 @@ namespace eval statusbar {
 		variable lastdesktop 9
 		variable desktopoffset 0
 		variable themefile
-		puts $::argv
+
 		if {$::argc > 0} {
 			set firstdesktop [lindex $::argv 0]
 		}
