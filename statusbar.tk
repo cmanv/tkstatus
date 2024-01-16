@@ -17,7 +17,7 @@ namespace eval fileutils {
 	}
 
 	proc grep1 {pattern {files {}}} {
-		set result "" 
+		set result ""
 		foreach filename $files {
 			set file [open $filename r]
 			while {[gets $file line] >= 0} {
@@ -156,11 +156,11 @@ namespace eval statusbar {
 
 		bind .bar.loadavg <1> { exec xterm +sb -class top -e top & }
 		bind .bar.mixer <4> {
-			exec mixer vol +5
+			exec mixer vol=+0.05
 			statusbar::update_mixer
 		}
 		bind .bar.mixer <5> {
-			exec mixer vol -5
+			exec mixer vol=-0.05
 			statusbar::update_mixer
 		}
 		bind .bar.metar <1> { exec xmeteo -p }
@@ -410,17 +410,17 @@ namespace eval statusbar {
 		variable accountlist
 
 		switch $theme {
-			jour { 
+			jour {
 				set currenttheme jour
-				array set color [theme::jour] 
+				array set color [theme::jour]
 			}
-			nuit { 
+			nuit {
 				set currenttheme nuit
-				array set color [theme::nuit] 
+				array set color [theme::nuit]
 			}
-			default { 
+			default {
 				set currenttheme jour
-				array set color [theme::jour] 
+				array set color [theme::jour]
 			}
 		}
 
@@ -474,7 +474,7 @@ namespace eval statusbar {
 		variable metar
 
 		set theme [fileutils::cat $themefile]
-		if {$theme ne $currenttheme && [string length $theme]} { set_theme $theme } 
+		if {$theme ne $currenttheme && [string length $theme]} { set_theme $theme }
 
 		set loadavg "[sysinfo::getloadavg] "
 		set usedmem "[join [sysinfo::getusedmemswap]] "
@@ -511,7 +511,20 @@ namespace eval statusbar {
 	}
 
 	proc init {} {
+		variable firstdesktop 0
+		variable lastdesktop 9
+		variable desktopoffset 0
 		variable themefile
+		puts $::argv
+		if {$::argc > 0} {
+			set firstdesktop [lindex $::argv 0]
+		}
+		if {$::argc > 1} {
+			set lastdesktop [lindex $::argv 1]
+		}
+		if {$::argc > 2} {
+			set desktopoffset [lindex $::argv 2]
+		}
 
 		setup_bar
 		setup_devices
@@ -521,14 +534,14 @@ namespace eval statusbar {
 		set_theme [fileutils::cat $themefile]
 		mpd::connect $::env(MPD_HOST)
 		xlib::init
-		xlib::setdesktops 1 9
+		xlib::setdesktops $firstdesktop $lastdesktop $desktopoffset
 
 		every 2000 normal_update
 		every 600 fast_update
 	}
 }
 
-tk appname "tkstatus"
+tk appname "statusbar"
 font create normal -family NotoSans -size 11
 font create italic -family NotoSans -size 11 -slant italic
 font create bold -family NotoSans -size 11 -weight bold
