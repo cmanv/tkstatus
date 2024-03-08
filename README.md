@@ -7,7 +7,7 @@ This is a personal project specifically designed to run on my FreeBSD desktop wi
 The tcl language lacks the functions to access system information. But this is circumvented by using packages which are collections of C functions.
 For my own use, I've written these 4 small packages to provide all the functionnality I need for a status bar. These packages can be build with cmake and the relevant libraries and header files installed.
 
-The resulting shared libraries should be installed under **TCLLIBPATH**. The path of the relevant external libraries such as __libX11.so__ or __libmpdclient.so__ should be defined in **LD_PRELOAD**. In my case, this is done in the calling shell script __statusbar.sh__.
+The resulting shared libraries should be installed under **TCLLIBPATH**. The path of the relevant external libraries such __libmpdclient.so__ should be defined in **LD_PRELOAD**. In my case, this is done in the calling shell script __statusbar.sh__.
 
 ## Files
 ### statusbar.sh
@@ -35,25 +35,6 @@ Returns the amount data downloaded end uploaded on the given interface.
 
 * sysinfo::getmixervol :
 Returns the current volume of the mixer.
-
-### tclxlib
-This package provides a few functions to obtain information from the X display. You'll need standard X libraries and header files to build this on your system.
-
-* xlib:init :
-Initialize the connection to the X display. This should only called once.
-
-* xlib::setdesktops :
-Set the number of the first and last desktop. By default the first desktop is 0 and the last is 9.
-On cwm, the first desktop should be set to 1.
-
-* xlib::getactivewindowname :
-Name of the selected window
-
-* xlib::getcurrentdsktop :
-Name of the selected desktop
-
-* xlib::getlistuseddesktop :
-List of active desktops spectrwm style. A desktop is considered active if a window is opened in it. A star marks the selected desktop.
  
 ### tclmpd
 This package is used to return the currently playing song on the Music Player Daemon. It requires the __libmpdclient__ package and corresponding header files to build.
