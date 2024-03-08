@@ -2,7 +2,6 @@
 package require SysInfo
 package require SharedMem
 package require MPD
-package require XLib
 
 namespace eval fileutils {
 	proc cat {filename} {
@@ -472,6 +471,7 @@ namespace eval statusbar {
 		variable netout
 		variable datetime
 		variable metar
+		variable mixer
 
 		set theme [fileutils::cat $themefile]
 		if {$theme ne $currenttheme && [string length $theme]} { set_theme $theme }
@@ -487,44 +487,51 @@ namespace eval statusbar {
 			-locale $::env(LANG) -format {%d %b %H:%M }]
 		set metar "[join [shmem::read /metar/report]] "
 
+		set mixer "$remix(mixer) [sysinfo::getmixervol]"
+
 		update_devices
 		update_mailboxes
 		update_musicpd
 	}
 
-	# Update som status bar items every 0.5 seconds
-	proc fast_update {} {
+	proc read_socket {channel} {
 		variable remix
 		variable desktops
 		variable windowname
 		variable mixer
 
-		set desktops [join [xlib::getlistuseddesktop]]
-		set windowname [string range [join [xlib::getactivewindowname]] 0 120]
-		set mixer "$remix(mixer) [sysinfo::getmixervol]"
+		if {[gets $channel line] < 0} {
+			if {[eof $channel]} {
+				close $channel
+			}
+			return
+		}
+		set words [split [string trimright $line] '=']
+		set key [lindex $words 0]
+		if {$key == "window_active"} {
+			set windowname [string range [join [lreplace $words 0 0]] 0 120]
+		}
+		if {$key == "desktop_list"} {
+			set desktops [join [lreplace $words 0 0]]
+		}
+		if {$key == "mixer_volume"} {
+			statusbar::update_mixer
+		}
+	}
+
+	proc server_accept {channel host port} {
+		fconfigure $channel -buffering none -blocking 0
+		fileevent $channel readable [list statusbar::read_socket $channel]
 	}
 
 	# Launch command periodically
 	proc every {ms cmd} {
+		eval $cmd
 		after $ms [namespace code [info level 0]]
-		{*}$cmd
 	}
 
 	proc init {} {
-		variable firstdesktop 0
-		variable lastdesktop 9
-		variable desktopoffset 0
 		variable themefile
-
-		if {$::argc > 0} {
-			set firstdesktop [lindex $::argv 0]
-		}
-		if {$::argc > 1} {
-			set lastdesktop [lindex $::argv 1]
-		}
-		if {$::argc > 2} {
-			set desktopoffset [lindex $::argv 2]
-		}
 
 		setup_bar
 		setup_devices
@@ -533,11 +540,8 @@ namespace eval statusbar {
 
 		set_theme [fileutils::cat $themefile]
 		mpd::connect $::env(MPD_HOST)
-		xlib::init
-		xlib::setdesktops $firstdesktop $lastdesktop $desktopoffset
 
 		every 2000 normal_update
-		every 600 fast_update
 	}
 }
 
@@ -549,6 +553,9 @@ font create bold -family NotoSans -size 11 -weight bold
 wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
 wm resizable . 0 0
-wm title . "statusbar.tk version 20230908"
+wm title . "statusbar.tk version 20240307"
 
 statusbar::init
+
+socket -server statusbar::server_accept -myaddr localhost 9995
+vwait forever
