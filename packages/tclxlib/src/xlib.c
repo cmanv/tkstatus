@@ -3,8 +3,10 @@
 static Display *display = NULL;
 static Window root;
 static int errorlog = 0;
-static int mindesktop = 0;
-static int maxdesktop = 9;
+static int firstdesktop = 0;
+static int lastdesktop = 9;
+static int ndesktops;
+static int printoffset;
 static const int bsize = 256;
 
 int XLib_InitObjCmd( ClientData clientData, Tcl_Interp *interp,
@@ -34,17 +36,24 @@ int XLib_SetDesktopsObjCmd( ClientData clientData, Tcl_Interp *interp,
 {
 	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
 	if (objc > 1) {
-		if (Tcl_GetIntFromObj(interp, objv[1], &mindesktop) != TCL_OK) {
-			Tcl_SetStringObj(resultObj, "** Erreur: mindesktop non valide **", -1);
+		if (Tcl_GetIntFromObj(interp, objv[1], &firstdesktop) != TCL_OK) {
+			Tcl_SetStringObj(resultObj, "** Erreur: firstdesktop non valide **", -1);
 			return TCL_ERROR;
 		}
 	}
 	if (objc > 2) {
-		if (Tcl_GetIntFromObj(interp, objv[2], &maxdesktop) != TCL_OK) {
-			Tcl_SetStringObj(resultObj, "** Erreur: maxdesktop non valide **", -1);
+		if (Tcl_GetIntFromObj(interp, objv[2], &lastdesktop) != TCL_OK) {
+			Tcl_SetStringObj(resultObj, "** Erreur: lastdesktop non valide **", -1);
 			return TCL_ERROR;
 		}
 	}
+
+	// Sanitize
+	if (firstdesktop > 1) firstdesktop = 1;
+	if (firstdesktop < 0) firstdesktop = 0;
+	if (lastdesktop < firstdesktop) lastdesktop = firstdesktop;
+	ndesktops = lastdesktop + 1;
+	if (firstdesktop == 0) printoffset = 1;
 
 	return TCL_OK;
 }
@@ -167,20 +176,20 @@ int XLib_GetListUsedDesktopObjCmd( ClientData clientData, Tcl_Interp *interp,
 		currentdesktop = -1;
 
 	/* Make a list of desktops with clients including current desktop */
-	char desktoplist[65];
+	char desktoplist[100];
 	char desktopitem[5];
 	*desktoplist = 0;
-	for (int d = mindesktop; d <= maxdesktop; d++) {
+	for (int d = firstdesktop; d <= lastdesktop; d++) {
 		if (d == currentdesktop) {
-			snprintf(desktopitem, 5, " *%d", d);
-			strlcat(desktoplist, desktopitem, 64);
+			snprintf(desktopitem, 5, " *%d", d+printoffset);
+			strlcat(desktoplist, desktopitem, 99);
 			continue;
 		}
 		int *clientptr = clientdesktoplist;
 		for (int i = 0; i < numclients; i++) {
 			if (*clientptr == d) {
-				snprintf(desktopitem, 5, "  %d", d);
-				strlcat(desktoplist, desktopitem, 64);
+				snprintf(desktopitem, 5, "  %d", d+printoffset);
+				strlcat(desktoplist, desktopitem, 99);
 				break;
 			}
 			clientptr++;

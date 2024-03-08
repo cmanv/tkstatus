@@ -1,3 +1,11 @@
+2024-02-01
+	* version 0.7
+	* Seulement firstdesktop et lastdesktop sont acceptés en paramètres.
+
+2024-01-16
+	* version 0.6
+	* Ajoute desktopoffset
+
 2023-05-27
 	* version 0.5
 	* Ajoute setdesktops

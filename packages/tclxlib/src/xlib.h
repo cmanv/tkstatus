@@ -4,7 +4,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <tcl.h>
-#include "config.h"
+#include "version.h"
 
 unsigned char *get_window_property(Window, Atom, unsigned long *);
 int error_handler(Display *, XErrorEvent *);
