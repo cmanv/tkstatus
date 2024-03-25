@@ -1,5 +1,5 @@
 # tkstatus
-Status bar for minimalist X11 window managers written in C and tcl/tk. 
+Status bar for minimalist X11 window managers written in tcl/tk and C.
 
 ## Introduction
 This is a personal project specifically designed to run on my FreeBSD desktop with the cwm window manager. The main script uses tcl/tk 8.6.
