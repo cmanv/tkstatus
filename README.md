@@ -7,7 +7,7 @@ This is a personal project specifically designed to run on my FreeBSD desktop wi
 The tcl language lacks the functions to access system information. But this is circumvented by using packages which are collections of C functions.
 For my own use, I've written these 4 small packages to provide all the functionnality I need for a status bar. These packages can be build with cmake and the relevant libraries and header files installed.
 
-The resulting shared libraries should be installed under **TCLLIBPATH**. The path of the relevant external libraries such __libmpdclient.so__ should be defined in **LD_PRELOAD**. In my case, this is done in the calling shell script __statusbar.sh__.
+The resulting shared libraries should be installed under **TCLLIBPATH**. The path of the relevant external libraries such as __libmpdclient.so__ should be defined in **LD_PRELOAD**. In my case, this is done in the calling shell script __statusbar.sh__.
 
 ## Files
 ### statusbar.sh
@@ -18,7 +18,7 @@ This is the main script. It's highly likely that you'll want to modify it for yo
 
 ## Packages
 ### tclsysinfo
-This package is system specific. The provided version was written for FreeBSD 13.x.
+This package is system specific. The provided version was written for FreeBSD 14.X.
 The following functions are provided:
 
 * sysinfo::getloadavg :
@@ -45,18 +45,6 @@ Connects to the currently running Music Player Daemon. The host can be a Unix so
 * mpd::currenttitle :
 Returns the title of the song currently playing.
 
-### tclshmem
-This package allows basic ipc through a shared memory address. This supposes that a running application shares data on a known address. (On my desktop, it's a small weather app.)
-
-* shmem::read(address) :
-Returns the content of the shared memory address.
-
-* shmem::write(address) :
-Writes content to the shared memory address.
-
-* shmem::delete(address) :
-Removes the shared memory address.
-
 ## Themes
 
 The bar has a light and dark theme built-in. (the dark theme being based on **Nord**)
@@ -74,3 +62,7 @@ The script uses some icons from the __remixicon__ unicode font to be displayed n
 
 The function __mailboxes_setup__ of the tcl/tk script looks for maildirs under the root folder __$HOME/.maildir__ (variable __maildir__)
 The accounts available under this root folder can be defined in __accountlist__. These should be actual folders in maildir format.
+
+## TCP Socket
+
+The statusbar is listening to the tcp socket 9995 on localhost. It is able to receive messages from applications for various status changes instead of polling for them. For example a window manager can send messages for active window change, desktop change etc.. The theme can also be toggled in this way. This mechanism helps keeping the CPU usage at a very low level.
