@@ -13,7 +13,7 @@ proc read_file { filename } {
 proc convert_date { rfc822 } {
 	set ctime [clock scan $rfc822]
 	set date [clock format $ctime -format {%a %d %b %Y %T %Z} \
-			-timezone :America/Montreal -locale fr]
+			-timezone $::timezone -locale $::lang]
 	return $date
 }
 
@@ -98,6 +98,8 @@ namespace eval statusbar {
 	variable wmport 9981
 	variable mailpopup 0
 	variable themefile "$::env(HOME)/.cache/theme/default"
+	variable accountlist {}
+	variable maildir ""
 
 	# Unicode icons from remixicon
 	array set remix [ list	down 	\uea4a	up 	\uea74 \
@@ -234,14 +236,12 @@ namespace eval statusbar {
 
 	# Setup the mailboxes
 	proc setup_mailboxes {} {
-		variable accountlist
 		variable mailboxes
+		variable maildir
+		variable accountlist
 
 		frame .bar.mailboxes
 		frame .bar.mailsep -width 1
-
-		set accountlist [ list unix b2b2c gmail yahoo ]
-		set maildir "$::env(HOME)/.maildir"
 
 		array set mailboxes {}
 		foreach account $accountlist {
@@ -596,6 +596,19 @@ namespace eval statusbar {
 		mpd::connect $::env(MPD_HOST)
 
 		every 2000 status_update
+	}
+}
+
+set lang en
+set timezone :America/New_York
+set statusbar::accountlist [ list gmail yahoo ]
+set statusbar::maildir "$::env(HOME)/.maildir"
+
+set configfile $::env(HOME)/.config/statusbar/config
+if {[file exists $configfile]} {
+	if {[catch {source $configfile}]} {
+		puts stderr "Error evaluating $configfile"
+		exit
 	}
 }
 
