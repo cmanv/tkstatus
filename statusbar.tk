@@ -599,18 +599,10 @@ namespace eval statusbar {
 	}
 }
 
-set lang en
-set timezone :America/New_York
-set statusbar::accountlist [ list gmail yahoo ]
+set lang fr
+set timezone :America/Montreal
+set statusbar::accountlist [ list b2b2c gmail yahoo unix ]
 set statusbar::maildir "$::env(HOME)/.maildir"
-
-set configfile $::env(HOME)/.config/statusbar/config
-if {[file exists $configfile]} {
-	if {[catch {source $configfile}]} {
-		puts stderr "Error evaluating $configfile"
-		exit
-	}
-}
 
 tk appname "statusbar"
 font create normal -family NotoSans -size 11
