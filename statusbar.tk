@@ -1,67 +1,101 @@
 #!/usr/bin/env wish8.6
-package require fileutil
+package require mime
 package require SysInfo
 package require MPD
 
-namespace eval theme {
-	# Nord theme
-	array set nord [ list \
-		polar1	{#2e3440}	polar2	{#3b4252} \
-		polar3	{#434c5e}	polar4	{#4c566a} \
-		snow1	{#d8dee9}	snow2	{#e5e9f0} \
-		snow3	{#eceff4}	frost1	{#5e81ac} \
-		frost2	{#81a1c1}	frost3	{#88c0d0} \
-		frost4	{#8fbcbb}	aurora1	{#b48ead} \
-		aurora2	{#a3be8c}	aurora3	{#ebcb8b} \
-		aurora4	{#d08770}	aurora5	{#bf616a} ]
+proc read_file { filename } {
+	set file [open $filename r]
+	set content [read $file]
+	close $file
+	return $content
+}
 
+proc convert_date { rfc822 } {
+	set ctime [clock scan $rfc822]
+	set date [clock format $ctime -format {%a %d %b %Y %T %Z} \
+			-timezone :America/Montreal -locale fr]
+	return $date
+}
+
+proc convert_header { header } {
+	set tokens [regexp -linestop -all -inline {(.*)=\?([\w\-]+)\?(.)\?(.*?)\?\=(.*)} $header]
+	if { $tokens == {} } {
+		return $header
+	}
+
+	set result ""
+	foreach { _ head charset enctype value tail } $tokens {
+		set charset [string tolower $charset]
+		if { [string match iso-* $charset] } {
+			set charset [string replace $charset 3 3]
+		}
+		set enctype [string tolower $enctype]
+		if { $enctype == "b" } {
+			set value [::base64::decode $value]
+		} elseif { $enctype == "q" } {
+			set value [::mime::qp_decode $value 1]
+		}
+
+		set value [encoding convertfrom $charset $value]
+		set result "${result}${head}${value}${tail}"
+	}
+
+	return $result
+}
+
+namespace eval theme {
 	proc dark {} {
-		variable nord
 		set colortable [ list \
-			acpitemp	$nord(aurora2) \
-			bar		$nord(polar2) \
-			b2b2c		$nord(aurora3) \
-			datetime	$nord(snow1) \
-			desktop		$nord(aurora2) \
-			devices		$nord(frost2) \
-			gmail		$nord(aurora5) \
-			loadavg		$nord(frost4) \
-			mailinfo	$nord(snow1) \
-			metar		$nord(aurora3) \
-			mixer		$nord(frost4) \
-			musicpd		$nord(frost4) \
-			netin		$nord(frost4) \
-			netout		$nord(aurora1) \
-			separator	{#2c8c2c} \
-			unix		$nord(aurora2) \
-			usedmem		$nord(frost4) \
-			windowname	$nord(aurora2) ]
+			acpitemp	PaleGreen3 \
+			bar		{#3b4252} \
+			b2b2c		orange \
+			datetime	WhiteSmoke \
+			desktop		PaleGreen3 \
+			devices		SteelBlue2 \
+			gmail		SkyBlue2 \
+			loadavg		CadetBlue3 \
+			mailinfo	WhiteSmoke \
+			metar		Gold \
+			mixer		CadetBlue3 \
+			mode		CadetBlue3 \
+			musicpd		CadetBlue3 \
+			netin		Gold2 \
+			netout		CadetBlue3 \
+			separator	OliveDrab \
+			unix		tan \
+			usedmem		CadetBlue3 \
+			windowname	PaleGreen3 \
+			yahoo		PaleGreen3 ]
 	}
 
 	proc light {} {
 		set colortable [ list \
 			acpitemp	MediumBlue \
 			bar		gray90 \
-			b2b2c		SteelBlue \
+			b2b2c		brown \
 			datetime	black \
 			desktop		DarkBlue \
 			devices		DarkGreen \
-			gmail		purple \
+			gmail		SteelBlue \
 			loadavg		black \
 			mailinfo	black \
 			metar		DarkGreen \
 			mixer		black \
+			mode		DarkBlue \
 			musicpd		DarkBlue \
 			netin		DarkGreen \
 			netout		purple \
 			separator	black \
-			unix		DarkGreen \
+			unix		black \
 			usedmem		black \
-			windowname	black ]
+			windowname	black \
+			yahoo		DarkGreen ]
 	}
 }
 
 namespace eval statusbar {
+	variable xscreen 0
+	variable wmport 9981
 	variable mailpopup 0
 	variable themefile "$::env(HOME)/.cache/theme/default"
 
@@ -72,27 +106,29 @@ namespace eval statusbar {
 				mail	\ueec0	mixer	\uf229 ]
 
 	# List of fixed items in the bar
-	set baritems [ list desktop sep0 loadavg usedmem acpitemp \
-			netin netout sep1 windowname datetime \
-			sep2 metar sep3 mixer sep4 ]
+	set baritems [ list mode sep0 desktop sep1 loadavg usedmem acpitemp \
+			netin netout sep2 windowname datetime \
+			sep3 metar sep4 mixer sep5 ]
 
 	# Array describing items in the bar
 	array set widgetarray [ list \
-		desktop [ list type var side left text statusbar::desktops font normal ] \
+		mode [ list type var side left text statusbar::mode font normal ] \
 		sep0 [ list type vseparator side left ] \
+		desktop [ list type var side left text statusbar::desktops font normal ] \
+		sep1 [ list type vseparator side left ] \
 		loadavg [ list type var side left text statusbar::loadavg font normal ] \
 		usedmem [ list type var side left text statusbar::usedmem font normal ] \
 		acpitemp [ list type var side left text statusbar::acpitemp font normal ] \
 		netin [ list type var side left text statusbar::netin font normal ] \
 		netout [ list type var side left text statusbar::netout font normal ] \
-		sep1 [ list type vseparator side left ] \
+		sep2 [ list type vseparator side left ] \
 		windowname [ list type xvar side left text statusbar::windowname font normal ] \
 		datetime [ list type var side right text statusbar::datetime font normal ] \
-		sep2 [ list type vseparator side right ] \
-		metar [ list type var side right text statusbar::metar font normal ] \
 		sep3 [ list type vseparator side right ] \
+		metar [ list type var side right text statusbar::metar font normal ] \
+		sep4 [ list type vseparator side right ] \
 		mixer [ list type var side right text statusbar::mixer font normal ] \
-		sep4 [ list type vseparator side right ] ]
+		sep5 [ list type vseparator side right ] ]
 
 	# Setup the fixed items in the bar
 	proc setup_bar {} {
@@ -124,6 +160,8 @@ namespace eval statusbar {
 			}
 		}
 
+		bind .bar.desktop <4> { statusbar::prev_desktop }
+		bind .bar.desktop <5> { statusbar::next_desktop }
 		bind .bar.loadavg <1> { exec xterm +sb -class top -e top & }
 		bind .bar.mixer <4> {
 			exec mixer vol=+0.05
@@ -172,7 +210,7 @@ namespace eval statusbar {
 			if {[file exists $device(path)]} {
 				if {!$device(visible)} {
 					if {![string length [pack slaves .bar.devices]]} {
-						pack .bar.devices -after .bar.sep1 -side left
+						pack .bar.devices -after .bar.sep2 -side left
 						pack .bar.devicessep -after .bar.devices -fill y \
 							-padx 5 -side left
 					}
@@ -202,7 +240,7 @@ namespace eval statusbar {
 		frame .bar.mailboxes
 		frame .bar.mailsep -width 1
 
-		set accountlist [ list unix b2b2c gmail ]
+		set accountlist [ list unix b2b2c gmail yahoo ]
 		set maildir "$::env(HOME)/.maildir"
 
 		array set mailboxes {}
@@ -236,7 +274,7 @@ namespace eval statusbar {
 				set mailbox(newmail) $newmail
 				if {!$mailbox(visible)} {
 					if {![string length [pack slaves .bar.mailboxes]]} {
-						pack .bar.mailboxes -after .bar.sep3 -side right
+						pack .bar.mailboxes -after .bar.sep4 -side right
 						pack .bar.mailsep -after .bar.mailboxes -fill y \
 							-padx 5 -side right
 					}
@@ -288,9 +326,10 @@ namespace eval statusbar {
 		set count 0
 		array set mailbox $mailboxes($account)
 		foreach file [glob -nocomplain -dir "$mailbox(path)" *] {
-			set date [join [lrange [split [fileutil::grep ^Date: $file] ":"] 2 end]]
-			set from [join [lrange [split [fileutil:::grep ^From: $file] ":"] 2 end]]
-			set subject [join [lrange [split [fileutil::grep ^Subject: $file] ":"] 2 end]]
+			set tokens [mime::initialize -string [read_file $file]]
+			set date [convert_date [lindex [mime::getheader $tokens Date] 0]]
+			set from [convert_header [lindex [mime::getheader $tokens From] 0]]
+			set subject [convert_header [lindex [mime::getheader $tokens Subject] 0]]
 
 			pack [frame .popup.date$count -background $color(bar)] \
 				-expand 1 -fill x
@@ -357,7 +396,7 @@ namespace eval statusbar {
 		if {[string length $title]} {
 			set musicpd $title
 			if {!$musicpd_visible} {
-				pack .bar.musicpd -after .bar.sep4 -side right
+				pack .bar.musicpd -after .bar.sep5 -side right
 				pack .bar.musicsep -after .bar.musicpd -fill y -padx 5 -side right
 				set musicpd_visible 1
 			}
@@ -422,6 +461,30 @@ namespace eval statusbar {
 		.bar.musicsep configure -background $color(separator)
 	}
 
+	proc prev_desktop {} {
+		variable xscreen
+		variable wmport
+
+		if {[catch {set channel [socket localhost $wmport]} ]} {
+			puts stderr "Could not open socket on port $wmport!\n"
+			return
+		}
+		puts $channel "$xscreen;PrevDesktop"
+		close $channel
+	}
+
+	proc next_desktop {} {
+		variable xscreen
+		variable wmport
+
+		if {[catch {set channel [socket localhost $wmport]} ]} {
+			puts stderr "Could not open socket on port $wmport!\n"
+			return
+		}
+		puts $channel "$xscreen;NextDesktop"
+		close $channel
+	}
+
 	# Update mixer after button event
 	proc update_mixer {} {
 		variable mixer
@@ -460,6 +523,7 @@ namespace eval statusbar {
 	proc read_socket {channel} {
 		variable currenttheme
 		variable desktops
+		variable mode
 		variable windowname
 		variable metar
 
@@ -488,6 +552,9 @@ namespace eval statusbar {
 		}
 		if {$key == "desktop_list"} {
 			set desktops $value
+		}
+		if {$key == "desktop_mode"} {
+			set mode " $value"
 		}
 		if {$key == "mixer_volume"} {
 			statusbar::update_mixer
@@ -521,7 +588,11 @@ namespace eval statusbar {
 		setup_mailboxes
 		setup_musicpd
 
-		set_theme [string trim [fileutil::cat $themefile]]
+		if {[file exists $themefile]} {
+			set_theme [string trim [read_file $themefile]]
+		} else {
+			set theme "light"
+		}
 		mpd::connect $::env(MPD_HOST)
 
 		every 2000 status_update
@@ -535,7 +606,7 @@ font create bold -family NotoSans -size 11 -weight bold
 
 wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
-wm title . "statusbar.tk version 20240325"
+wm title . "statusbar.tk version 20240815"
 
 statusbar::init
 
