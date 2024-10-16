@@ -1,4 +1,4 @@
-#!/usr/bin/env wish8.6
+#!/usr/bin/env wish9.0
 package require mime
 package require SysInfo
 package require MPD
@@ -25,9 +25,21 @@ proc convert_header { header } {
 
 	set result ""
 	foreach { _ head charset enctype value tail } $tokens {
+		if { [string is space $head] } {
+			if { [string length $result] } {
+				set head " "
+			} else {
+				set head ""
+			}
+		}
+		if { [string is space $tail] } {
+			set tail ""
+		}
 		set charset [string tolower $charset]
 		if { [string match iso-* $charset] } {
-			set charset [string replace $charset 3 3]
+			set charset [string replace $charset 0 3 iso]
+		} elseif { [string match windows-* $charset] } {
+			set charset [string replace $charset 0 7 cp]
 		}
 		set enctype [string tolower $enctype]
 		if { $enctype == "b" } {
@@ -35,7 +47,6 @@ proc convert_header { header } {
 		} elseif { $enctype == "q" } {
 			set value [::mime::qp_decode $value 1]
 		}
-
 		set value [encoding convertfrom $charset $value]
 		set result "${result}${head}${value}${tail}"
 	}
@@ -72,7 +83,7 @@ namespace eval theme {
 		set colortable [ list \
 			acpitemp	MediumBlue \
 			bar		gray90 \
-			b2b2c		brown \
+			b2b2c		chocolate \
 			datetime	black \
 			desktop		DarkBlue \
 			devices		DarkGreen \
@@ -86,7 +97,7 @@ namespace eval theme {
 			netin		DarkGreen \
 			netout		purple \
 			separator	black \
-			unix		black \
+			unix		brown \
 			usedmem		black \
 			windowname	black \
 			yahoo		DarkGreen ]
@@ -162,15 +173,22 @@ namespace eval statusbar {
 			}
 		}
 
-		bind .bar.desktop <4> { statusbar::prev_desktop }
-		bind .bar.desktop <5> { statusbar::next_desktop }
-		bind .bar.loadavg <1> { exec xterm +sb -class top -e top & }
-		bind .bar.mixer <4> {
-			exec mixer vol=+0.05
-			statusbar::update_mixer
+		bind .bar.mode <1> { statusbar::wm_message {PrevMode} }
+		bind .bar.mode <3> { statusbar::wm_message {NextMode} }
+		bind .bar.desktop <MouseWheel> {
+			if {%D < 0} {
+				statusbar::wm_message {PrevDesktop}
+			} else {
+				statusbar::wm_message {NextDesktop}
+			}
 		}
-		bind .bar.mixer <5> {
-			exec mixer vol=-0.05
+		bind .bar.loadavg <1> { exec xterm +sb -class top -e top & }
+		bind .bar.mixer <MouseWheel> {
+			if {%D < 0} {
+				exec mixer vol=-0.05
+			} else {
+				exec mixer vol=+0.05
+			}
 			statusbar::update_mixer
 		}
 		bind .bar.metar <1> { catch {exec metarcmd.tcl toggle_popup} }
@@ -379,11 +397,13 @@ namespace eval statusbar {
 		bind .bar.musicpd <3> {
 			if {![catch {exec mpc stop}]} { statusbar::update_musicpd }
 		}
-		bind .bar.musicpd <4> {
-			if {![catch {exec mpc prev}]} { statusbar::update_musicpd }
-		}
-		bind .bar.musicpd <5> {
-			if {![catch {exec mpc next}]} { statusbar::update_musicpd }
+		bind .bar.musicpd <MouseWheel> {
+			if {%D < 0} {
+				if {![catch {exec mpc next}]} { statusbar::update_musicpd }
+			} else {
+				if {![catch {exec mpc prev}]} { statusbar::update_musicpd }
+			}
+
 		}
 	}
 
@@ -461,7 +481,8 @@ namespace eval statusbar {
 		.bar.musicsep configure -background $color(separator)
 	}
 
-	proc prev_desktop {} {
+	# Send a message to the window manager
+	proc wm_message { wmmessage } {
 		variable xscreen
 		variable wmport
 
@@ -469,19 +490,7 @@ namespace eval statusbar {
 			puts stderr "Could not open socket on port $wmport!\n"
 			return
 		}
-		puts $channel "$xscreen;PrevDesktop"
-		close $channel
-	}
-
-	proc next_desktop {} {
-		variable xscreen
-		variable wmport
-
-		if {[catch {set channel [socket localhost $wmport]} ]} {
-			puts stderr "Could not open socket on port $wmport!\n"
-			return
-		}
-		puts $channel "$xscreen;NextDesktop"
+		puts $channel "$xscreen;$wmmessage"
 		close $channel
 	}
 
@@ -601,7 +610,7 @@ namespace eval statusbar {
 
 set lang fr
 set timezone :America/Montreal
-set statusbar::accountlist [ list b2b2c gmail yahoo unix ]
+set statusbar::accountlist [ list b2b2c gmail unix yahoo ]
 set statusbar::maildir "$::env(HOME)/.maildir"
 
 tk appname "statusbar"
@@ -611,7 +620,7 @@ font create bold -family NotoSans -size 11 -weight bold
 
 wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
-wm title . "statusbar.tk version 20240815"
+wm title . "statusbar.tk version 20241016"
 
 statusbar::init
 

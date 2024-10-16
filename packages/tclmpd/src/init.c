@@ -5,11 +5,11 @@ Tclmpd_Init(Tcl_Interp *interp)
 {
 	Tcl_Namespace *namespace;
 
-	if (Tcl_InitStubs(interp, "8.6", 0) == NULL) {
+	if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) {
 		return TCL_ERROR;
 	}
 
-	if (Tcl_PkgRequire(interp, "Tcl", "8.6", 0) == NULL) {
+	if (Tcl_PkgRequire(interp, "Tcl", TCL_VERSION, 0) == NULL) {
 		return TCL_ERROR;
 	}
 
