@@ -1,4 +1,5 @@
 #!/usr/bin/env wish9.0
+package require metar
 package require mime
 package require SysInfo
 package require MPD
@@ -138,7 +139,7 @@ namespace eval statusbar {
 		windowname [ list type xvar side left text statusbar::windowname font normal ] \
 		datetime [ list type var side right text statusbar::datetime font normal ] \
 		sep3 [ list type vseparator side right ] \
-		metar [ list type var side right text statusbar::metar font normal ] \
+		metar [ list type var side right text metar::report(statusbar) font normal ] \
 		sep4 [ list type vseparator side right ] \
 		mixer [ list type var side right text statusbar::mixer font normal ] \
 		sep5 [ list type vseparator side right ] ]
@@ -191,8 +192,8 @@ namespace eval statusbar {
 			}
 			statusbar::update_mixer
 		}
-		bind .bar.metar <1> { catch {exec metarcmd.tcl toggle_popup} }
-		bind .bar.metar <2> { catch {exec metarcmd.tcl metar_update} }
+		bind .bar.metar <1> { metar::toggle_window }
+		bind .bar.metar <2> { metar::update_report }
 	}
 
 	# Setup the removable devices
@@ -555,25 +556,22 @@ namespace eval statusbar {
 		}
 		if {$key == "window_active"} {
 			set windowname $value
-		}
-		if {$key == "no_window_active"} {
+		} elseif {$key == "no_window_active"} {
 			set windowname ""
-		}
-		if {$key == "desktop_list"} {
+		} elseif {$key == "desktop_list"} {
 			set desktops $value
-		}
-		if {$key == "desktop_mode"} {
+		} elseif {$key == "desktop_mode"} {
 			set mode " $value"
-		}
-		if {$key == "mixer_volume"} {
+		} elseif {$key == "mixer_volume"} {
 			statusbar::update_mixer
-		}
-		if {$key == "metar_update"} {
-			set metar $value
-		}
-		if {$key == "set_theme"} {
+		} elseif { $key == "toggle_metar_window" } {
+			metar::toggle_window
+		} elseif { $key == "update_metar_report" } {
+			metar::update_report
+		} elseif {$key == "set_theme"} {
 			if {$value != $currenttheme} {
 				set_theme $value
+				metar::configure_window $value
 			}
 		}
 	}
@@ -596,6 +594,7 @@ namespace eval statusbar {
 		setup_devices
 		setup_mailboxes
 		setup_musicpd
+		metar::init
 
 		if {[file exists $themefile]} {
 			set_theme [string trim [read_file $themefile]]
@@ -620,7 +619,7 @@ font create bold -family NotoSans -size 11 -weight bold
 
 wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
-wm title . "statusbar.tk version 20241016"
+wm title . "statusbar.tk version 20241017"
 
 statusbar::init
 
