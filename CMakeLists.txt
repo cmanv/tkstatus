@@ -11,9 +11,11 @@ set(TCL_LIBRARY_VERSION "9.0")
 set(TCL_INCLUDE_PATH "/usr/local/include/tcl9.0")
 
 # Subdirs
+
+add_subdirectory(modules/maildir)
 add_subdirectory(modules/metar)
-add_subdirectory(modules/tclmpd)
-add_subdirectory(modules/tclsysinfo)
+add_subdirectory(modules/musicpd)
+add_subdirectory(modules/sysinfo)
 add_subdirectory(modules/utils)
 
 # Install files

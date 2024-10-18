@@ -1,7 +1,7 @@
 #include "sysinfo.h"
 
 EXTERN int
-Tclsysinfo_Init(Tcl_Interp *interp)
+Sysinfo_Init(Tcl_Interp *interp)
 {
 	Tcl_Namespace *namespace;
 

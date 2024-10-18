@@ -1,111 +1,14 @@
 #!/usr/bin/env wish9.0
 package require utils
+package require maildir
 package require metar
-package require mime
 package require SysInfo
 package require MPD
-
-proc convert_date { rfc822 } {
-	set ctime [clock scan $rfc822]
-	set date [clock format $ctime -format {%a %d %b %Y %T %Z} \
-			-timezone $::timezone -locale $::lang]
-	return $date
-}
-
-proc convert_header { header } {
-	set tokens [regexp -linestop -all -inline {(.*)=\?([\w\-]+)\?(.)\?(.*?)\?\=(.*)} $header]
-	if { $tokens == {} } {
-		return $header
-	}
-
-	set result ""
-	foreach { _ head charset enctype value tail } $tokens {
-		if { [string is space $head] } {
-			if { [string length $result] } {
-				set head " "
-			} else {
-				set head ""
-			}
-		}
-		if { [string is space $tail] } {
-			set tail ""
-		}
-		set charset [string tolower $charset]
-		if { [string match iso-* $charset] } {
-			set charset [string replace $charset 0 3 iso]
-		} elseif { [string match windows-* $charset] } {
-			set charset [string replace $charset 0 7 cp]
-		}
-		set enctype [string tolower $enctype]
-		if { $enctype == "b" } {
-			set value [::base64::decode $value]
-		} elseif { $enctype == "q" } {
-			set value [::mime::qp_decode $value 1]
-		}
-		set value [encoding convertfrom $charset $value]
-		set result "${result}${head}${value}${tail}"
-	}
-
-	return $result
-}
-
-namespace eval theme {
-	proc dark {} {
-		set colortable [ list \
-			acpitemp	PaleGreen3 \
-			bar		{#3b4252} \
-			b2b2c		orange \
-			datetime	WhiteSmoke \
-			desktop		PaleGreen3 \
-			devices		SteelBlue2 \
-			gmail		SkyBlue2 \
-			loadavg		CadetBlue3 \
-			mailinfo	WhiteSmoke \
-			metar		Gold \
-			mixer		CadetBlue3 \
-			mode		CadetBlue3 \
-			musicpd		CadetBlue3 \
-			netin		Gold2 \
-			netout		CadetBlue3 \
-			separator	OliveDrab \
-			unix		tan \
-			usedmem		CadetBlue3 \
-			windowname	PaleGreen3 \
-			yahoo		PaleGreen3 ]
-	}
-
-	proc light {} {
-		set colortable [ list \
-			acpitemp	MediumBlue \
-			bar		gray90 \
-			b2b2c		chocolate \
-			datetime	black \
-			desktop		DarkBlue \
-			devices		DarkGreen \
-			gmail		SteelBlue \
-			loadavg		black \
-			mailinfo	black \
-			metar		DarkGreen \
-			mixer		black \
-			mode		DarkBlue \
-			musicpd		DarkBlue \
-			netin		DarkGreen \
-			netout		purple \
-			separator	black \
-			unix		brown \
-			usedmem		black \
-			windowname	black \
-			yahoo		DarkGreen ]
-	}
-}
 
 namespace eval statusbar {
 	variable xscreen 0
 	variable wmport 9981
-	variable mailpopup 0
 	variable themefile "$::env(HOME)/.cache/theme/default"
-	variable accountlist {}
-	variable maildir ""
 
 	# Unicode icons from remixicon
 	array set remix [ list	down 	\uea4a	up 	\uea74 \
@@ -114,29 +17,67 @@ namespace eval statusbar {
 				mail	\ueec0	mixer	\uf229 ]
 
 	# List of fixed items in the bar
-	set baritems [ list mode sep0 desktop sep1 loadavg usedmem acpitemp \
-			netin netout sep2 windowname datetime \
-			sep3 metar sep4 mixer sep5 ]
+	set baritems [ list mode modesep desktop desksep loadavg usedmem acpitemp \
+			netin netout infosep windowname datetime \
+			datesep metar metarsep mixer mixersep ]
 
 	# Array describing items in the bar
 	array set widgetarray [ list \
 		mode [ list type var side left text statusbar::mode font normal ] \
-		sep0 [ list type vseparator side left ] \
+		modesep [ list type vseparator side left ] \
 		desktop [ list type var side left text statusbar::desktops font normal ] \
-		sep1 [ list type vseparator side left ] \
+		desksep [ list type vseparator side left ] \
 		loadavg [ list type var side left text statusbar::loadavg font normal ] \
 		usedmem [ list type var side left text statusbar::usedmem font normal ] \
 		acpitemp [ list type var side left text statusbar::acpitemp font normal ] \
 		netin [ list type var side left text statusbar::netin font normal ] \
 		netout [ list type var side left text statusbar::netout font normal ] \
-		sep2 [ list type vseparator side left ] \
+		infosep [ list type vseparator side left ] \
 		windowname [ list type xvar side left text statusbar::windowname font normal ] \
 		datetime [ list type var side right text statusbar::datetime font normal ] \
-		sep3 [ list type vseparator side right ] \
+		datesep [ list type vseparator side right ] \
 		metar [ list type var side right text metar::report(statusbar) font normal ] \
-		sep4 [ list type vseparator side right ] \
+		metarsep [ list type vseparator side right ] \
 		mixer [ list type var side right text statusbar::mixer font normal ] \
-		sep5 [ list type vseparator side right ] ]
+		mixersep [ list type vseparator side right ] ]
+
+	proc dark {} {
+		set theme [ list \
+			acpitemp	PaleGreen3 \
+			bar		{#3b4252} \
+			datetime	WhiteSmoke \
+			desktop		PaleGreen3 \
+			devices		SteelBlue2 \
+			loadavg		CadetBlue3 \
+			metar		Gold \
+			mixer		CadetBlue3 \
+			mode		CadetBlue3 \
+			musicpd		CadetBlue3 \
+			netin		Gold2 \
+			netout		CadetBlue3 \
+			separator	OliveDrab \
+			usedmem		CadetBlue3 \
+			windowname	PaleGreen3 ]
+	}
+
+	proc light {} {
+		set theme [ list \
+			acpitemp	MediumBlue \
+			bar		gray90 \
+			datetime	black \
+			desktop		DarkBlue \
+			devices		DarkGreen \
+			loadavg		black \
+			metar		DarkGreen \
+			mixer		black \
+			mode		DarkBlue \
+			musicpd		DarkBlue \
+			netin		DarkGreen \
+			netout		purple \
+			separator	black \
+			usedmem		black \
+			windowname	black ]
+	}
 
 	# Setup the fixed items in the bar
 	proc setup_bar {} {
@@ -225,7 +166,7 @@ namespace eval statusbar {
 			if {[file exists $device(path)]} {
 				if {!$device(visible)} {
 					if {![string length [pack slaves .bar.devices]]} {
-						pack .bar.devices -after .bar.sep2 -side left
+						pack .bar.devices -after .bar.infosep -side left
 						pack .bar.devicessep -after .bar.devices -fill y \
 							-padx 5 -side left
 					}
@@ -245,134 +186,6 @@ namespace eval statusbar {
 			}
 		}
 
-	}
-
-	# Setup the mailboxes
-	proc setup_mailboxes {} {
-		variable mailboxes
-		variable maildir
-		variable accountlist
-
-		frame .bar.mailboxes
-		frame .bar.mailsep -width 1
-
-		array set mailboxes {}
-		foreach account $accountlist {
-			array set mailbox {}
-			set mailbox(path) "$maildir/$account/inbox/new"
-			set mailbox(visible) 0
-			set mailbox(newmail) 0
-			set mailboxes($account) [array get mailbox]
-
-			label .bar.mailboxes.$account -font normal -text ""
-			bind .bar.mailboxes.$account <1>  "statusbar::newmailpopup $account"
-			bind .bar.mailboxes.$account <2> {
-				exec emacsclient -c -e -F "((width . 120) (height . 30))" \
-					"(mu4e)" > /dev/null 2>@1 &
-			}
-		}
-	}
-
-	# Look for new messages in the mailboxes
-	proc update_mailboxes {} {
-		variable remix
-		variable accountlist
-		variable mailboxes
-
-		foreach account $accountlist {
-			array set mailbox $mailboxes($account)
-			set newmail [llength [glob -nocomplain -dir "$mailbox(path)" *]]
-			if {$newmail && $newmail != $mailbox(newmail)} {
-				.bar.mailboxes.$account configure -text "$remix(mail) ($newmail)"
-				set mailbox(newmail) $newmail
-				if {!$mailbox(visible)} {
-					if {![string length [pack slaves .bar.mailboxes]]} {
-						pack .bar.mailboxes -after .bar.sep4 -side right
-						pack .bar.mailsep -after .bar.mailboxes -fill y \
-							-padx 5 -side right
-					}
-					pack .bar.mailboxes.$account -side left
-					set mailbox(visible) 1
-				}
-				set mailboxes($account) [array get mailbox]
-			} else {
-				if {!$newmail && $mailbox(visible)} {
-					pack forget .bar.mailboxes.$account
-					if {![string length [pack slaves .bar.mailboxes]]} {
-						pack forget .bar.mailboxes .bar.mailsep
-					}
-					set mailbox(newmail) 0
-					set mailbox(visible) 0
-					set mailboxes($account) [array get mailbox]
-				}
-			}
-		}
-
-	}
-
-	# Popup after button event on mail icon
-	proc newmailpopup { account } {
-		variable currenttheme
-		variable mailboxes
-		variable mailpopup
-
-		if {$mailpopup} {
-			destroy .popup
-			set mailpopup 0
-			return
-		}
-		set mailpopup 1
-		array set color [theme::$currenttheme]
-
-		toplevel .popup -background $color(bar) -class Newmail
-		wm attributes .popup -type dialog
-		wm resizable .popup 0 0
-
-		pack [frame .popup.$account -background $color(bar)] \
-			-expand 1 -fill x -side top
-		pack [label .popup.$account.label -font bold -bg $color(bar) \
-			-fg $color($account) -text "-- $account --"] \
-			-expand 1 -side left
-		pack [frame .popup.sep$account -background $color(separator) \
-			-height 1] -fill x -side top
-
-		set count 0
-		array set mailbox $mailboxes($account)
-		foreach file [glob -nocomplain -dir "$mailbox(path)" *] {
-			set tokens [mime::initialize -string [utils::read_file $file]]
-			set date [convert_date [lindex [mime::getheader $tokens Date] 0]]
-			set from [convert_header [lindex [mime::getheader $tokens From] 0]]
-			set subject [convert_header [lindex [mime::getheader $tokens Subject] 0]]
-
-			pack [frame .popup.date$count -background $color(bar)] \
-				-expand 1 -fill x
-			pack [label .popup.date$count.label -text $date \
-				-font normal -bg $color(bar) -fg $color(mailinfo)] \
-				-side left -padx 5
-			pack [frame .popup.from$count -background $color(bar)] \
-				-expand 1 -fill x
-			pack [label .popup.from$count.label -text $from \
-				-font normal -bg $color(bar) -fg $color(mailinfo)] \
-				-side left -padx 5
-			pack [frame .popup.subject$count -background $color(bar)] \
-				-expand 1 -fill x
-			pack [label .popup.subject$count.label -text $subject \
-				-font normal -bg $color(bar) -fg $color(mailinfo)] \
-				-side left -padx 5
-
-			pack [frame .popup.sep$count -background $color(separator) \
-				-height 1] -side top -fill x
-			incr count
-		}
-		wm title .popup "$account - $count message(s) non lu(s)."
-		bind .popup <Button> {
-			destroy .popup
-			set statusbar::mailpopup 0
-		}
-		if {!$count} {
-			destroy .popup
-			set mailpopup 0
-		}
 	}
 
 	# Setup widget for MPD
@@ -407,11 +220,11 @@ namespace eval statusbar {
 		variable musicpd
 		variable musicpd_visible
 
-		set title [join [mpd::currenttitle]]
+		set title [join [musicpd::currenttitle]]
 		if {[string length $title]} {
 			set musicpd $title
 			if {!$musicpd_visible} {
-				pack .bar.musicpd -after .bar.sep5 -side right
+				pack .bar.musicpd -after .bar.mixersep -side right
 				pack .bar.musicsep -after .bar.musicpd -fill y -padx 5 -side right
 				set musicpd_visible 1
 			}
@@ -436,11 +249,11 @@ namespace eval statusbar {
 		switch $theme {
 			light {
 				set currenttheme light
-				array set color [theme::light]
+				array set color [light]
 			}
 			dark {
 				set currenttheme dark
-				array set color [theme::dark]
+				array set color [dark]
 			}
 			default {
 				return
@@ -466,11 +279,7 @@ namespace eval statusbar {
 			.bar.devices.$device configure -bg $color(bar) -fg $color(devices)
 		}
 
-		.bar.mailboxes configure -background $color(bar)
-		.bar.mailsep configure -background $color(separator)
-		foreach account $accountlist {
-			.bar.mailboxes.$account configure -bg $color(bar) -fg $color($account)
-		}
+		maildir::set_theme $theme
 
 		.bar.musicpd configure -bg $color(bar) -fg $color(musicpd)
 		.bar.musicsep configure -background $color(separator)
@@ -519,7 +328,7 @@ namespace eval statusbar {
 		set mixer "$remix(mixer) [sysinfo::getmixervol]"
 
 		update_devices
-		update_mailboxes
+		maildir::update_mailboxes
 		update_musicpd
 	}
 
@@ -579,15 +388,16 @@ namespace eval statusbar {
 
 		setup_bar
 		setup_devices
-		setup_mailboxes
 		setup_musicpd
+		maildir::init .bar metarsep right
 
 		if {[file exists $themefile]} {
 			set_theme [string trim [utils::read_file $themefile]]
 		} else {
-			set theme "light"
+			set_theme light
 		}
-		mpd::connect $::env(MPD_HOST)
+
+		musicpd::connect $::env(MPD_HOST)
 
 		utils::every 2000 statusbar::bar_update
 	}
@@ -595,8 +405,6 @@ namespace eval statusbar {
 
 set lang fr
 set timezone :America/Montreal
-set statusbar::accountlist [ list b2b2c gmail unix yahoo ]
-set statusbar::maildir "$::env(HOME)/.maildir"
 
 tk appname "statusbar"
 font create normal -family NotoSans -size 11

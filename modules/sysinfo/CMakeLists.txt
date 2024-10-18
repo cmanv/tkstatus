@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 3.20)
 
 # Project identification
-project ("tclsysinfo")
-set(PACKAGE_NAME "tclsysinfo")
+project ("sysinfo")
+set(PACKAGE_NAME "sysinfo")
 set(PACKAGE_VERSION "0.5")
 set(PACKAGE_PROVIDE "SysInfo")
 set(PACKAGE_INDEX "pkgIndex.tcl")
@@ -20,11 +20,11 @@ target_sources(${PACKAGE_LIB}
 PRIVATE src/init.c src/sysinfo.c
 )
 install(TARGETS ${PACKAGE_LIB} DESTINATION lib/${PACKAGE_NAME})
-install(FILES ${tclsysinfo_BINARY_DIR}/${PACKAGE_INDEX} DESTINATION lib/${PACKAGE_NAME})
+install(FILES ${sysinfo_BINARY_DIR}/${PACKAGE_INDEX} DESTINATION lib/${PACKAGE_NAME})
 
 include_directories(/usr/local/include ${TCL_INCLUDE_PATH})
 
 # Project config file
-configure_file(${tclsysinfo_SOURCE_DIR}/src/config.h.in ${tclsysinfo_BINARY_DIR}/src/config.h)
-configure_file(${tclsysinfo_SOURCE_DIR}/tcl/pkgIndex.tcl.in ${tclsysinfo_BINARY_DIR}/${PACKAGE_INDEX})
-add_definitions(-I ${tclsysinfo_BINARY_DIR}/src)
+configure_file(${sysinfo_SOURCE_DIR}/src/config.h.in ${sysinfo_BINARY_DIR}/src/config.h)
+configure_file(${sysinfo_SOURCE_DIR}/tcl/pkgIndex.tcl.in ${sysinfo_BINARY_DIR}/${PACKAGE_INDEX})
+add_definitions(-I ${sysinfo_BINARY_DIR}/src)

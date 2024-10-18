@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 3.20)
 
 # Project identification
-project ("tclmpd")
-set(PACKAGE_NAME "tclmpd")
+project ("musicpd")
+set(PACKAGE_NAME "musicpd")
 set(PACKAGE_VERSION "0.3")
 set(PACKAGE_PROVIDE "MPD")
 set(PACKAGE_INDEX "pkgIndex.tcl")
@@ -22,12 +22,12 @@ PRIVATE src/init.c src/mpd.c
 
 # Install files
 install(TARGETS ${PACKAGE_LIB} DESTINATION lib/${PACKAGE_NAME})
-install(FILES ${tclmpd_BINARY_DIR}/${PACKAGE_INDEX} DESTINATION lib/${PACKAGE_NAME})
+install(FILES ${musicpd_BINARY_DIR}/${PACKAGE_INDEX} DESTINATION lib/${PACKAGE_NAME})
 
 # Project config file
-configure_file(${tclmpd_SOURCE_DIR}/src/config.h.in ${tclmpd_BINARY_DIR}/src/config.h)
-configure_file(${tclmpd_SOURCE_DIR}/tcl/pkgIndex.tcl.in ${tclmpd_BINARY_DIR}/${PACKAGE_INDEX})
-add_definitions(-I ${tclmpd_BINARY_DIR}/src)
+configure_file(${musicpd_SOURCE_DIR}/src/config.h.in ${musicpd_BINARY_DIR}/src/config.h)
+configure_file(${musicpd_SOURCE_DIR}/tcl/pkgIndex.tcl.in ${musicpd_BINARY_DIR}/${PACKAGE_INDEX})
+add_definitions(-I ${musicpd_BINARY_DIR}/src)
 
 # Include files
 include_directories(/usr/local/include/mpd ${TCL_INCLUDE_PATH})

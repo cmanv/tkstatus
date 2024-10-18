@@ -329,7 +329,7 @@ proc ::metar::configure_info_grid { grid } {
 proc ::metar::configure_window { value } {
 	variable theme
 	array set theme [$value]
-	.metar configure -background $theme(background)
+	.metar.window configure -background $theme(background)
 	configure_header .metar.window.header
 	configure_summary .metar.window.summary
 	.metar.window.title2 configure -bg $theme(background) -fg $theme(label1)
