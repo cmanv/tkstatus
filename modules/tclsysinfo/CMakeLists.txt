@@ -19,8 +19,8 @@ add_library(${PACKAGE_LIB} SHARED)
 target_sources(${PACKAGE_LIB} 
 PRIVATE src/init.c src/sysinfo.c
 )
-install(TARGETS ${PACKAGE_LIB} DESTINATION lib/${PACKAGE_NAME}-${PACKAGE_VERSION})
-install(FILES ${tclsysinfo_BINARY_DIR}/${PACKAGE_INDEX} DESTINATION lib/${PACKAGE_NAME}-${PACKAGE_VERSION})
+install(TARGETS ${PACKAGE_LIB} DESTINATION lib/${PACKAGE_NAME})
+install(FILES ${tclsysinfo_BINARY_DIR}/${PACKAGE_INDEX} DESTINATION lib/${PACKAGE_NAME})
 
 include_directories(/usr/local/include ${TCL_INCLUDE_PATH})
 

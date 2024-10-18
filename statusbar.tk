@@ -1,15 +1,9 @@
 #!/usr/bin/env wish9.0
+package require utils
 package require metar
 package require mime
 package require SysInfo
 package require MPD
-
-proc read_file { filename } {
-	set file [open $filename r]
-	set content [read $file]
-	close $file
-	return $content
-}
 
 proc convert_date { rfc822 } {
 	set ctime [clock scan $rfc822]
@@ -345,7 +339,7 @@ namespace eval statusbar {
 		set count 0
 		array set mailbox $mailboxes($account)
 		foreach file [glob -nocomplain -dir "$mailbox(path)" *] {
-			set tokens [mime::initialize -string [read_file $file]]
+			set tokens [mime::initialize -string [utils::read_file $file]]
 			set date [convert_date [lindex [mime::getheader $tokens Date] 0]]
 			set from [convert_header [lindex [mime::getheader $tokens From] 0]]
 			set subject [convert_header [lindex [mime::getheader $tokens Subject] 0]]
@@ -502,8 +496,7 @@ namespace eval statusbar {
 		set mixer "$remix(mixer) [sysinfo::getmixervol]"
 	}
 
-	# Update some status bar items every 2 seconds
-	proc status_update {} {
+	proc bar_update {} {
 		variable remix
 		variable loadavg
 		variable usedmem
@@ -581,12 +574,6 @@ namespace eval statusbar {
 		fileevent $channel readable [list statusbar::read_socket $channel]
 	}
 
-	# Launch command periodically
-	proc every {ms cmd} {
-		eval $cmd
-		after $ms [namespace code [info level 0]]
-	}
-
 	proc init {} {
 		variable themefile
 
@@ -594,16 +581,15 @@ namespace eval statusbar {
 		setup_devices
 		setup_mailboxes
 		setup_musicpd
-		metar::init
 
 		if {[file exists $themefile]} {
-			set_theme [string trim [read_file $themefile]]
+			set_theme [string trim [utils::read_file $themefile]]
 		} else {
 			set theme "light"
 		}
 		mpd::connect $::env(MPD_HOST)
 
-		every 2000 status_update
+		utils::every 2000 statusbar::bar_update
 	}
 }
 
@@ -622,6 +608,7 @@ wm geometry . "[winfo vrootwidth .]x26+0+0"
 wm title . "statusbar.tk version 20241017"
 
 statusbar::init
+metar::init
 
 socket -server statusbar::server_accept -myaddr localhost 9995
 vwait forever

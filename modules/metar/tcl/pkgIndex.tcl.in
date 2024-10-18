@@ -1,0 +1,3 @@
+if {![package vsatisfies [package provide Tk] 9.0]} {return}
+package ifneeded metar @PACKAGE_VERSION@ [list source [file join $dir metar.tk]]
+package ifneeded metar::decode @PACKAGE_VERSION@ [list source [file join $dir metar_decode.tcl]]

@@ -16,9 +16,9 @@ This shell script should be called at startup in __.xinitrc__ or __.xsession__.
 ### statusbar.tk
 This is the main script. It's highly likely that you'll want to modify it for your own system.
 
-## Packages
+## Modules
 ### tclsysinfo
-This package is system specific. The provided version was written for FreeBSD 14.X.
+This module is system specific. The provided version was written for FreeBSD 14.X.
 The following functions are provided:
 
 * sysinfo::getloadavg :
@@ -37,13 +37,16 @@ Returns the amount data downloaded end uploaded on the given interface.
 Returns the current volume of the mixer.
  
 ### tclmpd
-This package is used to return the currently playing song on the Music Player Daemon. It requires the __libmpdclient__ package and corresponding header files to build.
+This module is used to return the currently playing song on the Music Player Daemon. It requires the __libmpdclient__ package and corresponding header files to build.
 
 * mpd::connect(host) :
 Connects to the currently running Music Player Daemon. The host can be a Unix socket or a resolvable internet address.
 
 * mpd::currenttitle :
 Returns the title of the song currently playing.
+
+### metar
+This module is used to display a short weather report from a METAR station. The reports are in french. ;)
 
 ## Themes
 

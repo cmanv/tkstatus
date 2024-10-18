@@ -1,4 +1,5 @@
 package require Tk 9.0
+package require utils
 package require fileutil
 package require metar::decode
 
@@ -331,7 +332,7 @@ proc ::metar::configure_window { value } {
 	.metar configure -background $theme(background)
 	configure_header .metar.window.header
 	configure_summary .metar.window.summary
-	.main.title2 configure -bg $theme(background) -fg $theme(label1)
+	.metar.window.title2 configure -bg $theme(background) -fg $theme(label1)
 	configure_info_grid .metar.window.grid
 }
 
@@ -358,11 +359,6 @@ proc ::metar::update_report {} {
 	update_grid .metar.window.grid
 }
 
-proc ::metar::every {ms cmd} {
-	after $ms [namespace code [info level 0]]
-	eval $cmd
-}
-
 proc ::metar::init {} {
 	variable theme
 	variable station
@@ -386,7 +382,7 @@ proc ::metar::init {} {
 	array set theme [[string trim [fileutil::cat $themefile]]]
 	create_window
 
-	every 600000 ::metar::update_report
+	utils::every 600000 ::metar::update_report
 }
 
-package provide metar 0.2
+package provide metar 1.0

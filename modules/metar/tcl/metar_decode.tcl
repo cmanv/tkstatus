@@ -668,4 +668,4 @@ proc ::metar::decode::get_report {} {
 	return [array get report]
 }
 
-package provide metar::decode 0.2
+package provide metar::decode 1.0

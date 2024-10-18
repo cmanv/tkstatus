@@ -21,8 +21,8 @@ PRIVATE src/init.c src/mpd.c
 )
 
 # Install files
-install(TARGETS ${PACKAGE_LIB} DESTINATION lib/${PACKAGE_NAME}-${PACKAGE_VERSION})
-install(FILES ${tclmpd_BINARY_DIR}/${PACKAGE_INDEX} DESTINATION lib/${PACKAGE_NAME}-${PACKAGE_VERSION})
+install(TARGETS ${PACKAGE_LIB} DESTINATION lib/${PACKAGE_NAME})
+install(FILES ${tclmpd_BINARY_DIR}/${PACKAGE_INDEX} DESTINATION lib/${PACKAGE_NAME})
 
 # Project config file
 configure_file(${tclmpd_SOURCE_DIR}/src/config.h.in ${tclmpd_BINARY_DIR}/src/config.h)
