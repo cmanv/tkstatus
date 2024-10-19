@@ -13,7 +13,7 @@ namespace eval maildir {
 
 proc maildir::dark {} {
 	set theme [ list \
-		bar		{#3b4252} \
+		background	{#3b4252} \
 		mailinfo	WhiteSmoke \
 		mailsep		OliveDrab \
 		b2b2c		orange \
@@ -24,7 +24,7 @@ proc maildir::dark {} {
 
 proc maildir::light {} {
 	set theme [ list \
-		bar		gray90 \
+		background	gray90 \
 		mailinfo	black \
 		mailsep		black \
 		b2b2c		chocolate \
@@ -37,13 +37,13 @@ proc maildir::set_theme { currenttheme } {
 	variable accountlist
 	variable mailframe
 	variable mailsep
-	variable theme
-	array set theme [$currenttheme]
+	variable them
 
-	$mailframe configure -background $theme(bar)
+	array set theme [$currenttheme]
+	$mailframe configure -background $theme(background)
 	$mailsep configure -background $theme(mailsep)
 	foreach account $accountlist {
-		$mailframe.$account configure -bg $theme(bar) -fg $theme($account)
+		$mailframe.$account configure -bg $theme(background) -fg $theme($account)
 	}
 }
 
@@ -99,7 +99,7 @@ proc maildir::update_mailboxes {} {
 			$mailframe.$account configure -text "$mailicon ($newmail)"
 			set mailbox(newmail) $newmail
 			if {!$mailbox(visible)} {
-				if {![string length [pack slaves .bar.mailboxes]]} {
+				if {![string length [pack slaves $mailframe]]} {
 					pack $mailframe -after $mailpos \
 						-side $mailside
 					pack $mailsep -after $mailframe \
@@ -181,14 +181,14 @@ proc maildir::newmail { account } {
 	}
 	set activepopup 1
 
-	toplevel .mailpopup -background $theme(bar) -class Newmail
+	toplevel .mailpopup -background $theme(background) -class Newmail
 	wm attributes .mailpopup -type dialog
 	wm overrideredirect .mailpopup 1
 	wm geometry .mailpopup -10+26
 
-	pack [frame .mailpopup.$account -background $theme(bar)] \
+	pack [frame .mailpopup.$account -background $theme(background)] \
 		-expand 1 -fill x -side top
-	pack [label .mailpopup.$account.label -font bold -bg $theme(bar) \
+	pack [label .mailpopup.$account.label -font bold -bg $theme(background) \
 		-fg $theme($account) -text "-- $account --"] \
 		-expand 1 -side left
 	pack [frame .mailpopup.sep$account -background $theme(mailsep) \
@@ -202,20 +202,20 @@ proc maildir::newmail { account } {
 		set from [convert_header [lindex [mime::getheader $tokens From] 0]]
 		set subject [convert_header [lindex [mime::getheader $tokens Subject] 0]]
 
-		pack [frame .mailpopup.date$count -background $theme(bar)] \
+		pack [frame .mailpopup.date$count -background $theme(background)] \
 			-expand 1 -fill x
 		pack [label .mailpopup.date$count.label -text $date \
-			-font normal -bg $theme(bar) -fg $theme(mailinfo)] \
+			-font normal -bg $theme(background) -fg $theme(mailinfo)] \
 			-side left -padx 5
-		pack [frame .mailpopup.from$count -background $theme(bar)] \
+		pack [frame .mailpopup.from$count -background $theme(background)] \
 			-expand 1 -fill x
 		pack [label .mailpopup.from$count.label -text $from \
-			-font normal -bg $theme(bar) -fg $theme(mailinfo)] \
+			-font normal -bg $theme(background) -fg $theme(mailinfo)] \
 			-side left -padx 5
-		pack [frame .mailpopup.subject$count -background $theme(bar)] \
+		pack [frame .mailpopup.subject$count -background $theme(background)] \
 			-expand 1 -fill x
 		pack [label .mailpopup.subject$count.label -text $subject \
-			-font normal -bg $theme(bar) -fg $theme(mailinfo)] \
+			-font normal -bg $theme(background) -fg $theme(mailinfo)] \
 			-side left -padx 5
 
 		pack [frame .mailpopup.sep$count -background $theme(mailsep) \

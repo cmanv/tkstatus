@@ -1,0 +1,110 @@
+#!/usr/bin/env wish9.0
+
+namespace eval devices {
+	array set icons [ list	disk	\ueba9	printer	\uefd2 \
+				sdcard	\uf066	udisk	\uf1cc ]
+
+	namespace export init update_devices set_theme
+
+	proc dark {} {
+		set theme [ list \
+			background	{#3b4252} \
+			devices		SteelBlue2 \
+			separator	OliveDrab ]
+	}
+
+	proc light {} {
+		set theme [ list \
+			background	gray90 \
+			devices		DarkGreen \
+			separator	black ]
+	}
+
+	# Setup the removable devices
+	proc init { widget position side } {
+		variable devicelist
+		variable devicearray
+		variable icons
+		variable devframe
+		variable devsep
+		variable devpos
+		variable devside
+
+		set devframe $widget.devices
+		set devsep $widget.devivessep
+		set devpos $widget.$position
+		set devside $side
+
+		frame $devframe
+		frame $devsep -width 1
+
+		set devicelist [ list ada1 da0 da1 mmcsd0 ulpt0 ]
+		set deviceicons [ list $icons(disk) $icons(udisk) $icons(udisk) \
+				$icons(sdcard) $icons(printer) ]
+
+		array set devicearray {}
+		foreach devid $devicelist icon $deviceicons {
+			array set device {}
+			set device(path) "/dev/$devid"
+			set device(visible) 0
+			set devicearray($devid) [array get device]
+
+			label $devframe.$devid
+			$devframe.$devid configure -font normal -text "$icon $devid"
+		}
+	}
+
+	# Check the presence of removable devices.
+	proc update_devices {} {
+		variable devicelist
+		variable devicearray
+		variable devframe
+		variable devsep
+		variable devpos
+		variable devside
+
+		foreach devid $devicelist {
+			array set device $devicearray($devid)
+			if {[file exists $device(path)]} {
+				if {!$device(visible)} {
+					if {![string length [pack slaves $devframe]]} {
+						pack $devframe -after $devpos -side $devside
+						pack $devsep -after $devframe -fill y \
+							-padx 5 -side $devside
+					}
+					pack $devframe.$devid -in $devframe -side left
+					set device(visible) 1
+					set devicearray($devid) [array get device]
+				}
+			} else {
+				if {$device(visible)} {
+					pack forget $devframe.$devid
+					if {![string length [pack slaves $devframe]]} {
+						pack forget $devframe $devsep
+					}
+					set device(visible) 0
+					set devicearray($devid) [array get device]
+				}
+			}
+		}
+
+	}
+
+	# Set the theme on the alements of the bar
+	proc set_theme { currenttheme } {
+		variable devicelist
+		variable devframe
+		variable devsep
+		variable stheme
+		
+		array set theme [$currenttheme]
+
+		$devframe configure -background $theme(background)
+		$devsep configure -background $theme(separator)
+		foreach device $devicelist {
+			$devframe.$device configure -bg $theme(background) -fg $theme(devices)
+		}
+	}
+}
+
+package provide devices 0.1

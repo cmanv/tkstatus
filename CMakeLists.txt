@@ -12,6 +12,7 @@ set(TCL_INCLUDE_PATH "/usr/local/include/tcl9.0")
 
 # Subdirs
 
+add_subdirectory(modules/devices)
 add_subdirectory(modules/maildir)
 add_subdirectory(modules/metar)
 add_subdirectory(modules/musicpd)

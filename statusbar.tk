@@ -1,5 +1,6 @@
 #!/usr/bin/env wish9.0
 package require utils
+package require devices
 package require maildir
 package require metar
 package require SysInfo
@@ -47,7 +48,6 @@ namespace eval statusbar {
 			bar		{#3b4252} \
 			datetime	WhiteSmoke \
 			desktop		PaleGreen3 \
-			devices		SteelBlue2 \
 			loadavg		CadetBlue3 \
 			metar		Gold \
 			mixer		CadetBlue3 \
@@ -66,7 +66,6 @@ namespace eval statusbar {
 			bar		gray90 \
 			datetime	black \
 			desktop		DarkBlue \
-			devices		DarkGreen \
 			loadavg		black \
 			metar		DarkGreen \
 			mixer		black \
@@ -129,63 +128,6 @@ namespace eval statusbar {
 		}
 		bind .bar.metar <1> { metar::toggle_window }
 		bind .bar.metar <2> { metar::update_report }
-	}
-
-	# Setup the removable devices
-	proc setup_devices {} {
-		variable devicelist
-		variable devicearray
-		variable remix
-
-		frame .bar.devices
-		frame .bar.devicessep -width 1
-
-		set devicelist [ list ada1 da0 da1 mmcsd0 ulpt0 ]
-		set deviceicons [ list $remix(disk) $remix(udisk) $remix(udisk) \
-				$remix(sdcard) $remix(printer) ]
-
-		array set devicearray {}
-		foreach devid $devicelist icon $deviceicons {
-			array set device {}
-			set device(path) "/dev/$devid"
-			set device(visible) 0
-			set devicearray($devid) [array get device]
-
-			label .bar.devices.$devid
-			.bar.devices.$devid configure -font normal -text "$icon $devid"
-		}
-	}
-
-	# Check the presence of removable devices.
-	proc update_devices {} {
-		variable devicelist
-		variable devicearray
-
-		foreach devid $devicelist {
-			array set device $devicearray($devid)
-			if {[file exists $device(path)]} {
-				if {!$device(visible)} {
-					if {![string length [pack slaves .bar.devices]]} {
-						pack .bar.devices -after .bar.infosep -side left
-						pack .bar.devicessep -after .bar.devices -fill y \
-							-padx 5 -side left
-					}
-					pack .bar.devices.$devid -in .bar.devices -side left
-					set device(visible) 1
-					set devicearray($devid) [array get device]
-				}
-			} else {
-				if {$device(visible)} {
-					pack forget .bar.devices.$devid
-					if {![string length [pack slaves .bar.devices]]} {
-						pack forget .bar.devices .bar.devicessep
-					}
-					set device(visible) 0
-					set devicearray($devid) [array get device]
-				}
-			}
-		}
-
 	}
 
 	# Setup widget for MPD
@@ -273,12 +215,7 @@ namespace eval statusbar {
 			}
 		}
 
-		.bar.devices configure -background $color(bar)
-		.bar.devicessep configure -background $color(separator)
-		foreach device $devicelist {
-			.bar.devices.$device configure -bg $color(bar) -fg $color(devices)
-		}
-
+		devices::set_theme $theme
 		maildir::set_theme $theme
 
 		.bar.musicpd configure -bg $color(bar) -fg $color(musicpd)
@@ -327,7 +264,7 @@ namespace eval statusbar {
 
 		set mixer "$remix(mixer) [sysinfo::getmixervol]"
 
-		update_devices
+		devices::update_devices
 		maildir::update_mailboxes
 		update_musicpd
 	}
@@ -387,9 +324,9 @@ namespace eval statusbar {
 		variable themefile
 
 		setup_bar
-		setup_devices
-		setup_musicpd
+		devices::init .bar infosep left
 		maildir::init .bar metarsep right
+		setup_musicpd
 
 		if {[file exists $themefile]} {
 			set_theme [string trim [utils::read_file $themefile]]
