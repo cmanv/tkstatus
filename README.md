@@ -17,6 +17,24 @@ This shell script should be called at startup in __.xinitrc__ or __.xsession__.
 This is the main script. It's highly likely that you'll want to modify it for your own system.
 
 ## Modules
+### devices
+This module is used to report on the presence of removable devices on the system, such a disks or printers.
+
+### maildir 
+Report on the presence of new mail in the inbox folders of maildirs directories in the system.
+
+### metar
+This module is used to display a short weather report from a METAR station. The reports are in french. ;)
+
+### musicpd
+This module is used to return the currently playing song on the Music Player Daemon. It requires the __libmpdclient__ package and corresponding header files to build.
+
+* mpd::connect(host) :
+Connects to the currently running Music Player Daemon. The host can be a Unix socket or a resolvable internet address.
+
+* mpd::currenttitle :
+Returns the title of the song currently playing.
+
 ### sysinfo
 This module is system specific. The provided version was written for FreeBSD 14.X.
 The following functions are provided:
@@ -36,24 +54,6 @@ Returns the amount data downloaded end uploaded on the given interface.
 * sysinfo::getmixervol :
 Returns the current volume of the mixer.
  
-### musicpd
-This module is used to return the currently playing song on the Music Player Daemon. It requires the __libmpdclient__ package and corresponding header files to build.
-
-* mpd::connect(host) :
-Connects to the currently running Music Player Daemon. The host can be a Unix socket or a resolvable internet address.
-
-* mpd::currenttitle :
-Returns the title of the song currently playing.
-
-### metar
-This module is used to display a short weather report from a METAR station. The reports are in french. ;)
-
-### devices
-This module is used to display a short weather report from a METAR station. The reports are in french. ;)
-
-### maildir 
-Report on the presence of new mail in the inbox folders of maildirs directories in the system.
-
 ## Themes
 
 The bar has a light and dark theme built-in. (the dark theme being based on **Nord**)
