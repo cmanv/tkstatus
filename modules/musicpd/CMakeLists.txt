@@ -26,7 +26,7 @@ install(FILES ${musicpd_BINARY_DIR}/${PACKAGE_INDEX} DESTINATION lib/${PACKAGE_N
 
 # Project config file
 configure_file(${musicpd_SOURCE_DIR}/src/config.h.in ${musicpd_BINARY_DIR}/src/config.h)
-configure_file(${musicpd_SOURCE_DIR}/tcl/pkgIndex.tcl.in ${musicpd_BINARY_DIR}/${PACKAGE_INDEX})
+configure_file(${musicpd_SOURCE_DIR}/pkgIndex.tcl.in ${musicpd_BINARY_DIR}/${PACKAGE_INDEX})
 add_definitions(-I ${musicpd_BINARY_DIR}/src)
 
 # Include files

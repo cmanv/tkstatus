@@ -26,5 +26,5 @@ include_directories(/usr/local/include ${TCL_INCLUDE_PATH})
 
 # Project config file
 configure_file(${sysinfo_SOURCE_DIR}/src/config.h.in ${sysinfo_BINARY_DIR}/src/config.h)
-configure_file(${sysinfo_SOURCE_DIR}/tcl/pkgIndex.tcl.in ${sysinfo_BINARY_DIR}/${PACKAGE_INDEX})
+configure_file(${sysinfo_SOURCE_DIR}/pkgIndex.tcl.in ${sysinfo_BINARY_DIR}/${PACKAGE_INDEX})
 add_definitions(-I ${sysinfo_BINARY_DIR}/src)

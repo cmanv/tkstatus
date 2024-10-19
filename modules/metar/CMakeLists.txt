@@ -13,9 +13,9 @@ set(TCL_LIBRARY_VERSION "9.0")
 set(TCL_INCLUDE_PATH "/usr/local/include/tcl9.0")
 
 # Project config file
-configure_file(${metar_SOURCE_DIR}/tcl/pkgIndex.tcl.in ${metar_BINARY_DIR}/${PACKAGE_INDEX})
+configure_file(${metar_SOURCE_DIR}/pkgIndex.tcl.in ${metar_BINARY_DIR}/${PACKAGE_INDEX})
 
 # Install files
 install(FILES ${metar_BINARY_DIR}/${PACKAGE_INDEX} DESTINATION ${PACKAGE_LIB})
-install(FILES ${metar_SOURCE_DIR}/tcl/metar.tk DESTINATION ${PACKAGE_LIB})
-install(FILES ${metar_SOURCE_DIR}/tcl/metar_decode.tcl DESTINATION ${PACKAGE_LIB})
+install(FILES ${metar_SOURCE_DIR}/metar.tk DESTINATION ${PACKAGE_LIB})
+install(FILES ${metar_SOURCE_DIR}/metar_decode.tcl DESTINATION ${PACKAGE_LIB})
