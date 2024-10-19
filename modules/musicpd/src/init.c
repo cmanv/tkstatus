@@ -1,7 +1,7 @@
 #include "mpd.h"
 
 EXTERN int
-Musicpd_Init(Tcl_Interp *interp)
+Mpd_Init(Tcl_Interp *interp)
 {
 	Tcl_Namespace *namespace;
 
@@ -17,17 +17,17 @@ Musicpd_Init(Tcl_Interp *interp)
 		return TCL_ERROR;
 	}
 
-	namespace = Tcl_CreateNamespace(interp, "musicpd", (ClientData)NULL,
+	namespace = Tcl_CreateNamespace(interp, "mpd", (ClientData)NULL,
 					(Tcl_NamespaceDeleteProc *)NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"musicpd::connect",
+				"mpd::connect",
 				MPD_ConnectObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"musicpd::currenttitle",
+				"mpd::currenttitle",
 				MPD_CurrentTitleObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);

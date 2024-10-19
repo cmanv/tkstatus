@@ -4,7 +4,7 @@ namespace eval devices {
 	array set icons [ list	disk	\ueba9	printer	\uefd2 \
 				sdcard	\uf066	udisk	\uf1cc ]
 
-	namespace export init update_devices set_theme
+	namespace export setup update set_theme
 
 	proc dark {} {
 		set theme [ list \
@@ -21,7 +21,7 @@ namespace eval devices {
 	}
 
 	# Setup the removable devices
-	proc init { widget position side } {
+	proc setup { widget position side } {
 		variable devicelist
 		variable devicearray
 		variable icons
@@ -55,7 +55,7 @@ namespace eval devices {
 	}
 
 	# Check the presence of removable devices.
-	proc update_devices {} {
+	proc update {} {
 		variable devicelist
 		variable devicearray
 		variable devframe
@@ -90,15 +90,13 @@ namespace eval devices {
 
 	}
 
-	# Set the theme on the alements of the bar
+	# Set the theme for musicpd
 	proc set_theme { currenttheme } {
 		variable devicelist
 		variable devframe
 		variable devsep
-		variable stheme
 		
 		array set theme [$currenttheme]
-
 		$devframe configure -background $theme(background)
 		$devsep configure -background $theme(separator)
 		foreach device $devicelist {

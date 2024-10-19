@@ -8,7 +8,7 @@ namespace eval maildir {
 	variable mailicon \ueec0
 	variable activepopup 0
 
-	namespace export init update_mailboxes set_theme
+	namespace export setup update set_theme
 }
 
 proc maildir::dark {} {
@@ -33,22 +33,8 @@ proc maildir::light {} {
 		yahoo		DarkGreen ]
 }
 
-proc maildir::set_theme { currenttheme } {
-	variable accountlist
-	variable mailframe
-	variable mailsep
-	variable them
-
-	array set theme [$currenttheme]
-	$mailframe configure -background $theme(background)
-	$mailsep configure -background $theme(mailsep)
-	foreach account $accountlist {
-		$mailframe.$account configure -bg $theme(background) -fg $theme($account)
-	}
-}
-
 # Setup the mailboxes
-proc maildir::init { widget position side } {
+proc maildir::setup { widget position side } {
 	variable accountlist
 	variable path
 	variable mailboxes
@@ -83,7 +69,7 @@ proc maildir::init { widget position side } {
 }
 
 # Look for new messages in the mailboxes
-proc maildir::update_mailboxes {} {
+proc maildir::update {} {
 	variable accountlist
 	variable mailboxes
 	variable mailframe
@@ -122,6 +108,20 @@ proc maildir::update_mailboxes {} {
 		}
 	}
 
+}
+
+proc maildir::set_theme { currenttheme } {
+	variable accountlist
+	variable mailframe
+	variable mailsep
+	variable them
+
+	array set theme [$currenttheme]
+	$mailframe configure -background $theme(background)
+	$mailsep configure -background $theme(mailsep)
+	foreach account $accountlist {
+		$mailframe.$account configure -bg $theme(background) -fg $theme($account)
+	}
 }
 
 proc maildir::convert_date { rfc822 } {
