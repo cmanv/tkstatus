@@ -114,7 +114,7 @@ proc maildir::set_theme { currenttheme } {
 	variable accountlist
 	variable mailframe
 	variable mailsep
-	variable them
+	variable theme
 
 	array set theme [$currenttheme]
 	$mailframe configure -background $theme(background)
