@@ -3,8 +3,8 @@ package require utils
 package require devices
 package require maildir
 package require metar
+package require musicpd
 package require SysInfo
-package require MPD
 
 namespace eval statusbar {
 	variable xscreen 0
@@ -13,8 +13,6 @@ namespace eval statusbar {
 
 	# Unicode icons from remixicon
 	array set remix [ list	down 	\uea4a	up 	\uea74 \
-				disk	\ueba9	printer	\uefd2 \
-				sdcard	\uf066	udisk	\uf1cc \
 				mail	\ueec0	mixer	\uf229 ]
 
 	# List of fixed items in the bar
@@ -45,14 +43,13 @@ namespace eval statusbar {
 	proc dark {} {
 		set theme [ list \
 			acpitemp	PaleGreen3 \
-			bar		{#3b4252} \
+			background	{#3b4252} \
 			datetime	WhiteSmoke \
 			desktop		PaleGreen3 \
 			loadavg		CadetBlue3 \
 			metar		Gold \
 			mixer		CadetBlue3 \
 			mode		CadetBlue3 \
-			musicpd		CadetBlue3 \
 			netin		Gold2 \
 			netout		CadetBlue3 \
 			separator	OliveDrab \
@@ -63,14 +60,13 @@ namespace eval statusbar {
 	proc light {} {
 		set theme [ list \
 			acpitemp	MediumBlue \
-			bar		gray90 \
+			background	gray90 \
 			datetime	black \
 			desktop		DarkBlue \
 			loadavg		black \
 			metar		DarkGreen \
 			mixer		black \
 			mode		DarkBlue \
-			musicpd		DarkBlue \
 			netin		DarkGreen \
 			netout		purple \
 			separator	black \
@@ -79,7 +75,7 @@ namespace eval statusbar {
 	}
 
 	# Setup the fixed items in the bar
-	proc setup_bar {} {
+	proc setup {} {
 		variable baritems
 		variable widgetarray
 
@@ -130,63 +126,11 @@ namespace eval statusbar {
 		bind .bar.metar <2> { metar::update_report }
 	}
 
-	# Setup widget for MPD
-	proc setup_musicpd {} {
-		variable musicpd_visible
-		set musicpd_visible 0
-
-		frame .bar.musicsep -width 1
-		label .bar.musicpd -font italic -textvar statusbar::musicpd
-
-		bind .bar.musicpd <1> {
-			if {![catch {exec mpc toggle}]} { statusbar::update_musicpd }
-		}
-		bind .bar.musicpd <2> {
-			exec xterm +sb -class ncmpcpp -e ncmpcpp &
-		}
-		bind .bar.musicpd <3> {
-			if {![catch {exec mpc stop}]} { statusbar::update_musicpd }
-		}
-		bind .bar.musicpd <MouseWheel> {
-			if {%D < 0} {
-				if {![catch {exec mpc next}]} { statusbar::update_musicpd }
-			} else {
-				if {![catch {exec mpc prev}]} { statusbar::update_musicpd }
-			}
-
-		}
-	}
-
-	# Show what is currently playing on MPD
-	proc update_musicpd {} {
-		variable musicpd
-		variable musicpd_visible
-
-		set title [join [musicpd::currenttitle]]
-		if {[string length $title]} {
-			set musicpd $title
-			if {!$musicpd_visible} {
-				pack .bar.musicpd -after .bar.mixersep -side right
-				pack .bar.musicsep -after .bar.musicpd -fill y -padx 5 -side right
-				set musicpd_visible 1
-			}
-
-		} else {
-			if {$musicpd_visible} {
-				pack forget .bar.musicpd .bar.musicsep
-				set musicpd_visible 0
-				set musicpd ""
-			}
-		}
-	}
-
 	# Set the theme on the alements of the bar
 	proc set_theme { theme } {
 		variable currenttheme
 		variable baritems
 		variable widgetarray
-		variable devicelist
-		variable accountlist
 
 		switch $theme {
 			light {
@@ -202,7 +146,7 @@ namespace eval statusbar {
 			}
 		}
 
-		.bar configure -background $color(bar)
+		.bar configure -background $color(background)
 		foreach item $baritems {
 			array set widget $widgetarray($item)
 			switch $widget(type) {
@@ -210,16 +154,14 @@ namespace eval statusbar {
 					.bar.$item configure -background $color(separator)
 				}
 				default {
-					.bar.$item configure -bg $color(bar) -fg $color($item)
+					.bar.$item configure -bg $color(background) -fg $color($item)
 				}
 			}
 		}
 
 		devices::set_theme $theme
 		maildir::set_theme $theme
-
-		.bar.musicpd configure -bg $color(bar) -fg $color(musicpd)
-		.bar.musicsep configure -background $color(separator)
+		musicpd::set_theme $theme
 	}
 
 	# Send a message to the window manager
@@ -242,7 +184,7 @@ namespace eval statusbar {
 		set mixer "$remix(mixer) [sysinfo::getmixervol]"
 	}
 
-	proc bar_update {} {
+	proc update {} {
 		variable remix
 		variable loadavg
 		variable usedmem
@@ -264,9 +206,9 @@ namespace eval statusbar {
 
 		set mixer "$remix(mixer) [sysinfo::getmixervol]"
 
-		devices::update_devices
-		maildir::update_mailboxes
-		update_musicpd
+		devices::update
+		maildir::update
+		musicpd::update
 	}
 
 	proc read_socket {channel} {
@@ -323,10 +265,10 @@ namespace eval statusbar {
 	proc init {} {
 		variable themefile
 
-		setup_bar
-		devices::init .bar infosep left
-		maildir::init .bar metarsep right
-		setup_musicpd
+		setup
+		devices::setup .bar infosep left
+		maildir::setup .bar metarsep right
+		musicpd::setup .bar mixersep right
 
 		if {[file exists $themefile]} {
 			set_theme [string trim [utils::read_file $themefile]]
@@ -334,9 +276,7 @@ namespace eval statusbar {
 			set_theme light
 		}
 
-		musicpd::connect $::env(MPD_HOST)
-
-		utils::every 2000 statusbar::bar_update
+		utils::every 2000 statusbar::update
 	}
 }
 
@@ -350,7 +290,7 @@ font create bold -family NotoSans -size 11 -weight bold
 
 wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
-wm title . "statusbar.tk version 20241017"
+wm title . "statusbar.tk version 20241019"
 
 statusbar::init
 metar::init
