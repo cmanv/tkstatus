@@ -20,37 +20,17 @@ namespace eval devices {
 			separator	black ]
 	}
 
-	# Setup the removable devices
-	proc setup { widget position side } {
+	# Set the theme for musicpd
+	proc set_theme { currenttheme } {
 		variable devicelist
-		variable devicearray
-		variable icons
 		variable devframe
 		variable devsep
-		variable devpos
-		variable devside
 
-		set devframe $widget.devices
-		set devsep $widget.devivessep
-		set devpos $widget.$position
-		set devside $side
-
-		frame $devframe
-		frame $devsep -width 1
-
-		set devicelist [ list ada1 da0 da1 mmcsd0 ulpt0 ]
-		set deviceicons [ list $icons(disk) $icons(udisk) $icons(udisk) \
-				$icons(sdcard) $icons(printer) ]
-
-		array set devicearray {}
-		foreach devid $devicelist icon $deviceicons {
-			array set device {}
-			set device(path) "/dev/$devid"
-			set device(visible) 0
-			set devicearray($devid) [array get device]
-
-			label $devframe.$devid
-			$devframe.$devid configure -font normal -text "$icon $devid"
+		array set theme [$currenttheme]
+		$devframe configure -background $theme(background)
+		$devsep configure -background $theme(separator)
+		foreach device $devicelist {
+			$devframe.$device configure -bg $theme(background) -fg $theme(devices)
 		}
 	}
 
@@ -90,19 +70,40 @@ namespace eval devices {
 
 	}
 
-	# Set the theme for musicpd
-	proc set_theme { currenttheme } {
+	# Setup the removable devices
+	proc setup { widget position side } {
 		variable devicelist
+		variable devicearray
+		variable icons
 		variable devframe
 		variable devsep
-		
-		array set theme [$currenttheme]
-		$devframe configure -background $theme(background)
-		$devsep configure -background $theme(separator)
-		foreach device $devicelist {
-			$devframe.$device configure -bg $theme(background) -fg $theme(devices)
+		variable devpos
+		variable devside
+
+		set devframe $widget.devices
+		set devsep $widget.devivessep
+		set devpos $widget.$position
+		set devside $side
+
+		frame $devframe
+		frame $devsep -width 1
+
+		set devicelist [ list ada1 da0 da1 mmcsd0 ulpt0 ]
+		set deviceicons [ list $icons(disk) $icons(udisk) $icons(udisk) \
+				$icons(sdcard) $icons(printer) ]
+
+		array set devicearray {}
+		foreach devid $devicelist icon $deviceicons {
+			array set device {}
+			set device(path) "/dev/$devid"
+			set device(visible) 0
+			set devicearray($devid) [array get device]
+
+			label $devframe.$devid
+			$devframe.$devid configure -font normal -text "$icon $devid"
 		}
 	}
+
 }
 
 package provide devices 0.1

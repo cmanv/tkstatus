@@ -33,38 +33,17 @@ proc maildir::light {} {
 		yahoo		DarkGreen ]
 }
 
-# Setup the mailboxes
-proc maildir::setup { widget position side } {
+proc maildir::set_theme { currenttheme } {
 	variable accountlist
-	variable path
-	variable mailboxes
 	variable mailframe
 	variable mailsep
-	variable mailpos
-	variable mailside
+	variable theme
 
-	set mailframe $widget.mailboxes
-	set mailsep $widget.mailsep
-	set mailpos $widget.$position
-	set mailside $side
-
-	frame $mailframe
-	frame $mailsep -width 1
-
-	array set mailboxes {}
+	array set theme [$currenttheme]
+	$mailframe configure -background $theme(background)
+	$mailsep configure -background $theme(mailsep)
 	foreach account $accountlist {
-		array set mailbox {}
-		set mailbox(path) "$path/$account/inbox/new"
-		set mailbox(visible) 0
-		set mailbox(newmail) 0
-		set mailboxes($account) [array get mailbox]
-
-		label $mailframe.$account -font normal -text ""
-		bind $mailframe.$account <1>  "maildir::newmail $account"
-		bind $mailframe.$account <2> {
-			exec emacsclient -c -e -F "((width . 120) (height . 30))" \
-				"(mu4e)" > /dev/null 2>@1 &
-		}
+		$mailframe.$account configure -bg $theme(background) -fg $theme($account)
 	}
 }
 
@@ -110,17 +89,38 @@ proc maildir::update {} {
 
 }
 
-proc maildir::set_theme { currenttheme } {
+# Setup the mailboxes
+proc maildir::setup { widget position side } {
 	variable accountlist
+	variable path
+	variable mailboxes
 	variable mailframe
 	variable mailsep
-	variable theme
+	variable mailpos
+	variable mailside
 
-	array set theme [$currenttheme]
-	$mailframe configure -background $theme(background)
-	$mailsep configure -background $theme(mailsep)
+	set mailframe $widget.mailboxes
+	set mailsep $widget.mailsep
+	set mailpos $widget.$position
+	set mailside $side
+
+	frame $mailframe
+	frame $mailsep -width 1
+
+	array set mailboxes {}
 	foreach account $accountlist {
-		$mailframe.$account configure -bg $theme(background) -fg $theme($account)
+		array set mailbox {}
+		set mailbox(path) "$path/$account/inbox/new"
+		set mailbox(visible) 0
+		set mailbox(newmail) 0
+		set mailboxes($account) [array get mailbox]
+
+		label $mailframe.$account -font normal -text ""
+		bind $mailframe.$account <1>  "maildir::newmail $account"
+		bind $mailframe.$account <2> {
+			exec emacsclient -c -e -F "((width . 120) (height . 30))" \
+				"(mu4e)" > /dev/null 2>@1 &
+		}
 	}
 }
 

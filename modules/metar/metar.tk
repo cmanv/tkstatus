@@ -23,6 +23,84 @@ proc ::metar::light {} {
 			{separator} {black} ]
 }
 
+proc ::metar::set_header_theme { header } {
+	variable theme
+	$header configure -background $theme(background)
+	$header.keys configure -background $theme(background)
+	$header.keys.station configure -background $theme(background)
+	$header.keys.station.text configure -bg $theme(background) -fg $theme(label1)
+	$header.keys.date configure -background $theme(background)
+	$header.keys.date.text configure -bg $theme(background) -fg $theme(label1)
+	$header.keys.status configure -background $theme(background)
+	$header.keys.status.text configure -bg $theme(background) -fg $theme(label1)
+	$header.values configure -background $theme(background)
+	$header.values.station configure -background $theme(background)
+	$header.values.station.text configure -bg $theme(background) -fg $theme(text1)
+	$header.values.date configure -background $theme(background)
+	$header.values.date.text configure -bg $theme(background) -fg $theme(text1)
+	$header.values.status configure -background $theme(background)
+	$header.values.status.text configure -bg $theme(background) -fg $theme(text1)
+}
+
+proc ::metar::set_summary_theme { summary } {
+	variable theme
+	$summary configure -background $theme(background)
+	$summary.temp configure -background $theme(background)
+	$summary.temp.status configure -background $theme(background)
+	$summary.temp.status.icon configure -bg $theme(background) -fg $theme(text2)
+	$summary.temp.status.text configure -bg $theme(background) -fg $theme(text2)
+	$summary.temp.remark configure -background $theme(background)
+	$summary.temp.remark.key configure -bg $theme(background) -fg $theme(label1)
+	$summary.temp.remark.value configure -bg $theme(background) -fg $theme(text2)
+	$summary.separator configure -background $theme(separator)
+	$summary.icon1 configure -background $theme(background)
+	$summary.icon1.sunrise configure -bg $theme(background) -fg $theme(icon)
+	$summary.icon1.sunset configure -bg $theme(background) -fg $theme(icon)
+	$summary.icon2 configure -background $theme(background)
+	$summary.icon2.up configure -bg $theme(background) -fg $theme(text1)
+	$summary.icon2.down configure -bg $theme(background) -fg $theme(text1)
+	$summary.hours configure -background $theme(background)
+	$summary.hours.sunrise configure -bg $theme(background) -fg $theme(text1)
+	$summary.hours.sunset configure -bg $theme(background) -fg $theme(text1)
+}
+
+proc ::metar::set_grid_theme { grid } {
+	variable theme
+	$grid configure -background $theme(background)
+	$grid.wind configure -bg $theme(background) -fg $theme(label1)
+	$grid.wind_val configure -bg $theme(background) -fg $theme(text2)
+	$grid.gust configure -bg $theme(background) -fg $theme(label1)
+	$grid.gust_val configure -bg $theme(background) -fg $theme(text2)
+	$grid.dew configure -bg $theme(background) -fg $theme(label1)
+	$grid.dew_val configure -bg $theme(background) -fg $theme(text2)
+	$grid.rhumidity configure -bg $theme(background) -fg $theme(label1)
+	$grid.rhumidity_val configure -bg $theme(background) -fg $theme(text2)
+	$grid.pressure configure -bg $theme(background) -fg $theme(label1)
+	$grid.pressure_val configure -bg $theme(background) -fg $theme(text2)
+	$grid.visibility configure -bg $theme(background) -fg $theme(label1)
+	$grid.visibility_val configure -bg $theme(background) -fg $theme(text2)
+	$grid.clouds configure -bg $theme(background) -fg $theme(label1)
+	$grid.clouds_val0 configure -bg $theme(background) -fg $theme(text2)
+	$grid.clouds_val1 configure -bg $theme(background) -fg $theme(text2)
+	$grid.clouds_val2 configure -bg $theme(background) -fg $theme(text2)
+	$grid.clouds_val3 configure -bg $theme(background) -fg $theme(text2)
+	$grid.precips configure -bg $theme(background) -fg $theme(label1)
+	$grid.precips_val0 configure -bg $theme(background) -fg $theme(text2)
+	$grid.precips_val1 configure -bg $theme(background) -fg $theme(text2)
+	$grid.precips_val2 configure -bg $theme(background) -fg $theme(text2)
+}
+
+proc ::metar::set_theme { currenttheme } {
+	variable theme
+
+	array set theme [$currenttheme]
+	.metar.window configure -background $theme(background)
+	set_header_theme .metar.window.header
+	set_summary_theme .metar.window.summary
+	.metar.window.title2 configure -bg $theme(background) -fg $theme(label1)
+	set_grid_theme .metar.window.grid
+}
+
 proc ::metar::create_header { header } {
 	variable theme
 	variable report
@@ -91,7 +169,6 @@ proc ::metar::create_summary { summary } {
 proc ::metar::create_info_grid { grid } {
 	variable theme
 	variable report
-	variable station
 
 	pack [frame $grid -background $theme(background)] -anchor w -padx 15 -side top
 	grid columnconfigure $grid 1 -weight 1
@@ -182,7 +259,6 @@ proc ::metar::create_info_grid { grid } {
 
 proc ::metar::update_grid { grid } {
 	variable report
-	variable station
 
 	if {![string length $report(wind)]} {
 		grid remove $grid.wind $grid.wind_val
@@ -259,83 +335,6 @@ proc ::metar::create_window {} {
 	create_info_grid .metar.window.grid
 }
 
-proc ::metar::configure_header { header } {
-	variable theme
-	$header configure -background $theme(background)
-	$header.keys configure -background $theme(background)
-	$header.keys.station configure -background $theme(background)
-	$header.keys.station.text configure -bg $theme(background) -fg $theme(label1)
-	$header.keys.date configure -background $theme(background)
-	$header.keys.date.text configure -bg $theme(background) -fg $theme(label1)
-	$header.keys.status configure -background $theme(background)
-	$header.keys.status.text configure -bg $theme(background) -fg $theme(label1)
-	$header.values configure -background $theme(background)
-	$header.values.station configure -background $theme(background)
-	$header.values.station.text configure -bg $theme(background) -fg $theme(text1)
-	$header.values.date configure -background $theme(background)
-	$header.values.date.text configure -bg $theme(background) -fg $theme(text1)
-	$header.values.status configure -background $theme(background)
-	$header.values.status.text configure -bg $theme(background) -fg $theme(text1)
-}
-
-proc ::metar::configure_summary { summary } {
-	variable theme
-	$summary configure -background $theme(background)
-	$summary.temp configure -background $theme(background)
-	$summary.temp.status configure -background $theme(background)
-	$summary.temp.status.icon configure -bg $theme(background) -fg $theme(text2)
-	$summary.temp.status.text configure -bg $theme(background) -fg $theme(text2)
-	$summary.temp.remark configure -background $theme(background)
-	$summary.temp.remark.key configure -bg $theme(background) -fg $theme(label1)
-	$summary.temp.remark.value configure -bg $theme(background) -fg $theme(text2)
-	$summary.separator configure -background $theme(separator)
-	$summary.icon1 configure -background $theme(background)
-	$summary.icon1.sunrise configure -bg $theme(background) -fg $theme(icon)
-	$summary.icon1.sunset configure -bg $theme(background) -fg $theme(icon)
-	$summary.icon2 configure -background $theme(background)
-	$summary.icon2.up configure -bg $theme(background) -fg $theme(text1)
-	$summary.icon2.down configure -bg $theme(background) -fg $theme(text1)
-	$summary.hours configure -background $theme(background)
-	$summary.hours.sunrise configure -bg $theme(background) -fg $theme(text1)
-	$summary.hours.sunset configure -bg $theme(background) -fg $theme(text1)
-}
-
-proc ::metar::configure_info_grid { grid } {
-	variable theme
-	$grid configure -background $theme(background)
-	$grid.wind configure -bg $theme(background) -fg $theme(label1)
-	$grid.wind_val configure -bg $theme(background) -fg $theme(text2)
-	$grid.gust configure -bg $theme(background) -fg $theme(label1)
-	$grid.gust_val configure -bg $theme(background) -fg $theme(text2)
-	$grid.dew configure -bg $theme(background) -fg $theme(label1)
-	$grid.dew_val configure -bg $theme(background) -fg $theme(text2)
-	$grid.rhumidity configure -bg $theme(background) -fg $theme(label1)
-	$grid.rhumidity_val configure -bg $theme(background) -fg $theme(text2)
-	$grid.pressure configure -bg $theme(background) -fg $theme(label1)
-	$grid.pressure_val configure -bg $theme(background) -fg $theme(text2)
-	$grid.visibility configure -bg $theme(background) -fg $theme(label1)
-	$grid.visibility_val configure -bg $theme(background) -fg $theme(text2)
-	$grid.clouds configure -bg $theme(background) -fg $theme(label1)
-	$grid.clouds_val0 configure -bg $theme(background) -fg $theme(text2)
-	$grid.clouds_val1 configure -bg $theme(background) -fg $theme(text2)
-	$grid.clouds_val2 configure -bg $theme(background) -fg $theme(text2)
-	$grid.clouds_val3 configure -bg $theme(background) -fg $theme(text2)
-	$grid.precips configure -bg $theme(background) -fg $theme(label1)
-	$grid.precips_val0 configure -bg $theme(background) -fg $theme(text2)
-	$grid.precips_val1 configure -bg $theme(background) -fg $theme(text2)
-	$grid.precips_val2 configure -bg $theme(background) -fg $theme(text2)
-}
-
-proc ::metar::configure_window { value } {
-	variable theme
-	array set theme [$value]
-	.metar.window configure -background $theme(background)
-	configure_header .metar.window.header
-	configure_summary .metar.window.summary
-	.metar.window.title2 configure -bg $theme(background) -fg $theme(label1)
-	configure_info_grid .metar.window.grid
-}
-
 proc ::metar::toggle_window {} {
 	variable state_visible
 
@@ -349,7 +348,7 @@ proc ::metar::toggle_window {} {
 	}
 }
 
-proc ::metar::update_report {} {
+proc ::metar::update {} {
 	variable report
 	variable station
 
@@ -359,10 +358,10 @@ proc ::metar::update_report {} {
 	update_grid .metar.window.grid
 }
 
-proc ::metar::init {} {
+proc ::metar::setup { currenttheme } {
 	variable theme
-	variable station
 
+	array set theme [$currenttheme]
 	font create fitalic -family Sans -size 12 -slant italic
 	font create fnormal -family Sans -size 12
 	font create fbold -family Sans -size 12 -weight bold
@@ -378,11 +377,9 @@ proc ::metar::init {} {
 	wm geometry .metar "-1+26"
 	wm state .metar withdrawn
 
-	set themefile $::env(HOME)/.cache/theme/default
-	array set theme [[string trim [fileutil::cat $themefile]]]
 	create_window
 
-	utils::every 600000 ::metar::update_report
+	utils::every 600000 ::metar::update
 }
 
 package provide metar 1.0

@@ -10,17 +10,19 @@ namespace eval statusbar {
 	variable xscreen 0
 	variable wmport 9981
 	variable themefile "$::env(HOME)/.cache/theme/default"
+	variable currenttheme light
 
-	# Unicode icons from remixicon
-	array set remix [ list	down 	\uea4a	up 	\uea74 \
-				mail	\ueec0	mixer	\uf229 ]
+	# Unicode codes from remixicon
+	array set icons [ list	down 	\uea4a \
+				up 	\uea74 \
+				mixer	\uf229 ]
 
-	# List of fixed items in the bar
+	# List of static items in the statusbar
 	set baritems [ list mode modesep desktop desksep loadavg usedmem acpitemp \
 			netin netout infosep windowname datetime \
 			datesep metar metarsep mixer mixersep ]
 
-	# Array describing items in the bar
+	# Array describing the static items in the bar
 	array set widgetarray [ list \
 		mode [ list type var side left text statusbar::mode font normal ] \
 		modesep [ list type vseparator side left ] \
@@ -74,9 +76,148 @@ namespace eval statusbar {
 			windowname	black ]
 	}
 
-	# Setup the fixed items in the bar
+	# Set the theme on the alements of the bar
+	proc set_theme { theme } {
+		variable currenttheme
+		variable baritems
+		variable widgetarray
+
+		switch $theme {
+			light {
+				set currenttheme light
+				array set color [light]
+			}
+			dark {
+				set currenttheme dark
+				array set color [dark]
+			}
+			default {
+				return
+			}
+		}
+
+		.bar configure -background $color(background)
+		foreach item $baritems {
+			array set widget $widgetarray($item)
+			switch $widget(type) {
+				vseparator {
+					.bar.$item configure -background $color(separator)
+				}
+				default {
+					.bar.$item configure -bg $color(background) -fg $color($item)
+				}
+			}
+		}
+
+		devices::set_theme $theme
+		maildir::set_theme $theme
+		musicpd::set_theme $theme
+	}
+
+	# Update mixer after button event
+	proc update_mixer {} {
+		variable mixer
+		variable icons
+		set mixer "$icons(mixer) [sysinfo::getmixervol]"
+	}
+
+	# Send a message to the window manager
+	proc wm_message { wmmessage } {
+		variable xscreen
+		variable wmport
+
+		if {[catch {set channel [socket localhost $wmport]} ]} {
+			puts stderr "Could not open socket on port $wmport!\n"
+			return
+		}
+		puts $channel "$xscreen;$wmmessage"
+		close $channel
+	}
+
+	proc read_socket {channel} {
+		variable currenttheme
+		variable desktops
+		variable mode
+		variable windowname
+		variable metar
+
+		if {[gets $channel line] < 0} {
+			close $channel
+			return
+		}
+		close $channel
+
+		set line [string trimright $line]
+		set equal [string first "=" $line]
+		if {$equal == -1} {
+			set key $line
+			set value ""
+		} elseif {$equal > 0} {
+			set key [string range $line 0 $equal-1]
+			set value [string range $line $equal+1 $equal+128]
+		} else {
+			return
+		}
+		if {$key == "window_active"} {
+			set windowname $value
+		} elseif {$key == "no_window_active"} {
+			set windowname ""
+		} elseif {$key == "desktop_list"} {
+			set desktops $value
+		} elseif {$key == "desktop_mode"} {
+			set mode " $value"
+		} elseif {$key == "mixer_volume"} {
+			statusbar::update_mixer
+		} elseif { $key == "toggle_metar_window" } {
+			metar::toggle_window
+		} elseif { $key == "update_metar_report" } {
+			metar::update_report
+		} elseif {$key == "set_theme"} {
+			if {$value != $currenttheme} {
+				set_theme $value
+				metar::set_theme $theme
+			}
+		}
+	}
+
+	proc server_accept {channel host port} {
+		fconfigure $channel -buffering none -blocking 0
+		fileevent $channel readable [list statusbar::read_socket $channel]
+	}
+
+	# Update the statusbar
+	proc update {} {
+		variable icons
+		variable loadavg
+		variable usedmem
+		variable acpitemp
+		variable netin
+		variable netout
+		variable datetime
+		variable mixer
+
+		set loadavg "[sysinfo::getloadavg] "
+		set usedmem "[join [sysinfo::getusedmemswap]] "
+		set acpitemp "T [sysinfo::getacpitemp]"
+		set netstats [sysinfo::getnetstats em0]
+		set netin "$icons(down)[join [lindex $netstats 0]]"
+		set netout "$icons(up)[join [lindex $netstats 1]]"
+
+		set datetime [clock format [clock seconds] \
+			-locale $::env(LANG) -format {%d %b %H:%M }]
+
+		set mixer "$icons(mixer) [sysinfo::getmixervol]"
+
+		devices::update
+		maildir::update
+		musicpd::update
+	}
+
+	# Setup the static items in the statusbar
 	proc setup {} {
 		variable baritems
+		variable currenttheme
+		variable themefile
 		variable widgetarray
 
 		frame .bar
@@ -124,148 +265,7 @@ namespace eval statusbar {
 		}
 		bind .bar.metar <1> { metar::toggle_window }
 		bind .bar.metar <2> { metar::update_report }
-	}
 
-	# Set the theme on the alements of the bar
-	proc set_theme { theme } {
-		variable currenttheme
-		variable baritems
-		variable widgetarray
-
-		switch $theme {
-			light {
-				set currenttheme light
-				array set color [light]
-			}
-			dark {
-				set currenttheme dark
-				array set color [dark]
-			}
-			default {
-				return
-			}
-		}
-
-		.bar configure -background $color(background)
-		foreach item $baritems {
-			array set widget $widgetarray($item)
-			switch $widget(type) {
-				vseparator {
-					.bar.$item configure -background $color(separator)
-				}
-				default {
-					.bar.$item configure -bg $color(background) -fg $color($item)
-				}
-			}
-		}
-
-		devices::set_theme $theme
-		maildir::set_theme $theme
-		musicpd::set_theme $theme
-	}
-
-	# Send a message to the window manager
-	proc wm_message { wmmessage } {
-		variable xscreen
-		variable wmport
-
-		if {[catch {set channel [socket localhost $wmport]} ]} {
-			puts stderr "Could not open socket on port $wmport!\n"
-			return
-		}
-		puts $channel "$xscreen;$wmmessage"
-		close $channel
-	}
-
-	# Update mixer after button event
-	proc update_mixer {} {
-		variable mixer
-		variable remix
-		set mixer "$remix(mixer) [sysinfo::getmixervol]"
-	}
-
-	proc update {} {
-		variable remix
-		variable loadavg
-		variable usedmem
-		variable acpitemp
-		variable netin
-		variable netout
-		variable datetime
-		variable mixer
-
-		set loadavg "[sysinfo::getloadavg] "
-		set usedmem "[join [sysinfo::getusedmemswap]] "
-		set acpitemp "T [sysinfo::getacpitemp]"
-		set netstats [sysinfo::getnetstats em0]
-		set netin "$remix(down)[join [lindex $netstats 0]]"
-		set netout "$remix(up)[join [lindex $netstats 1]]"
-
-		set datetime [clock format [clock seconds] \
-			-locale $::env(LANG) -format {%d %b %H:%M }]
-
-		set mixer "$remix(mixer) [sysinfo::getmixervol]"
-
-		devices::update
-		maildir::update
-		musicpd::update
-	}
-
-	proc read_socket {channel} {
-		variable currenttheme
-		variable desktops
-		variable mode
-		variable windowname
-		variable metar
-
-		if {[gets $channel line] < 0} {
-			close $channel
-			return
-		}
-		close $channel
-
-		set line [string trimright $line]
-		set equal [string first "=" $line]
-		if {$equal == -1} {
-			set key $line
-			set value ""
-		} elseif {$equal > 0} {
-			set key [string range $line 0 $equal-1]
-			set value [string range $line $equal+1 $equal+128]
-		} else {
-			return
-		}
-		if {$key == "window_active"} {
-			set windowname $value
-		} elseif {$key == "no_window_active"} {
-			set windowname ""
-		} elseif {$key == "desktop_list"} {
-			set desktops $value
-		} elseif {$key == "desktop_mode"} {
-			set mode " $value"
-		} elseif {$key == "mixer_volume"} {
-			statusbar::update_mixer
-		} elseif { $key == "toggle_metar_window" } {
-			metar::toggle_window
-		} elseif { $key == "update_metar_report" } {
-			metar::update_report
-		} elseif {$key == "set_theme"} {
-			if {$value != $currenttheme} {
-				set_theme $value
-				metar::configure_window $value
-			}
-		}
-	}
-
-	proc server_accept {channel host port} {
-		fconfigure $channel -buffering none -blocking 0
-		fileevent $channel readable [list statusbar::read_socket $channel]
-	}
-
-	proc init {} {
-		variable themefile
-
-		setup
 		devices::setup .bar infosep left
 		maildir::setup .bar metarsep right
 		musicpd::setup .bar mixersep right
@@ -275,6 +275,7 @@ namespace eval statusbar {
 		} else {
 			set_theme light
 		}
+		metar::setup $currenttheme
 
 		utils::every 2000 statusbar::update
 	}
@@ -292,8 +293,7 @@ wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
 wm title . "statusbar.tk version 20241019"
 
-statusbar::init
-metar::init
+statusbar::setup
 
 socket -server statusbar::server_accept -myaddr localhost 9995
 vwait forever
