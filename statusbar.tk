@@ -175,7 +175,7 @@ namespace eval statusbar {
 		} elseif {$key == "set_theme"} {
 			if {$value != $currenttheme} {
 				set_theme $value
-				metar::set_theme $theme
+				metar::set_theme $value
 			}
 		}
 	}
