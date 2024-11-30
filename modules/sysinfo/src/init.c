@@ -39,6 +39,18 @@ Sysinfo_Init(Tcl_Interp *interp)
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
+				"sysinfo::getcputemp",
+				SysInfo_GetCpuTempObjCmd,
+				(ClientData) NULL,
+				(Tcl_CmdDeleteProc*) NULL);
+
+	Tcl_CreateObjCommand(	interp,
+				"sysinfo::getcpufreq",
+				SysInfo_GetCpuFreqObjCmd,
+				(ClientData) NULL,
+				(Tcl_CmdDeleteProc*) NULL);
+
+	Tcl_CreateObjCommand(	interp,
 				"sysinfo::getnetstats",
 				SysInfo_GetNetStatsObjCmd,
 				(ClientData) NULL,

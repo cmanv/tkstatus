@@ -18,7 +18,7 @@ namespace eval statusbar {
 				mixer	\uf229 ]
 
 	# List of static items in the statusbar
-	set baritems [ list mode modesep desktop desksep loadavg usedmem acpitemp \
+	set baritems [ list mode modesep desktop desksep loadavg usedmem \
 			netin netout infosep windowname datetime \
 			datesep metar metarsep mixer mixersep ]
 
@@ -30,7 +30,6 @@ namespace eval statusbar {
 		desksep [ list type vseparator side left ] \
 		loadavg [ list type var side left text statusbar::loadavg font normal ] \
 		usedmem [ list type var side left text statusbar::usedmem font normal ] \
-		acpitemp [ list type var side left text statusbar::acpitemp font normal ] \
 		netin [ list type var side left text statusbar::netin font normal ] \
 		netout [ list type var side left text statusbar::netout font normal ] \
 		infosep [ list type vseparator side left ] \
@@ -44,7 +43,6 @@ namespace eval statusbar {
 
 	proc dark {} {
 		set theme [ list \
-			acpitemp	PaleGreen3 \
 			background	{#3b4252} \
 			datetime	WhiteSmoke \
 			desktop		PaleGreen3 \
@@ -61,7 +59,6 @@ namespace eval statusbar {
 
 	proc light {} {
 		set theme [ list \
-			acpitemp	MediumBlue \
 			background	gray90 \
 			datetime	black \
 			desktop		DarkBlue \
@@ -190,7 +187,6 @@ namespace eval statusbar {
 		variable icons
 		variable loadavg
 		variable usedmem
-		variable acpitemp
 		variable netin
 		variable netout
 		variable datetime
@@ -198,7 +194,6 @@ namespace eval statusbar {
 
 		set loadavg "[sysinfo::getloadavg] "
 		set usedmem "[join [sysinfo::getusedmemswap]] "
-		set acpitemp "T [sysinfo::getacpitemp]"
 		set netstats [sysinfo::getnetstats em0]
 		set netin "$icons(down)[join [lindex $netstats 0]]"
 		set netout "$icons(up)[join [lindex $netstats 1]]"
@@ -264,7 +259,7 @@ namespace eval statusbar {
 			statusbar::update_mixer
 		}
 		bind .bar.metar <1> { metar::toggle_window }
-		bind .bar.metar <2> { metar::update_report }
+		bind .bar.metar <2> { metar::update }
 
 		devices::setup .bar infosep left
 		maildir::setup .bar metarsep right

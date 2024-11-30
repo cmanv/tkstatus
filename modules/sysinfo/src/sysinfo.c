@@ -94,6 +94,48 @@ int SysInfo_GetAcpiTempObjCmd( ClientData clientData, Tcl_Interp *interp,
 	return TCL_OK;
 }
 
+int SysInfo_GetCpuTempObjCmd( ClientData clientData, Tcl_Interp *interp,
+				int objc, Tcl_Obj *const objv[])
+{
+	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
+	int temp;
+	size_t size = sizeof(int);
+
+	int err = sysctlbyname("dev.cpu.0.temperature", &temp, &size, 
+				(void *)NULL, (size_t)0); 
+	if (err < 0) {
+		Tcl_SetStringObj(resultObj, Tcl_PosixError(interp), -1);
+		return TCL_ERROR;	
+	}
+
+	double tcelcius = (double)(temp - 2731)/10;
+	if (Tcl_ListObjAppendElement(interp, resultObj, Tcl_ObjPrintf("%.f°C", tcelcius)) != TCL_OK) {
+		return TCL_ERROR;	
+	}
+	return TCL_OK;
+}
+
+int SysInfo_GetCpuFreqObjCmd( ClientData clientData, Tcl_Interp *interp,
+				int objc, Tcl_Obj *const objv[])
+{
+	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
+	int freq;
+	size_t size = sizeof(int);
+
+	int err = sysctlbyname("dev.cpu.0.freq", &freq, &size, 
+				(void *)NULL, (size_t)0); 
+	if (err < 0) {
+		Tcl_SetStringObj(resultObj, Tcl_PosixError(interp), -1);
+		return TCL_ERROR;	
+	}
+
+	double fmhz = (double)(freq)/1000;
+	if (Tcl_ListObjAppendElement(interp, resultObj, Tcl_ObjPrintf("%.1f Mhz", fmhz)) != TCL_OK) {
+		return TCL_ERROR;	
+	}
+	return TCL_OK;
+}
+
 int SysInfo_GetNetStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 				int objc, Tcl_Obj *const objv[])
 {
