@@ -1,8 +1,7 @@
 #!/usr/bin/env wish9.0
 
 namespace eval devices {
-	array set icons [ list	disk	\ueba9	printer	\uefd2 \
-				sdcard	\uf066	udisk	\uf1cc ]
+	array set icons [ list	printer	\uefd2	sdcard	\uf066	udisk	\uf1cc ]
 
 	namespace export setup update set_theme
 
@@ -88,8 +87,8 @@ namespace eval devices {
 		frame $devframe
 		frame $devsep -width 1
 
-		set devicelist [ list ada1 da0 da1 mmcsd0 ulpt0 ]
-		set deviceicons [ list $icons(disk) $icons(udisk) $icons(udisk) \
+		set devicelist [ list da0 da1 mmcsd0 ulpt0 ]
+		set deviceicons [ list $icons(udisk) $icons(udisk) \
 				$icons(sdcard) $icons(printer) ]
 
 		array set devicearray {}

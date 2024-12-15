@@ -1,5 +1,5 @@
 #include "mpd.h"
-static const int titlelength = 128;
+static const int titlelength = 132;
 static char host[65] = "";
 static int port = 0;
 static int timeout = 0;
@@ -80,8 +80,12 @@ int mpd_current_title(char *currenttitle, int len)
 	if (song) {
 	        char album[65];
 	        char title[65];
-	        strlcpy(album, mpd_song_get_tag(song, MPD_TAG_ALBUM, 0), 64); 
-		strlcpy(title, mpd_song_get_tag(song, MPD_TAG_TITLE, 0), 64);
+		bzero(album, 65);
+		bzero(title, 65);
+		const char *aptr =  mpd_song_get_tag(song, MPD_TAG_ALBUM, 0);
+		const char *tptr = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
+		if (aptr) strlcpy(album, aptr, 64); 
+		if (tptr) strlcpy(title, tptr, 64);
 		snprintf(currenttitle, len, "%s - %s", title, album);
 		mpd_song_free(song);
 	}

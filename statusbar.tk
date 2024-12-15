@@ -168,7 +168,7 @@ namespace eval statusbar {
 		} elseif { $key == "toggle_metar_window" } {
 			metar::toggle_window
 		} elseif { $key == "update_metar_report" } {
-			metar::update_report
+			metar::update
 		} elseif {$key == "set_theme"} {
 			if {$value != $currenttheme} {
 				set_theme $value
