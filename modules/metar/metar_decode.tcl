@@ -10,8 +10,8 @@ namespace eval ::metar::decode {
 		code		CYUL \
 		name		Montréal/Dorval \
 		timezone	America/Montreal \
-		longitude	-73.3 \
-		latitude	45.517 ]
+		longitude	-73.59 \
+		latitude	45.525 ]
 
 	array set const [ list \
 		pi			3.14159265358979 \
