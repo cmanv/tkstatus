@@ -201,6 +201,7 @@ proc maildir::newmail { account } {
 		set date [convert_date [lindex [mime::getheader $tokens Date] 0]]
 		set from [convert_header [lindex [mime::getheader $tokens From] 0]]
 		set subject [convert_header [lindex [mime::getheader $tokens Subject] 0]]
+		set subject [utils::scrub_utf8_4bytes_chars $subject]
 
 		pack [frame .mailpopup.date$count -background $theme(background)] \
 			-expand 1 -fill x
