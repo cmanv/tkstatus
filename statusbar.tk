@@ -11,6 +11,7 @@ namespace eval statusbar {
 	variable wmport 9981
 	variable themefile "$::env(HOME)/.cache/theme/default"
 	variable currenttheme light
+	variable wintitle
 
 	# Unicode codes from remixicon
 	array set icons [ list	down 	\uea4a \
@@ -19,7 +20,7 @@ namespace eval statusbar {
 
 	# List of static items in the statusbar
 	set baritems [ list mode modesep desktop desksep loadavg usedmem \
-			netin netout infosep windowname datetime \
+			netin netout infosep title datetime \
 			datesep metar metarsep mixer mixersep ]
 
 	# Array describing the static items in the bar
@@ -33,7 +34,7 @@ namespace eval statusbar {
 		netin [ list type var side left text statusbar::netin font normal ] \
 		netout [ list type var side left text statusbar::netout font normal ] \
 		infosep [ list type vseparator side left ] \
-		windowname [ list type xvar side left text statusbar::windowname font normal ] \
+		title [ list type text side left height 1 width 108 font normal ] \
 		datetime [ list type var side right text statusbar::datetime font normal ] \
 		datesep [ list type vseparator side right ] \
 		metar [ list type var side right text metar::report(statusbar) font normal ] \
@@ -54,7 +55,7 @@ namespace eval statusbar {
 			netout		CadetBlue3 \
 			separator	OliveDrab \
 			usedmem		CadetBlue3 \
-			windowname	PaleGreen3 ]
+			title		PaleGreen3 ]
 	}
 
 	proc light {} {
@@ -70,7 +71,7 @@ namespace eval statusbar {
 			netout		purple \
 			separator	black \
 			usedmem		black \
-			windowname	black ]
+			title		black ]
 	}
 
 	# Set the theme on the alements of the bar
@@ -135,7 +136,7 @@ namespace eval statusbar {
 		variable currenttheme
 		variable desktops
 		variable mode
-		variable windowname
+		variable wintitle
 		variable metar
 
 		if {[gets $channel line] < 0} {
@@ -144,6 +145,7 @@ namespace eval statusbar {
 		}
 		close $channel
 
+		set length 0
 		set line [string trimright $line]
 		set equal [string first "=" $line]
 		if {$equal == -1} {
@@ -151,14 +153,23 @@ namespace eval statusbar {
 			set value ""
 		} elseif {$equal > 0} {
 			set key [string range $line 0 $equal-1]
-			set value [string range $line $equal+1 $equal+128]
+			set value [string range $line $equal+1 end]
+			set length [string length $value]
+			if {$length > 110} {
+				set length 110
+			}
 		} else {
 			return
 		}
 		if {$key == "window_active"} {
-			set windowname [utils::scrub_utf8_4bytes_chars $value]
+			$wintitle delete 1.0 end
+			$wintitle insert 1.0 $value
+			$wintitle configure -width $length
+			foreach i [$wintitle search -all -regexp {[\U010000-\U10ffff]} 1.0 end] {
+				$wintitle tag add emoji $i
+			}
 		} elseif {$key == "no_window_active"} {
-			set windowname ""
+			$wintitle delete 1.0 end
 		} elseif {$key == "desktop_list"} {
 			set desktops $value
 		} elseif {$key == "desktop_mode"} {
@@ -214,6 +225,7 @@ namespace eval statusbar {
 		variable currenttheme
 		variable themefile
 		variable widgetarray
+		variable wintitle
 
 		frame .bar
 		pack .bar -fill both -expand 1
@@ -224,14 +236,17 @@ namespace eval statusbar {
 					pack [label .bar.$item -font $widget(font) \
 						-text $widget(text)] -side $widget(side)
 				}
+				text {
+					set wintitle [text .bar.$item -font $widget(font) \
+						-height $widget(height) -width $widget(width) \
+						-borderwidth 0 -highlightthickness 0 \
+						-wrap word]
+					$wintitle tag configure emoji -font emoji
+					pack $wintitle -side $widget(side) -expand 1
+				}
 				var {
 					pack [label .bar.$item -font $widget(font) \
 						-textvar $widget(text)] -side $widget(side)
-				}
-				xvar {
-					pack [label .bar.$item -font $widget(font) \
-						-textvar $widget(text)] -side $widget(side) \
-						-expand 1
 				}
 				vseparator {
 					pack [frame .bar.$item -width 1] -fill y -padx 5 \
@@ -283,10 +298,11 @@ tk appname "statusbar"
 font create normal -family NotoSans -size 11
 font create italic -family NotoSans -size 11 -slant italic
 font create bold -family NotoSans -size 11 -weight bold
+font create emoji -family NotoColorEmoji -size 11
 
 wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
-wm title . "statusbar.tk version 20250113"
+wm title . "statusbar.tk version 20250114"
 
 statusbar::setup
 
