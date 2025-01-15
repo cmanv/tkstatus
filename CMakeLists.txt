@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.20)
 # Project identification
 project ("statusbar")
 set(PACKAGE_NAME "statusbar")
-set(PACKAGE_VERSION "20250113")
+set(PACKAGE_VERSION "20250115")
 message (STATUS "*** Building ${PACKAGE_NAME} ${PACKAGE_VERSION} ***")
 
 #find_package(TCL)

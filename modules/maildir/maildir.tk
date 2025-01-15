@@ -201,7 +201,6 @@ proc maildir::newmail { account } {
 		set date [convert_date [lindex [mime::getheader $tokens Date] 0]]
 		set from [convert_header [lindex [mime::getheader $tokens From] 0]]
 		set subject [convert_header [lindex [mime::getheader $tokens Subject] 0]]
-		set subject [utils::scrub_utf8_4bytes_chars $subject]
 
 		pack [frame .mailpopup.date$count -background $theme(background)] \
 			-expand 1 -fill x
@@ -215,9 +214,20 @@ proc maildir::newmail { account } {
 			-side left -padx 5
 		pack [frame .mailpopup.subject$count -background $theme(background)] \
 			-expand 1 -fill x
-		pack [label .mailpopup.subject$count.label -text $subject \
-			-font normal -bg $theme(background) -fg $theme(mailinfo)] \
-			-side left -padx 5
+
+		set width [string length $subject]
+		set height [tcl::mathfunc::ceil [expr $width / 72.0]]
+		set width [tcl::mathfunc::min $width 72]
+
+		set tsubject [text .mailpopup.subject$count.text -font normal -wrap word \
+				-borderwidth 0 -highlightthickness 0 -height $height -width $width \
+				-bg $theme(background) -fg $theme(mailinfo)]
+		pack $tsubject -side left -padx 5
+		$tsubject tag configure emoji -font emoji
+		$tsubject insert 1.0 $subject
+		foreach i [$tsubject search -all -regexp {[\u2000-\u28ff\U1f000-\U1faff]} 1.0 end] {
+			$tsubject tag add emoji $i
+		}
 
 		pack [frame .mailpopup.sep$count -background $theme(mailsep) \
 			-height 1] -side top -fill x

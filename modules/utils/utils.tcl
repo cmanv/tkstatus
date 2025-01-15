@@ -13,10 +13,6 @@ namespace eval utils {
 		return $content
 	}
 
-	proc scrub_utf8_4bytes_chars { s } {
-		return [regsub -all {[\U010000-\U10ffff]} $s " "]
-	}
-
 	namespace export every read_file
 }
 

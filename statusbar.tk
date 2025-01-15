@@ -34,7 +34,7 @@ namespace eval statusbar {
 		netin [ list type var side left text statusbar::netin font normal ] \
 		netout [ list type var side left text statusbar::netout font normal ] \
 		infosep [ list type vseparator side left ] \
-		title [ list type text side left height 1 width 108 font normal ] \
+		title [ list type text side left height 1 font normal ] \
 		datetime [ list type var side right text statusbar::datetime font normal ] \
 		datesep [ list type vseparator side right ] \
 		metar [ list type var side right text metar::report(statusbar) font normal ] \
@@ -154,18 +154,15 @@ namespace eval statusbar {
 		} elseif {$equal > 0} {
 			set key [string range $line 0 $equal-1]
 			set value [string range $line $equal+1 end]
-			set length [string length $value]
-			if {$length > 110} {
-				set length 110
-			}
+			set length [tcl::mathfunc::min [string length $value] 110]
 		} else {
 			return
 		}
 		if {$key == "window_active"} {
 			$wintitle delete 1.0 end
-			$wintitle insert 1.0 $value
 			$wintitle configure -width $length
-			foreach i [$wintitle search -all -regexp {[\U010000-\U10ffff]} 1.0 end] {
+			$wintitle insert 1.0 $value
+			foreach i [$wintitle search -all -regexp {[\u2000-\u28ff\U1f000-\U1faff]} 1.0 end] {
 				$wintitle tag add emoji $i
 			}
 		} elseif {$key == "no_window_active"} {
@@ -238,9 +235,8 @@ namespace eval statusbar {
 				}
 				text {
 					set wintitle [text .bar.$item -font $widget(font) \
-						-height $widget(height) -width $widget(width) \
-						-borderwidth 0 -highlightthickness 0 \
-						-wrap word]
+						-height $widget(height) -borderwidth 0 \
+						-highlightthickness 0 -wrap word]
 					$wintitle tag configure emoji -font emoji
 					pack $wintitle -side $widget(side) -expand 1
 				}
@@ -302,7 +298,7 @@ font create emoji -family NotoColorEmoji -size 11
 
 wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
-wm title . "statusbar.tk version 20250114"
+wm title . "statusbar.tk version 20250115"
 
 statusbar::setup
 
