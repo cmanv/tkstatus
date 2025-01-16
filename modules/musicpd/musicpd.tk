@@ -68,7 +68,7 @@ namespace eval musicpd {
 		set musicpos $widget.$position
 		set musicside $side
 
-		label $musicframe -font italic -textvar musicpd::now_playing
+		label $musicframe -font italic -text \uef32
 		frame $musicsep -width 1
 
 		bind $musicframe <1> {
