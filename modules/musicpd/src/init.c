@@ -27,6 +27,12 @@ Mpd_Init(Tcl_Interp *interp)
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
+				"mpd::active",
+				MPD_ActiveObjCmd,
+				(ClientData) NULL,
+				(Tcl_CmdDeleteProc*) NULL);
+
+	Tcl_CreateObjCommand(	interp,
 				"mpd::currenttitle",
 				MPD_CurrentTitleObjCmd,
 				(ClientData) NULL,

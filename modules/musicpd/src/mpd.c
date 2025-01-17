@@ -1,5 +1,5 @@
 #include "mpd.h"
-static const int titlelength = 132;
+static const int titlelength = 256;
 static char host[65] = "";
 static int port = 0;
 static int timeout = 0;
@@ -30,9 +30,19 @@ int MPD_ConnectObjCmd( ClientData clientData, Tcl_Interp *interp,
 		}
 	}
 
-    	if (conn) mpd_connection_free(conn);
+	if (conn) mpd_connection_free(conn);
 	conn = mpd_connection_new(host, port, timeout);
 
+	return TCL_OK;
+}
+
+int MPD_ActiveObjCmd( ClientData clientData, Tcl_Interp *interp,
+				int objc, Tcl_Obj *const objv[])
+{
+	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
+	if (Tcl_ListObjAppendElement(interp, resultObj, Tcl_ObjPrintf("%d", mpd_active())) != TCL_OK) {
+		return TCL_ERROR;
+	}
 	return TCL_OK;
 }
 
@@ -45,9 +55,29 @@ int MPD_CurrentTitleObjCmd( ClientData clientData, Tcl_Interp *interp,
 	mpd_current_title(currenttitle, titlelength);
 
 	if (Tcl_ListObjAppendElement(interp, resultObj, Tcl_NewStringObj(currenttitle, -1)) != TCL_OK) {
-		return TCL_ERROR;	
+		return TCL_ERROR;
 	}
 	return TCL_OK;
+}
+
+int mpd_active()
+{
+	if ((!conn) || (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS)) {
+		if (conn) mpd_connection_free(conn);
+		conn = mpd_connection_new(host, port, timeout);
+		if (!conn) return 0;
+		if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) return 0;
+	}
+
+	struct mpd_status *status = mpd_run_status(conn);
+	if (!status) return 0;
+
+	enum mpd_state s = mpd_status_get_state(status);
+	if ((s == MPD_STATE_PLAY) || (s == MPD_STATE_PAUSE)) {
+		return 1;
+	}
+
+	return 0;
 }
 
 int mpd_current_title(char *currenttitle, int len)
@@ -55,10 +85,10 @@ int mpd_current_title(char *currenttitle, int len)
 	bzero(currenttitle, len);
 
 	if ((!conn) || (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS)) {
-    		if (conn) mpd_connection_free(conn);
+		if (conn) mpd_connection_free(conn);
 		conn = mpd_connection_new(host, port, timeout);
 		if (!conn) return 1;
-    		if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) return 1;
+		if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) return 1;
 	}
 
 	struct mpd_status *status = mpd_run_status(conn);
@@ -78,15 +108,27 @@ int mpd_current_title(char *currenttitle, int len)
 
 	struct mpd_song *song = mpd_run_get_queue_song_id(conn, id);
 	if (song) {
-	        char album[65];
-	        char title[65];
-		bzero(album, 65);
-		bzero(title, 65);
-		const char *aptr =  mpd_song_get_tag(song, MPD_TAG_ALBUM, 0);
-		const char *tptr = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
-		if (aptr) strlcpy(album, aptr, 64); 
-		if (tptr) strlcpy(title, tptr, 64);
-		snprintf(currenttitle, len, "%s - %s", title, album);
+		char artist[64];
+		char album[64];
+		char track[5];
+		char title[110];
+
+		bzero(artist, 64);
+		bzero(album, 64);
+		bzero(track, 5);
+		bzero(title, 110);
+
+		const char *partist =  mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
+		const char *palbum =  mpd_song_get_tag(song, MPD_TAG_ALBUM, 0);
+		const char *ptrack  = mpd_song_get_tag(song, MPD_TAG_TRACK, 0);
+		const char *ptitle  = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
+
+		if (partist) strlcpy(artist, partist, 64);
+		if (palbum) strlcpy(album, palbum, 64);
+		if (ptrack) strlcpy(track, ptrack, 5);
+		if (ptitle) strlcpy(title, ptitle, 110);
+
+		snprintf(currenttitle, len, "%s - %s\n%s - %s", artist, album, track, title);
 		mpd_song_free(song);
 	}
 	mpd_status_free(status);

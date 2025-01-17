@@ -3,93 +3,131 @@ package require MPD
 
 namespace eval musicpd {
 	variable musicpd_active 0
-	variable now_playing ""
+	variable activepopup 0
 
 	namespace export setup update set_theme
+}
 
-	proc dark {} {
-		set theme [ list \
-			background	{#3b4252} \
-			musicpd		CadetBlue3 \
-			separator	OliveDrab ]
+proc musicpd::dark {} {
+	set theme [ list \
+		background	{#3b4252} \
+		musicpd		CadetBlue3 \
+		title	 	CadetBlue3 \
+		separator	OliveDrab ]
+}
+
+proc musicpd::light {} {
+	set theme [ list \
+		background	gray90 \
+		musicpd		DarkBlue \
+		title	 	black \
+		separator	black ]
+}
+
+# Set the theme for the devices
+proc musicpd::set_theme { currenttheme } {
+	variable musicframe
+	variable musicsep
+	variable theme
+
+	array set theme [$currenttheme]
+	$musicframe configure -bg $theme(background) -fg $theme(musicpd)
+	$musicsep configure -background $theme(separator)
+}
+
+# Show what is currently playing on MPD
+proc musicpd::update {} {
+	variable musicframe
+	variable musicsep
+	variable musicpos
+	variable musicside
+	variable musicpd_active
+
+	if {[mpd::active] == "1"} {
+		if {!$musicpd_active} {
+			pack $musicframe -after $musicpos -side $musicside
+			pack $musicsep -after $musicframe -fill y -padx 5 -side $musicside
+			set musicpd_active 1
+		}
+
+	} else {
+		if {$musicpd_active} {
+			pack forget $musicframe $musicsep
+			set musicpd_active 0
+		}
 	}
+}
 
-	proc light {} {
-		set theme [ list \
-			background	gray90 \
-			musicpd		DarkBlue \
-			separator	black ]
+# Setup widget for MPD
+proc musicpd::setup { widget position side } {
+	variable musicframe
+	variable musicsep
+	variable musicpos
+	variable musicside
+
+	set musicframe $widget.musicpd
+	set musicsep $widget.musicsep
+	set musicpos $widget.$position
+	set musicside $side
+
+	label $musicframe -font italic -text \uef32
+	frame $musicsep -width 1
+
+	bind $musicframe <Enter> {
+		musicpd::show_info
 	}
-
-	# Set the theme for the devices
-	proc set_theme { currenttheme } {
-		variable musicframe
-		variable musicsep
-
-		array set theme [$currenttheme]
-		$musicframe configure -bg $theme(background) -fg $theme(musicpd)
-		$musicsep configure -background $theme(separator)
+	bind $musicframe <Leave> {
+		destroy .musicpopup
+		set musicpd::activepopup 0
 	}
-
-	# Show what is currently playing on MPD
-	proc update {} {
-		variable musicframe
-		variable musicsep
-		variable musicpos
-		variable musicside
-		variable musicpd_active
-		variable now_playing
-
-		set now_playing [join [mpd::currenttitle]]
-		if {[string length $now_playing]} {
-			if {!$musicpd_active} {
-				pack $musicframe -after $musicpos -side $musicside
-				pack $musicsep -after $musicframe -fill y -padx 5 -side $musicside
-				set musicpd_active 1
-			}
-
+	bind $musicframe <1> {
+		if {![catch {exec mpc toggle}]} { }
+	}
+	bind $musicframe <2> {
+		exec xterm +sb -class ncmpcpp -e ncmpcpp &
+	}
+	bind $musicframe <3> {
+		if {![catch {exec mpc stop}]} { musicpd::update }
+	}
+	bind $musicframe <MouseWheel> {
+		if {%D < 0} {
+			if {![catch {exec mpc next}]} { musicpd::show_info }
 		} else {
-			if {$musicpd_active} {
-				pack forget $musicframe $musicsep
-				set musicpd_active 0
-			}
+			if {![catch {exec mpc prev}]} { musicpd::show_info }
 		}
 	}
+	mpd::connect $::env(MPD_HOST)
+}
 
-	# Setup widget for MPD
-	proc setup { widget position side } {
-		variable musicframe
-		variable musicsep
-		variable musicpos
-		variable musicside
+# Show info on current track
+proc musicpd::show_info { } {
+	variable theme
+	variable activepopup
 
-		set musicframe $widget.musicpd
-		set musicsep $widget.musicsep
-		set musicpos $widget.$position
-		set musicside $side
-
-		label $musicframe -font italic -text \uef32
-		frame $musicsep -width 1
-
-		bind $musicframe <1> {
-			if {![catch {exec mpc toggle}]} { musicpd::update }
-		}
-		bind $musicframe <2> {
-			exec xterm +sb -class ncmpcpp -e ncmpcpp &
-		}
-		bind $musicframe <3> {
-			if {![catch {exec mpc stop}]} { musicpd::update }
-		}
-		bind $musicframe <MouseWheel> {
-			if {%D < 0} {
-				if {![catch {exec mpc next}]} { musicpd::update }
-			} else {
-				if {![catch {exec mpc prev}]} { musicpd::update }
-			}
-
-		}
-		mpd::connect $::env(MPD_HOST)
+	if {$activepopup} {
+		destroy .musicpopup
+	} else {
+		set activepopup 1
 	}
+
+	set mpdtitle [join [mpd::currenttitle]]
+
+	toplevel .musicpopup -background $theme(background) -class NowPlaying
+	wm title .musicpopup "Now Playing"
+	wm attributes .musicpopup -type dialog
+	wm overrideredirect .musicpopup 1
+	set xpos [tcl::mathfunc::max [expr [winfo pointerx .] - 120] 1]
+	wm geometry .musicpopup +$xpos+26
+
+	set width 0
+	foreach line [split $mpdtitle \n] {
+		set width [tcl::mathfunc::max [string length $line] $width]
+	}
+	set musictext [text .musicpopup.text -font normal -width $width -height 2 \
+			-borderwidth 1 -highlightthickness 0 \
+			-bg $theme(background) -fg $theme(title)]
+	pack $musictext -side left -padx 5 -pady 3
+	$musictext insert 1.0 $mpdtitle
 }
 
 package provide musicpd 0.3
