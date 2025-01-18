@@ -6,13 +6,19 @@ namespace eval musicpd {
 	variable activepopup 0
 
 	namespace export setup update set_theme
+
+	array set icons [ list \
+		0	\ueb92 \
+		1	\ueb78 \
+		2	\uef32 \
+		3	\uef82 ]
 }
 
 proc musicpd::dark {} {
 	set theme [ list \
 		background	{#3b4252} \
 		musicpd		CadetBlue3 \
-		title	 	CadetBlue3 \
+		title	 	LightGray \
 		separator	OliveDrab ]
 }
 
@@ -42,8 +48,12 @@ proc musicpd::update {} {
 	variable musicpos
 	variable musicside
 	variable musicpd_active
+	variable icons
 
-	if {[mpd::active] == "1"} {
+	set state [mpd::state]
+
+	if { $state == 2 || $state == 3 } {
+		$musicframe configure -text $icons($state)
 		if {!$musicpd_active} {
 			pack $musicframe -after $musicpos -side $musicside
 			pack $musicsep -after $musicframe -fill y -padx 5 -side $musicside
@@ -70,7 +80,7 @@ proc musicpd::setup { widget position side } {
 	set musicpos $widget.$position
 	set musicside $side
 
-	label $musicframe -font italic -text \uef32
+	label $musicframe -font normal
 	frame $musicsep -width 1
 
 	bind $musicframe <Enter> {
@@ -81,7 +91,7 @@ proc musicpd::setup { widget position side } {
 		set musicpd::activepopup 0
 	}
 	bind $musicframe <1> {
-		if {![catch {exec mpc toggle}]} { }
+		if {![catch {exec mpc toggle}]} { musicpd::update }
 	}
 	bind $musicframe <2> {
 		exec xterm +sb -class ncmpcpp -e ncmpcpp &
@@ -117,7 +127,7 @@ proc musicpd::show_info { } {
 	wm attributes .musicpopup -type dialog
 	wm overrideredirect .musicpopup 1
 	set xpos [tcl::mathfunc::max [expr [winfo pointerx .] - 120] 1]
-	wm geometry .musicpopup +$xpos+26
+	wm geometry .musicpopup +$xpos+27
 
 	set width 0
 	foreach line [split $mpdtitle \n] {
@@ -130,4 +140,4 @@ proc musicpd::show_info { } {
 	$musictext insert 1.0 $mpdtitle
 }
 
-package provide musicpd 0.3
+package provide musicpd 0.4

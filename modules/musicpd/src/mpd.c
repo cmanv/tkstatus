@@ -36,11 +36,11 @@ int MPD_ConnectObjCmd( ClientData clientData, Tcl_Interp *interp,
 	return TCL_OK;
 }
 
-int MPD_ActiveObjCmd( ClientData clientData, Tcl_Interp *interp,
+int MPD_StateObjCmd( ClientData clientData, Tcl_Interp *interp,
 				int objc, Tcl_Obj *const objv[])
 {
 	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
-	if (Tcl_ListObjAppendElement(interp, resultObj, Tcl_ObjPrintf("%d", mpd_active())) != TCL_OK) {
+	if (Tcl_ListObjAppendElement(interp, resultObj, Tcl_ObjPrintf("%d", mpd_get_state())) != TCL_OK) {
 		return TCL_ERROR;
 	}
 	return TCL_OK;
@@ -60,7 +60,7 @@ int MPD_CurrentTitleObjCmd( ClientData clientData, Tcl_Interp *interp,
 	return TCL_OK;
 }
 
-int mpd_active()
+int mpd_get_state()
 {
 	if ((!conn) || (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS)) {
 		if (conn) mpd_connection_free(conn);
@@ -72,12 +72,7 @@ int mpd_active()
 	struct mpd_status *status = mpd_run_status(conn);
 	if (!status) return 0;
 
-	enum mpd_state s = mpd_status_get_state(status);
-	if ((s == MPD_STATE_PLAY) || (s == MPD_STATE_PAUSE)) {
-		return 1;
-	}
-
-	return 0;
+	return mpd_status_get_state(status);
 }
 
 int mpd_current_title(char *currenttitle, int len)

@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.20)
 # Project identification
 project ("musicpd")
 set(PACKAGE_NAME "musicpd")
-set(PACKAGE_VERSION "0.3")
+set(PACKAGE_VERSION "0.4")
 set(PACKAGE_PROVIDE "MPD")
 set(PACKAGE_INDEX "pkgIndex.tcl")
 set(PACKAGE_LIB mpd${PACKAGE_VERSION})

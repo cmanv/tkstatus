@@ -45,17 +45,17 @@ namespace eval statusbar {
 	proc dark {} {
 		set theme [ list \
 			background	{#3b4252} \
-			datetime	WhiteSmoke \
-			desktop		PaleGreen3 \
-			loadavg		CadetBlue3 \
+			datetime	LightGray \
+			desktop		LightGray \
+			loadavg		PaleGreen3 \
 			metar		Gold \
-			mixer		CadetBlue3 \
-			mode		CadetBlue3 \
-			netin		Gold2 \
+			mixer		PaleGreen3 \
+			mode		LightGray \
+			netin		Gold \
 			netout		CadetBlue3 \
-			separator	OliveDrab \
-			usedmem		CadetBlue3 \
-			title		PaleGreen3 ]
+			separator	Gray \
+			usedmem		PaleGreen3 \
+			title		LightGray ]
 	}
 
 	proc light {} {
@@ -275,8 +275,8 @@ namespace eval statusbar {
 		bind .bar.metar <2> { metar::update }
 
 		devices::setup .bar infosep left
-		maildir::setup .bar datesep right
-		musicpd::setup .bar metarsep right
+		maildir::setup .bar metarsep right
+		musicpd::setup .bar mixersep right
 
 		if {[file exists $themefile]} {
 			set_theme [string trim [utils::read_file $themefile]]
@@ -300,7 +300,7 @@ font create emoji -family NotoColorEmoji -size 11
 
 wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
-wm title . "statusbar.tk version 20250117"
+wm title . "statusbar.tk version 20250118"
 
 statusbar::setup
 
