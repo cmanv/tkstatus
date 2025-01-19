@@ -340,14 +340,17 @@ proc ::metar::decode::decode_clouds { code alt type } {
 	variable const
 	variable current
 
+	if {![info exists current(clouds)]} {
+		set current(clouds) ""
+	}
 	set desc $cloud_codes($code)
 	set current(cloud_code) $code
 	set current(cloud_desc) $desc
 	if {[string length $alt]} {
 		set altitude [expr 100 * round([scan $alt %d] * $const(cm_feet) / 100)]
-		lappend current(clouds) "$desc, $altitude m"
+		set current(clouds) "$desc, $altitude m\n$current(clouds)"
 	} else {
-		lappend current(clouds) "$desc"
+		set current(clouds) "$desc\n$current(clouds)"
 	}
 	if {[string length $type]} {
 		set current(cloud_type) $cloud_types($type)
@@ -383,6 +386,9 @@ proc ::metar::decode::decode_precips { icode qcode pcodes } {
 		break
 	}
 
+	if {![info exists current(precips)]} {
+		set current(precips) ""
+	}
 	foreach code $codes {
 		set post1 ""
 		set post2 ""
@@ -417,7 +423,7 @@ proc ::metar::decode::decode_precips { icode qcode pcodes } {
 		} else {
 			set description [string map {_ {}} $description]
 		}
-		lappend current(precips) $description
+		set current(precips) "$description\n$current(precips)"
 	}
 }
 
@@ -448,6 +454,7 @@ proc ::metar::decode::decode_metar_report { message } {
 		return
 	}
 	array unset current
+
 	set tokens [split $message " "]
 	foreach token $tokens {
 		if {$token == "RMK"} break
@@ -612,51 +619,23 @@ proc ::metar::decode::get_report {} {
 		if {[info exists current(visibility)]} {
 			set report(visibility) "$current(visibility) km"
 		}
-
-		set report(cloud0) ""
-		set report(cloud1) ""
-		set report(cloud2) ""
-		set report(cloud3) ""
+		set report(clouds) ""
 		if {[info exists current(clouds)]} {
-			set nclouds [llength $current(clouds)]
-			if {$nclouds > 3} {
-				set report(cloud3) [lindex $current(clouds) 3]
-			}
-			if {$nclouds > 2} {
-				set report(cloud2) [lindex $current(clouds) 2]
-			}
-			if {$nclouds > 1} {
-				set report(cloud1) [lindex $current(clouds) 1]
-			}
-			if {$nclouds > 0} {
-				set report(cloud0) [lindex $current(clouds) 0]
-			}
+			set report(clouds) [string trimright $current(clouds) \n]
 		}
-
-		set report(precip0) ""
-		set report(precip1) ""
-		set report(precip2) ""
+		set report(precips) ""
 		if {[info exists current(precips)]} {
-			set nprecips [llength $current(precips)]
-			if {$nprecips > 2} {
-				set report(precip2) [lindex $current(precips) 2]
-			}
-			if {$nprecips > 1} {
-				set report(precip1) [lindex $current(precips) 1]
-			}
-			if {$nprecips > 0} {
-				set report(precip0) [lindex $current(precips) 0]
-			}
+			set report(precips) [string trimright $current(precips) \n]
 		}
-
 		set report(weather_icon) [get_weather_icon]
 		set report(statusbar) "$report(weather_icon) $current(temp)°C"
 		set report(summary) "$current(temp)°C"
 		if {[info exists current(cloud_desc)]} {
 			set report(summary) "$current(temp)°C, $current(cloud_desc)"
 		}
-		if {[string length $report(precip0)]} {
-			set report(summary) "$current(temp)°C, $report(precip0)"
+		if {[string length $report(precips)]} {
+			set precipitation [lindex [lreverse [split $report(precips) \n]] 0]
+			set report(summary) "$current(temp)°C, $precipitation"
 		}
 
 		set report(request_status) "Requête complétée à $currenttime"

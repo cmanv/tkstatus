@@ -80,14 +80,9 @@ proc ::metar::set_grid_theme { grid } {
 	$grid.visibility configure -bg $theme(background) -fg $theme(label1)
 	$grid.visibility_val configure -bg $theme(background) -fg $theme(text2)
 	$grid.clouds configure -bg $theme(background) -fg $theme(label1)
-	$grid.clouds_val0 configure -bg $theme(background) -fg $theme(text2)
-	$grid.clouds_val1 configure -bg $theme(background) -fg $theme(text2)
-	$grid.clouds_val2 configure -bg $theme(background) -fg $theme(text2)
-	$grid.clouds_val3 configure -bg $theme(background) -fg $theme(text2)
+	$grid.clouds_val configure -bg $theme(background) -fg $theme(text2)
 	$grid.precips configure -bg $theme(background) -fg $theme(label1)
-	$grid.precips_val0 configure -bg $theme(background) -fg $theme(text2)
-	$grid.precips_val1 configure -bg $theme(background) -fg $theme(text2)
-	$grid.precips_val2 configure -bg $theme(background) -fg $theme(text2)
+	$grid.precips_val configure -bg $theme(background) -fg $theme(text2)
 }
 
 proc ::metar::set_theme { currenttheme } {
@@ -219,42 +214,21 @@ proc ::metar::create_info_grid { grid } {
 	grid configure $grid.visibility -row $row -column 0 -sticky w
 	grid configure $grid.visibility_val -row $row -column 1 -sticky w
 
-	label $grid.clouds -font fitalic -bg $theme(background) -fg $theme(label1) -text "Nuages :"
-	label $grid.clouds_val0 -font fnormal -bg $theme(background) -fg $theme(text2) \
-		-textvar metar::report(cloud0)
-	label $grid.clouds_val1 -font fnormal -bg $theme(background) -fg $theme(text2) \
-		-textvar metar::report(cloud1)
-	label $grid.clouds_val2 -font fnormal -bg $theme(background) -fg $theme(text2) \
-		-textvar metar::report(cloud2)
-	label $grid.clouds_val3 -font fnormal -bg $theme(background) -fg $theme(text2) \
-		-textvar metar::report(cloud3)
+	label $grid.clouds -font fitalic -bg $theme(background) -fg $theme(label1) \
+		-text "Nuages :"
+	text $grid.clouds_val -font fnormal -bg $theme(background) -fg $theme(text2) \
+		-borderwidth 0 -highlightthickness 0 -wrap none
+	incr row
+	grid configure $grid.clouds -row $row -column 0 -sticky nw
+	grid configure $grid.clouds_val -row $row -column 1 -sticky w
 
+	label $grid.precips -font fitalic -bg $theme(background) -fg $theme(label1) \
+		-text "Précipitations :"
+	text $grid.precips_val -font fnormal -bg $theme(background) -fg $theme(text2) \
+		-borderwidth 0 -highlightthickness 0 -wrap none
 	incr row
-	grid configure $grid.clouds -row $row -column 0 -sticky w
-	grid configure $grid.clouds_val0 -row $row -column 1 -sticky w
-	incr row
-	grid configure $grid.clouds_val1 -row $row -column 1 -sticky w
-	incr row
-	grid configure $grid.clouds_val2 -row $row -column 1 -sticky w
-	incr row
-	grid configure $grid.clouds_val3 -row $row -column 1 -sticky w
-
-	label $grid.precips -font fitalic -bg $theme(background) \
-		-fg $theme(label1) -text "Précipitations :"
-	label $grid.precips_val0 -font fnormal -bg $theme(background) -fg $theme(text2) \
-		-textvar metar::report(precip0)
-	label $grid.precips_val1 -font fnormal -bg $theme(background) -fg $theme(text2) \
-		-textvar metar::report(precip1)
-	label $grid.precips_val2 -font fnormal -bg $theme(background) -fg $theme(text2) \
-		-textvar metar::report(precip2)
-
-	incr row
-	grid configure $grid.precips -row $row -column 0 -sticky w
-	grid configure $grid.precips_val0 -row $row -column 1 -sticky w
-	incr row
-	grid configure $grid.precips_val1 -row $row -column 1 -sticky w
-	incr row
-	grid configure $grid.precips_val2 -row $row -column 1 -sticky w
+	grid configure $grid.precips -row $row -column 0 -sticky nw
+	grid configure $grid.precips_val -row $row -column 1 -sticky w
 }
 
 proc ::metar::update_grid { grid } {
@@ -284,41 +258,36 @@ proc ::metar::update_grid { grid } {
 		grid $grid.pressure $grid.pressure_val
 	}
 
-	if {![string length $report(cloud3)]} {
-		grid remove $grid.clouds_val3
+	$grid.clouds_val delete 1.0 end
+	if {![string length $report(clouds)]} {
+		grid remove $grid.clouds $grid.clouds_val
 	} else {
-		grid $grid.clouds_val3
-	}
-	if {![string length $report(cloud2)]} {
-		grid remove $grid.clouds_val2
-	} else {
-		grid $grid.clouds_val2
-	}
-	if {![string length $report(cloud1)]} {
-		grid remove $grid.clouds_val1
-	} else {
-		grid $grid.clouds_val1
-	}
-	if {![string length $report(cloud0)]} {
-		grid remove $grid.clouds $grid.clouds_val0
-	} else {
-		grid $grid.clouds $grid.clouds_val0
+		set width 0
+		set lines [split $report(clouds) \n]
+		set height [llength $lines]
+		foreach line $lines {
+			set width [tcl::mathfunc::max [string length $line] $width]
+		}
+		incr width
+		$grid.clouds_val insert 1.0 $report(clouds)
+		$grid.clouds_val configure -height $height -width $width
+		grid $grid.clouds $grid.clouds_val
 	}
 
-	if {![string length $report(precip2)]} {
-		grid remove $grid.precips_val2
+	$grid.precips_val delete 1.0 end
+	if {![string length $report(precips)]} {
+		grid remove $grid.precips $grid.precips_val
 	} else {
-		grid $grid.precips_val2
-	}
-	if {![string length $report(precip1)]} {
-		grid remove $grid.precips_val1
-	} else {
-		grid $grid.precips_val1
-	}
-	if {![string length $report(precip0)]} {
-		grid remove $grid.precips $grid.precips_val0
-	} else {
-		grid $grid.precips $grid.precips_val0
+		set width 0 
+		set lines [split $report(precips) \n]
+		set height [llength $lines]
+		foreach line $lines {
+			set width [tcl::mathfunc::max [string length $line] $width]
+		}
+		incr width
+		$grid.precips_val insert 1.0 $report(precips)
+		$grid.precips_val configure -height $height -width $width
+		grid $grid.precips $grid.precips_val
 	}
 }
 
