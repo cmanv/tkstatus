@@ -340,17 +340,22 @@ proc ::metar::decode::decode_clouds { code alt type } {
 	variable const
 	variable current
 
-	if {![info exists current(clouds)]} {
-		set current(clouds) ""
-	}
 	set desc $cloud_codes($code)
 	set current(cloud_code) $code
 	set current(cloud_desc) $desc
 	if {[string length $alt]} {
 		set altitude [expr 100 * round([scan $alt %d] * $const(cm_feet) / 100)]
-		set current(clouds) "$desc, $altitude m\n$current(clouds)"
+		if {[info exists current(clouds)]} {
+			set current(clouds) "$current(clouds)\n$desc, $altitude m"
+		} else {
+			set current(clouds) "$desc, $altitude m"
+		}
 	} else {
-		set current(clouds) "$desc\n$current(clouds)"
+		if {[info exists current(clouds)]} {
+			set current(clouds) "$current(clouds)\n$desc"
+		} else {
+			set current(clouds) $desc
+		}
 	}
 	if {[string length $type]} {
 		set current(cloud_type) $cloud_types($type)
@@ -386,9 +391,6 @@ proc ::metar::decode::decode_precips { icode qcode pcodes } {
 		break
 	}
 
-	if {![info exists current(precips)]} {
-		set current(precips) ""
-	}
 	foreach code $codes {
 		set post1 ""
 		set post2 ""
@@ -423,7 +425,11 @@ proc ::metar::decode::decode_precips { icode qcode pcodes } {
 		} else {
 			set description [string map {_ {}} $description]
 		}
-		set current(precips) "$description\n$current(precips)"
+		if {[info exists current(precips)]} {
+			set current(precips) "$current(precips)\n$description"
+		} else {
+			set current(precips) $description
+		}
 	}
 }
 
@@ -621,11 +627,11 @@ proc ::metar::decode::get_report {} {
 		}
 		set report(clouds) ""
 		if {[info exists current(clouds)]} {
-			set report(clouds) [string trimright $current(clouds) \n]
+			set report(clouds) $current(clouds)
 		}
 		set report(precips) ""
 		if {[info exists current(precips)]} {
-			set report(precips) [string trimright $current(precips) \n]
+			set report(precips) $current(precips)
 		}
 		set report(weather_icon) [get_weather_icon]
 		set report(statusbar) "$report(weather_icon) $current(temp)°C"
