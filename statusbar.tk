@@ -300,7 +300,7 @@ font create emoji -family NotoColorEmoji -size 11
 
 wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
-wm title . "statusbar.tk version 20250123"
+wm title . "statusbar.tk version 20250125"
 
 statusbar::setup
 

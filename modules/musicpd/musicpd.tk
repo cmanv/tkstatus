@@ -48,6 +48,7 @@ proc musicpd::update {} {
 	variable musicpos
 	variable musicside
 	variable musicpd_active
+	variable activepopup
 	variable icons
 
 	set state [mpd::state]
@@ -65,6 +66,9 @@ proc musicpd::update {} {
 			pack forget $musicframe $musicsep
 			set musicpd_active 0
 		}
+	}
+	if { $musicpd_active && $activepopup } {
+		update_info
 	}
 }
 
@@ -101,9 +105,9 @@ proc musicpd::setup { widget position side } {
 	}
 	bind $musicframe <MouseWheel> {
 		if {%D < 0} {
-			if {![catch {exec mpc next}]} { musicpd::show_info }
+			if {![catch {exec mpc next}]} { musicpd::update_info }
 		} else {
-			if {![catch {exec mpc prev}]} { musicpd::show_info }
+			if {![catch {exec mpc prev}]} { musicpd::update_info }
 		}
 	}
 	mpd::connect $::env(MPD_HOST)
@@ -113,15 +117,9 @@ proc musicpd::setup { widget position side } {
 proc musicpd::show_info { } {
 	variable theme
 	variable activepopup
+	variable musictext
 
-	if {$activepopup} {
-		destroy .musicpopup
-	} else {
-		set activepopup 1
-	}
-
-	set mpdtitle [join [mpd::currenttitle]]
-
+	set activepopup 1
 	toplevel .musicpopup -background $theme(background) -class NowPlaying
 	wm title .musicpopup "Now Playing"
 	wm attributes .musicpopup -type dialog
@@ -129,15 +127,25 @@ proc musicpd::show_info { } {
 	set xpos [tcl::mathfunc::max [expr [winfo pointerx .] - 120] 1]
 	wm geometry .musicpopup +$xpos+27
 
+	set musictext [text .musicpopup.text -font normal -height 2 \
+			-borderwidth 1 -highlightthickness 0 ]
+	pack $musictext -side left -padx 5 -pady 3
+	update_info
+}
+
+# Update info on current track
+proc musicpd::update_info { } {
+	variable theme
+	variable musictext
+	set mpdtitle [join [mpd::currenttitle]]
+
 	set width 0
 	foreach line [split $mpdtitle \n] {
 		set width [tcl::mathfunc::max [string length $line] $width]
 	}
-	set musictext [text .musicpopup.text -font normal -width $width -height 2 \
-			-borderwidth 1 -highlightthickness 0 \
-			-bg $theme(background) -fg $theme(title)]
-	pack $musictext -side left -padx 5 -pady 3
+	$musictext delete 1.0 end
 	$musictext insert 1.0 $mpdtitle
+	$musictext configure -width $width -bg $theme(background) -fg $theme(title)
 }
 
 package provide musicpd 0.4
