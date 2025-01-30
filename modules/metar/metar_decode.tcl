@@ -640,7 +640,7 @@ proc ::metar::decode::get_report {} {
 			set report(summary) "$current(temp)°C, $current(cloud_desc)"
 		}
 		if {[string length $report(precips)]} {
-			set precipitation [lindex [lreverse [split $report(precips) \n]] 0]
+			set precipitation [lindex [split $report(precips) \n] 0]
 			set report(summary) "$current(temp)°C, $precipitation"
 		}
 
