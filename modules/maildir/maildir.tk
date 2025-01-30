@@ -187,9 +187,7 @@ proc maildir::newmail { account } {
 	toplevel .mailpopup -background $theme(background) -class Newmail
 	wm attributes .mailpopup -type dialog
 	wm overrideredirect .mailpopup 1
-	set xpos [tcl::mathfunc::max [expr [winfo pointerx .] - 180] 1]
-	wm geometry .mailpopup +$xpos+27
-#	wm geometry .mailpopup -10+26
+	wm geometry .mailpopup -10+27
 
 	pack [frame .mailpopup.$account -background $theme(background)] \
 		-expand 1 -fill x -side top
@@ -238,7 +236,6 @@ proc maildir::newmail { account } {
 			-height 1] -side top -fill x
 		incr count
 	}
-	wm title .mailpopup "$account - $count message(s) non lu(s)."
 }
 
 package provide maildir 0.1
