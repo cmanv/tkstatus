@@ -41,7 +41,7 @@ namespace eval ::metar::decode {
 		orage		\uf196 ]
 
 	array set intensities [ list \
-		{-} 	[list type pre m {léger_ } f {légère_ }] \
+		{-} 	[list type pre m {faible_ } f {faible_ }] \
 		{+} 	[list type pre m {fort_ } f {forte_ }] \
 		{VC} 	[list type post m { au voisinage} f { au voisinage}] ]
 
