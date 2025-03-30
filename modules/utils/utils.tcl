@@ -7,9 +7,10 @@ namespace eval utils {
 	}
 
 	proc read_file { filename } {
+		set content ""
 		set file [open $filename r]
-		set content [read $file]
-		close $file
+		catch {set content [chan read $file]}
+		chan close $file
 		return $content
 	}
 

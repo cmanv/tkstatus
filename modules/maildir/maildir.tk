@@ -200,7 +200,11 @@ proc maildir::newmail { account } {
 	set count 0
 	array set mailbox $mailboxes($account)
 	foreach file [glob -nocomplain -dir "$mailbox(path)" *] {
-		set tokens [mime::initialize -string [utils::read_file $file]]
+		set mesg [utils::read_file $file]]
+		if {[string length $mesg] < 2} {
+			continue
+		}
+		set tokens [mime::initialize -string $mesg]
 		set date [convert_date [lindex [mime::getheader $tokens Date] 0]]
 		set from [convert_header [lindex [mime::getheader $tokens From] 0]]
 		set subject [convert_header [lindex [mime::getheader $tokens Subject] 0]]
