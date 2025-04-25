@@ -9,7 +9,7 @@ package require SysInfo
 namespace eval statusbar {
 	variable xscreen 0
 	variable wmport 9981
-	variable themefile "$::env(HOME)/.cache/theme/default"
+	variable themefile "$::env(XDG_STATE_HOME)/theme/default"
 	variable currenttheme light
 	variable wintitle
 
