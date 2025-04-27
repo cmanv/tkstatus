@@ -19,5 +19,5 @@ add_subdirectory(modules/sysinfo)
 add_subdirectory(modules/utils)
 
 # Install files
-install(PROGRAMS ${statusbar_SOURCE_DIR}/statusbar.tk DESTINATION scripts)
+install(PROGRAMS ${statusbar_SOURCE_DIR}/statusbar.tk DESTINATION bin)
 install(PROGRAMS ${statusbar_SOURCE_DIR}/statusbar.sh DESTINATION bin)
