@@ -1,4 +1,5 @@
 #!/usr/bin/env wish9.0
+package require unix_sockets
 package require utils
 package require devices
 package require maildir
@@ -8,7 +9,8 @@ package require SysInfo
 
 namespace eval statusbar {
 	variable xscreen 0
-	variable wmport 9981
+	variable serversocket /tmp/.statusbar-socket
+	variable wmsocket /tmp/.zwm-socket
 	variable themefile "$::env(XDG_STATE_HOME)/theme/current"
 	variable currenttheme light
 	variable wintitle
@@ -122,17 +124,17 @@ namespace eval statusbar {
 	# Send a message to the window manager
 	proc wm_message { wmmessage } {
 		variable xscreen
-		variable wmport
+		variable wmsocket
 
-		if {[catch {set channel [socket localhost $wmport]} ]} {
-			puts stderr "Could not open socket on port $wmport!\n"
+		if {[catch {set channel [unix_sockets::connect $wmsocket]} ]} {
+			puts stderr "Could not open socket $wmsocket!\n"
 			return
 		}
 		puts $channel "$xscreen;$wmmessage"
 		close $channel
 	}
 
-	proc read_socket {channel} {
+	proc read_message {channel} {
 		variable currenttheme
 		variable desktops
 		variable mode
@@ -187,9 +189,9 @@ namespace eval statusbar {
 		}
 	}
 
-	proc server_accept {channel host port} {
-		fconfigure $channel -buffering none -blocking 0
-		fileevent $channel readable [list statusbar::read_socket $channel]
+	proc server_accept {channel} {
+		chan configure $channel -buffering none -blocking 0
+		chan event $channel readable [list statusbar::read_message $channel]
 	}
 
 	# Update the statusbar
@@ -300,9 +302,8 @@ font create emoji -family NotoColorEmoji -size 11
 
 wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
-wm title . "statusbar.tk version 20250125"
+wm title . "statusbar.tk version 20250507"
 
 statusbar::setup
-
-socket -server statusbar::server_accept -myaddr localhost 9995
+set listen [unix_sockets::listen $statusbar::serversocket statusbar::server_accept]
 vwait forever
