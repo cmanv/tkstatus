@@ -67,6 +67,6 @@ The theme is auto-selected based on the content of the file __~/.cache/theme/def
 
 The script uses some icons from the __remixicon__ unicode font to be displayed next to some devices names. Theses need to be adjusted if you're using a different unicode font.
 
-## TCP Socket
+## Unix domain socket
 
-The statusbar is listening to the tcp socket 9995 on localhost. It is able to receive messages from applications for various status changes instead of polling for them. For example a window manager can send messages for active window change, desktop change etc.. The theme can also be toggled in this way. This mechanism helps keeping the CPU usage at a very low level.
+The statusbar is listening to a UNIX domain socket. It is able to receive messages from applications for various status changes instead of polling for them. For example a window manager can send messages for active window change, desktop change etc.. The theme can also be toggled in this way. This mechanism helps keeping the CPU usage at a very low level.
