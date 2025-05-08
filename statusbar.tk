@@ -9,9 +9,9 @@ package require SysInfo
 
 namespace eval statusbar {
 	variable xscreen 0
-	variable serversocket /tmp/.statusbar-socket
-	variable wmsocket /tmp/.zwm-socket
-	variable themefile "$::env(XDG_STATE_HOME)/theme/current"
+	variable barsocket	"$::env(STATUSBAR_SOCKET)"
+	variable wmsocket	"$::env(WM_SOCKET)"
+	variable themefile 	"$::env(XDG_STATE_HOME)/theme/current"
 	variable currenttheme light
 	variable wintitle
 
@@ -305,5 +305,5 @@ wm geometry . "[winfo vrootwidth .]x26+0+0"
 wm title . "statusbar.tk version 20250507"
 
 statusbar::setup
-set listen [unix_sockets::listen $statusbar::serversocket statusbar::server_accept]
+set listen [unix_sockets::listen $statusbar::barsocket statusbar::server_accept]
 vwait forever
