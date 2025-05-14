@@ -9,8 +9,8 @@ package require SysInfo
 
 namespace eval statusbar {
 	variable xscreen 0
-	variable barsocket	"$::env(STATUSBAR_SOCKET)"
-	variable wmsocket	"$::env(WM_SOCKET)"
+	variable barsocket	"$::env(WM_CLIENT_SOCKET)"
+	variable wmsocket	"$::env(WM_SERVER_SOCKET)"
 	variable themefile 	"$::env(XDG_STATE_HOME)/theme/current"
 	variable currenttheme light
 	variable wintitle

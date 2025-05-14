@@ -8,7 +8,7 @@ namespace eval devices {
 	proc dark {} {
 		set theme [ list \
 			background	{#3b4252} \
-			devices		SteelBlue2 \
+			devices		PaleGreen3 \
 			separator	OliveDrab ]
 	}
 
