@@ -121,7 +121,7 @@ proc ::metar::create_header { header } {
 		-fg $theme(text1) -textvar metar::report(date)]
 	pack [frame $header.values.status -background $theme(background)] -side top -anchor w
 	pack [label $header.values.status.text -font fnormal -bg $theme(background) \
-		-fg $theme(text1) -textvar metar::report(request_status)]
+		-fg $theme(text1) -textvar metar::report(request_message)]
 }
 
 proc ::metar::create_summary { summary } {
@@ -259,35 +259,39 @@ proc ::metar::update_grid { grid } {
 	}
 
 	$grid.clouds_val delete 1.0 end
-	if {![string length $report(clouds)]} {
-		grid remove $grid.clouds $grid.clouds_val
-	} else {
-		set width 0
-		set lines [split $report(clouds) \n]
-		set height [llength $lines]
-		foreach line $lines {
-			set width [tcl::mathfunc::max [string length $line] $width]
+	if {[info exists report(clouds)]} {
+		if {![string length $report(clouds)]} {
+			grid remove $grid.clouds $grid.clouds_val
+		} else {
+			set width 0
+			set lines [split $report(clouds) \n]
+			set height [llength $lines]
+			foreach line $lines {
+				set width [tcl::mathfunc::max [string length $line] $width]
+			}
+			incr width
+			$grid.clouds_val insert 1.0 $report(clouds)
+			$grid.clouds_val configure -height $height -width $width
+			grid $grid.clouds $grid.clouds_val
 		}
-		incr width
-		$grid.clouds_val insert 1.0 $report(clouds)
-		$grid.clouds_val configure -height $height -width $width
-		grid $grid.clouds $grid.clouds_val
 	}
 
 	$grid.precips_val delete 1.0 end
-	if {![string length $report(precips)]} {
-		grid remove $grid.precips $grid.precips_val
-	} else {
-		set width 0 
-		set lines [split $report(precips) \n]
-		set height [llength $lines]
-		foreach line $lines {
-			set width [tcl::mathfunc::max [string length $line] $width]
+	if {[info exists report(precips)]} {
+		if {![string length $report(precips)]} {
+			grid remove $grid.precips $grid.precips_val
+		} else {
+			set width 0
+			set lines [split $report(precips) \n]
+			set height [llength $lines]
+			foreach line $lines {
+				set width [tcl::mathfunc::max [string length $line] $width]
+			}
+			incr width
+			$grid.precips_val insert 1.0 $report(precips)
+			$grid.precips_val configure -height $height -width $width
+			grid $grid.precips $grid.precips_val
 		}
-		incr width
-		$grid.precips_val insert 1.0 $report(precips)
-		$grid.precips_val configure -height $height -width $width
-		grid $grid.precips $grid.precips_val
 	}
 }
 

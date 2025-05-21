@@ -644,10 +644,12 @@ proc ::metar::decode::get_report {} {
 			set report(summary) "$current(temp)°C, $precipitation"
 		}
 
-		set report(request_status) "Requête complétée à $currenttime"
+		set report(request_message) "Requête complétée à $currenttime"
+		set report(request_status) "OK"
 	} else {
 		set report(statusbar) \ueba4
-		set report(request_status) "Requête échouée à $currenttime"
+		set report(request_message) "Requête échouée à $currenttime"
+		set report(request_status) "KO"
 	}
 
 	return [array get report]
