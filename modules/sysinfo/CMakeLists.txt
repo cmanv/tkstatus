@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.20)
 # Project identification
 project ("sysinfo")
 set(PACKAGE_NAME "sysinfo")
-set(PACKAGE_VERSION "0.5")
+set(PACKAGE_VERSION "0.6")
 set(PACKAGE_PROVIDE "SysInfo")
 set(PACKAGE_INDEX "pkgIndex.tcl")
 set(PACKAGE_LIB ${PACKAGE_NAME}${PACKAGE_VERSION})

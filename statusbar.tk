@@ -22,7 +22,7 @@ namespace eval statusbar {
 
 	# List of static items in the statusbar
 	set baritems [ list mode modesep desktop desksep loadavg usedmem \
-			netin netout infosep title datetime \
+			arcsize netin infosep title datetime \
 			datesep metar metarsep mixer mixersep ]
 
 	# Array describing the static items in the bar
@@ -33,8 +33,8 @@ namespace eval statusbar {
 		desksep [ list type vseparator side left ] \
 		loadavg [ list type var side left text statusbar::loadavg font normal ] \
 		usedmem [ list type var side left text statusbar::usedmem font normal ] \
+		arcsize [ list type var side left text statusbar::arcsize font normal ] \
 		netin [ list type var side left text statusbar::netin font normal ] \
-		netout [ list type var side left text statusbar::netout font normal ] \
 		infosep [ list type vseparator side left ] \
 		title [ list type text side left height 1 font normal ] \
 		datetime [ list type var side right text statusbar::datetime font normal ] \
@@ -46,33 +46,35 @@ namespace eval statusbar {
 
 	proc dark {} {
 		set theme [ list \
+			arcsize		LightGray \
 			background	{#3b4252} \
 			datetime	LightGray \
 			desktop		LightGray \
-			loadavg		PaleGreen3 \
+			loadavg		CadetBlue3 \
 			metar		Gold \
 			mixer		PaleGreen3 \
 			mode		LightGray \
-			netin		Gold \
+			netin		PaleGreen3 \
 			netout		CadetBlue3 \
 			separator	Gray \
-			usedmem		PaleGreen3 \
+			usedmem		Gold \
 			title		LightGray ]
 	}
 
 	proc light {} {
 		set theme [ list \
+			arcsize		black \
 			background	gray90 \
 			datetime	black \
 			desktop		DarkBlue \
-			loadavg		black \
+			loadavg		purple \
 			metar		DarkGreen \
 			mixer		black \
 			mode		DarkBlue \
 			netin		DarkGreen \
 			netout		purple \
 			separator	black \
-			usedmem		black \
+			usedmem		DarkBlue \
 			title		black ]
 	}
 
@@ -199,16 +201,24 @@ namespace eval statusbar {
 		variable icons
 		variable loadavg
 		variable usedmem
+		variable arcsize
 		variable netin
-		variable netout
 		variable datetime
 		variable mixer
 
-		set loadavg "[sysinfo::getloadavg] "
-		set usedmem "[join [sysinfo::getusedmemswap]] "
+		set loadavg "C: [sysinfo::getloadavg] "
+		set memstats [sysinfo::getmemstats]
+		set usedmem "M: [join [lindex $memstats 0]] "
+		set swap [join [lindex $memstats 1]]
+		if {[string length $swap]} {
+			set usedmem "$usedmem($swap) "
+		}
+
+		set arcstats [sysinfo::getarcstats]
+		set arcsize "ARC: [join [lindex $arcstats 0]] "
+
 		set netstats [sysinfo::getnetstats em0]
-		set netin "$icons(down)[join [lindex $netstats 0]]"
-		set netout "$icons(up)[join [lindex $netstats 1]]"
+		set netin "$icons(down)[join [lindex $netstats 0]] "
 
 		set datetime [clock format [clock seconds] \
 			-locale $::env(LANG) -format {%d %b %H:%M }]

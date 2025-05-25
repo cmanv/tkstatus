@@ -27,8 +27,14 @@ Sysinfo_Init(Tcl_Interp *interp)
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"sysinfo::getusedmemswap",
-				SysInfo_GetUsedMemSwapObjCmd,
+				"sysinfo::getmemstats",
+				SysInfo_GetMemStatsObjCmd,
+				(ClientData) NULL,
+				(Tcl_CmdDeleteProc*) NULL);
+
+	Tcl_CreateObjCommand(	interp,
+				"sysinfo::getarcstats",
+				SysInfo_GetArcStatsObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);
 
