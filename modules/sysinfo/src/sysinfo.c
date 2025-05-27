@@ -45,7 +45,7 @@ int SysInfo_GetMemStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 
 	char mem_unit[3];
 	strcpy(mem_unit, "Mo");
-	if (memused>1024) { memused /= 1024; strcpy(mem_unit, "Go"); }
+	if (memused>=1024) { memused /= 1024; strcpy(mem_unit, "Go"); }
 
 	char mem_fmt[8];
 	strcpy(mem_fmt, "%.0f %s");
@@ -78,7 +78,7 @@ int SysInfo_GetMemStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 
 	char swap_unit[3];
 	strcpy(swap_unit, "Mo");
-	if (swapused>1024) { swapused /= 1024; strcpy(swap_unit, "Go"); }
+	if (swapused>=1024) { swapused /= 1024; strcpy(swap_unit, "Go"); }
 
 	char swap_fmt[8];
 	strcpy(swap_fmt, "%.0f %s");
@@ -145,7 +145,7 @@ int SysInfo_GetArcStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 
 	char arc_unit[3];
 	strcpy(arc_unit, "Mo");
-	if (arcsize>1024) { arcsize /= 1024; strcpy(arc_unit, "Go"); }
+	if (arcsize>=1024) { arcsize /= 1024; strcpy(arc_unit, "Go"); }
 
 	char arc_fmt[8];
 	strcpy(arc_fmt, "%.0f %s");
@@ -162,7 +162,7 @@ int SysInfo_GetArcStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 
 	char mfu_unit[3];
 	strcpy(mfu_unit, "Mo");
-	if (mfusize>1024) { mfusize /= 1024; strcpy(mfu_unit, "Go"); }
+	if (mfusize>=1024) { mfusize /= 1024; strcpy(mfu_unit, "Go"); }
 
 	char mfu_fmt[8];
 	strcpy(mfu_fmt, "%.0f %s");
@@ -179,7 +179,7 @@ int SysInfo_GetArcStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 
 	char mru_unit[3];
 	strcpy(mru_unit, "Mo");
-	if (mrusize>1024) { mrusize /= 1024; strcpy(mru_unit, "Go"); }
+	if (mrusize>=1024) { mrusize /= 1024; strcpy(mru_unit, "Go"); }
 
 	char mru_fmt[8];
 	strcpy(mru_fmt, "%.0f %s");
@@ -293,10 +293,10 @@ int SysInfo_GetNetStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 	char iunit[3], ounit[3];
 	strcpy(iunit, "Ko");
 	strcpy(ounit, "Ko");
-	if (inbound>1024) { inbound /= 1024; strcpy(iunit, "Mo"); }
-	if (outbound>1024) { outbound /= 1024; strcpy(ounit, "Mo"); }
-	if (inbound>1024) { inbound /= 1024; strcpy(iunit, "Go"); }
-	if (outbound>1024) { outbound /= 1024; strcpy(ounit, "Go"); }
+	if (inbound>=1024) { inbound /= 1024; strcpy(iunit, "Mo"); }
+	if (outbound>=1024) { outbound /= 1024; strcpy(ounit, "Mo"); }
+	if (inbound>=1024) { inbound /= 1024; strcpy(iunit, "Go"); }
+	if (outbound>=1024) { outbound /= 1024; strcpy(ounit, "Go"); }
 
 	char ifmt[8], ofmt[8];
 	strcpy(ifmt, "%.0f %s");
