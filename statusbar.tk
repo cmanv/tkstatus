@@ -163,14 +163,18 @@ namespace eval statusbar {
 			return
 		}
 		if {$key == "window_active"} {
+			$wintitle configure -state normal
 			$wintitle delete 1.0 end
 			$wintitle configure -width $length
 			$wintitle insert 1.0 $value
 			foreach i [$wintitle search -all -regexp {[\u2000-\u28ff\U1f000-\U1faff]} 1.0 end] {
 				$wintitle tag add emoji $i
 			}
+			$wintitle configure -state disabled
 		} elseif {$key == "no_window_active"} {
+			$wintitle configure -state normal
 			$wintitle delete 1.0 end
+			$wintitle configure -state disabled
 		} elseif {$key == "desktop_list"} {
 			set desktops $value
 		} elseif {$key == "desktop_mode"} {
@@ -253,6 +257,7 @@ namespace eval statusbar {
 						-highlightthickness 0 -wrap word]
 					$wintitle tag configure emoji -font emoji
 					pack $wintitle -side $widget(side) -expand 1
+					$wintitle configure -state disabled
 				}
 				var {
 					pack [label .bar.$item -font $widget(font) \
