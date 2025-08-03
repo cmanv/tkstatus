@@ -9,8 +9,8 @@ package require SysInfo
 
 namespace eval statusbar {
 	variable xscreen 0
-	variable barsocket	"$::env(WM_CLIENT_SOCKET)"
-	variable wmsocket	"$::env(WM_SERVER_SOCKET)"
+	variable barsocket	"$::env(BAR_SOCKET)"
+	variable wmsocket	"$::env(XDG_CACHE_HOME)/zwm/socket"
 	variable themefile 	"$::env(XDG_STATE_HOME)/theme/current"
 	variable currenttheme light
 	variable wintitle
@@ -46,18 +46,18 @@ namespace eval statusbar {
 
 	proc dark {} {
 		set theme [ list \
-			arcsize		LightGray \
+			arcsize		CadetBlue3 \
 			background	{#3b4252} \
 			datetime	LightGray \
 			desktop		LightGray \
-			loadavg		CadetBlue3 \
+			loadavg		Gold \
 			metar		Gold \
 			mixer		PaleGreen3 \
-			mode		LightGray \
-			netin		PaleGreen3 \
+			mode		CadetBlue3 \
+			netin		LightGray \
 			netout		CadetBlue3 \
 			separator	Gray \
-			usedmem		Gold \
+			usedmem		PaleGreen3 \
 			title		LightGray ]
 	}
 
@@ -270,13 +270,13 @@ namespace eval statusbar {
 			}
 		}
 
-		bind .bar.mode <1> { statusbar::wm_message {PrevMode} }
-		bind .bar.mode <3> { statusbar::wm_message {NextMode} }
+		bind .bar.mode <1> { statusbar::wm_message {desktop-mode-prev} }
+		bind .bar.mode <3> { statusbar::wm_message {desktop-mode-next} }
 		bind .bar.desktop <MouseWheel> {
 			if {%D < 0} {
-				statusbar::wm_message {PrevDesktop}
+				statusbar::wm_message {desktop-next}
 			} else {
-				statusbar::wm_message {NextDesktop}
+				statusbar::wm_message {desktop-prev}
 			}
 		}
 		bind .bar.loadavg <1> { exec xterm +sb -class top -e top & }
@@ -317,7 +317,7 @@ font create emoji -family NotoColorEmoji -size 11
 
 wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
-wm title . "statusbar.tk version 20250507"
+wm title . "statusbar.tk version 20250803"
 
 statusbar::setup
 set listen [unix_sockets::listen $statusbar::barsocket statusbar::server_accept]
