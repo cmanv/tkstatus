@@ -270,13 +270,13 @@ namespace eval statusbar {
 			}
 		}
 
-		bind .bar.mode <1> { statusbar::wm_message {desktop-mode-prev} }
-		bind .bar.mode <3> { statusbar::wm_message {desktop-mode-next} }
+		bind .bar.mode <1> { statusbar::wm_message "desktop-mode-prev" }
+		bind .bar.mode <3> { statusbar::wm_message "desktop-mode-next" }
 		bind .bar.desktop <MouseWheel> {
 			if {%D < 0} {
-				statusbar::wm_message {desktop-next}
+				statusbar::wm_message "desktop-next"
 			} else {
-				statusbar::wm_message {desktop-prev}
+				statusbar::wm_message "desktop-prev"
 			}
 		}
 		bind .bar.loadavg <1> { exec xterm +sb -class top -e top & }
