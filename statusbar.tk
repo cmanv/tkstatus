@@ -215,7 +215,7 @@ namespace eval statusbar {
 		set usedmem "M: [join [lindex $memstats 0]] "
 		set swap [join [lindex $memstats 1]]
 		if {[string length $swap]} {
-			set usedmem "$usedmem($swap) "
+			set usedmem "$usedmem\($swap\) "
 		}
 
 		set arcstats [sysinfo::getarcstats]
