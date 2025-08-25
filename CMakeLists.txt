@@ -1,9 +1,9 @@
 cmake_minimum_required (VERSION 3.20)
 
 # Project identification
-project ("statusbar")
-set(PACKAGE_NAME "statusbar")
-set(PACKAGE_VERSION "20250507")
+project ("zstatus")
+set(PACKAGE_NAME "zstatus")
+set(PACKAGE_VERSION "20250825")
 message (STATUS "*** Building ${PACKAGE_NAME} ${PACKAGE_VERSION} ***")
 
 #find_package(TCL)
@@ -20,5 +20,5 @@ add_subdirectory(modules/sysinfo)
 add_subdirectory(modules/utils)
 
 # Install files
-install(PROGRAMS ${statusbar_SOURCE_DIR}/statusbar.tk DESTINATION bin)
-install(PROGRAMS ${statusbar_SOURCE_DIR}/statusbar.sh DESTINATION bin)
+install(PROGRAMS ${zstatus_SOURCE_DIR}/zstatus.tk DESTINATION bin)
+install(PROGRAMS ${zstatus_SOURCE_DIR}/zstatus.sh DESTINATION bin)

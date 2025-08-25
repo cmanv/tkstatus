@@ -7,7 +7,7 @@ package require metar
 package require musicpd
 package require SysInfo
 
-namespace eval statusbar {
+namespace eval zstatus {
 	variable xscreen 0
 	variable barsocket	"$::env(BAR_SOCKET)"
 	variable wmsocket	"$::env(XDG_CACHE_HOME)/zwm/socket"
@@ -25,25 +25,25 @@ namespace eval statusbar {
 				HTiled	H \
 				Stacked	S ]
 
-	# List of static items in the statusbar
-	set baritems [ list deskmode lsep desklist lsep \
+	# Ordered list of widgets in the statusbar
+	set barwidgets [ list deskmode lsep desklist lsep \
 			deskname lsep loadavg usedmem \
 			arcsize netin lsep title datetime \
 			rsep metar rsep mixer rsep ]
 
-	# Array describing the static items in the bar
+	# Array describing the widgets in the statusbar
 	array set widgetarray [ list \
-	    deskmode [ list type var side left text statusbar::deskmode font normal ] \
-	    deskname [ list type var side left text statusbar::deskname font normal ] \
-	    desklist [ list type var side left text statusbar::desklist font normal ] \
-	    loadavg [ list type var side left text statusbar::loadavg font normal ] \
-	    usedmem [ list type var side left text statusbar::usedmem font normal ] \
-	    arcsize [ list type var side left text statusbar::arcsize font normal ] \
-	    netin [ list type var side left text statusbar::netin font normal ] \
+	    deskmode [ list type var side left text zstatus::deskmode font normal ] \
+	    deskname [ list type var side left text zstatus::deskname font normal ] \
+	    desklist [ list type var side left text zstatus::desklist font normal ] \
+	    loadavg [ list type var side left text zstatus::loadavg font normal ] \
+	    usedmem [ list type var side left text zstatus::usedmem font normal ] \
+	    arcsize [ list type var side left text zstatus::arcsize font normal ] \
+	    netin [ list type var side left text zstatus::netin font normal ] \
 	    title [ list type text side left height 1 font normal ] \
-	    datetime [ list type var side right text statusbar::datetime font normal ] \
+	    datetime [ list type var side right text zstatus::datetime font normal ] \
 	    metar [ list type var side right text metar::report(statusbar) font normal ] \
-	    mixer [ list type var side right text statusbar::mixer font normal ] \
+	    mixer [ list type var side right text zstatus::mixer font normal ] \
 	    rsep [ list type vseparator side right ] \
 	    lsep [ list type vseparator side left ] ]
 
@@ -86,7 +86,7 @@ namespace eval statusbar {
 	# Set the theme on the alements of the bar
 	proc set_theme { theme } {
 		variable currenttheme
-		variable baritems
+		variable barwidgets
 		variable widgetarray
 
 		switch $theme {
@@ -105,7 +105,7 @@ namespace eval statusbar {
 
 		.bar configure -background $color(background)
 		set count 0
-		foreach item $baritems {
+		foreach item $barwidgets {
 			array set widget $widgetarray($item)
 			switch $widget(type) {
 				vseparator {
@@ -195,7 +195,7 @@ namespace eval statusbar {
 		} elseif {$key == "desktop_name"} {
 			set deskname $value
 		} elseif {$key == "mixer_volume"} {
-			statusbar::update_mixer
+			zstatus::update_mixer
 		} elseif { $key == "toggle_metar_window" } {
 			metar::toggle_window
 		} elseif { $key == "update_metar_report" } {
@@ -212,7 +212,7 @@ namespace eval statusbar {
 
 	proc server_accept {channel} {
 		chan configure $channel -buffering none -blocking 0
-		chan event $channel readable [list statusbar::read_message $channel]
+		chan event $channel readable [list zstatus::read_message $channel]
 	}
 
 	# Update the statusbar
@@ -251,7 +251,7 @@ namespace eval statusbar {
 
 	# Setup the static items in the statusbar
 	proc setup {} {
-		variable baritems
+		variable barwidgets
 		variable currenttheme
 		variable themefile
 		variable widgetarray
@@ -260,7 +260,7 @@ namespace eval statusbar {
 		frame .bar
 		pack .bar -fill both -expand 1
 		set count 0
-		foreach item $baritems {
+		foreach item $barwidgets {
 			array set widget $widgetarray($item)
 			switch $widget(type) {
 				label {
@@ -287,13 +287,13 @@ namespace eval statusbar {
 			}
 		}
 
-		bind .bar.deskmode <1> { statusbar::wm_message "desktop-mode-prev" }
-		bind .bar.deskmode <3> { statusbar::wm_message "desktop-mode-next" }
+		bind .bar.deskmode <1> { zstatus::wm_message "desktop-mode-prev" }
+		bind .bar.deskmode <3> { zstatus::wm_message "desktop-mode-next" }
 		bind .bar.desklist <MouseWheel> {
 			if {%D < 0} {
-				statusbar::wm_message "desktop-next"
+				zstatus::wm_message "desktop-next"
 			} else {
-				statusbar::wm_message "desktop-prev"
+				zstatus::wm_message "desktop-prev"
 			}
 		}
 		bind .bar.loadavg <1> { exec xterm +sb -class top -e top & }
@@ -303,7 +303,7 @@ namespace eval statusbar {
 			} else {
 				exec mixer vol=+0.05
 			}
-			statusbar::update_mixer
+			zstatus::update_mixer
 		}
 		bind .bar.metar <1> { metar::toggle_window }
 		bind .bar.metar <2> { metar::update }
@@ -319,14 +319,14 @@ namespace eval statusbar {
 		}
 		metar::setup $currenttheme
 
-		utils::every 2000 statusbar::update
+		utils::every 2000 zstatus::update
 	}
 }
 
 set lang fr
 set timezone :America/Montreal
 
-tk appname "statusbar"
+tk appname "zstatus"
 font create normal -family NotoSans -size 11
 font create italic -family NotoSans -size 11 -slant italic
 font create bold -family NotoSans -size 11 -weight bold
@@ -334,8 +334,8 @@ font create emoji -family NotoColorEmoji -size 11
 
 wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
-wm title . "statusbar.tk version 20250803"
+wm title . "zstatus version 20250825"
 
-statusbar::setup
-set listen [unix_sockets::listen $statusbar::barsocket statusbar::server_accept]
+zstatus::setup
+set listen [unix_sockets::listen $zstatus::barsocket zstatus::server_accept]
 vwait forever
