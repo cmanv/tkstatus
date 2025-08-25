@@ -21,39 +21,43 @@ namespace eval statusbar {
 				mixer	\uf229 ]
 
 	# List of static items in the statusbar
-	set baritems [ list mode modesep desktop desksep loadavg usedmem \
+	set baritems [ list deskmode deskmodesep deskname desknamesep \
+			desklist desklistsep loadavg usedmem \
 			arcsize netin infosep title datetime \
 			datesep metar metarsep mixer mixersep ]
 
 	# Array describing the static items in the bar
 	array set widgetarray [ list \
-		mode [ list type var side left text statusbar::mode font normal ] \
-		modesep [ list type vseparator side left ] \
-		desktop [ list type var side left text statusbar::desktops font normal ] \
-		desksep [ list type vseparator side left ] \
-		loadavg [ list type var side left text statusbar::loadavg font normal ] \
-		usedmem [ list type var side left text statusbar::usedmem font normal ] \
-		arcsize [ list type var side left text statusbar::arcsize font normal ] \
-		netin [ list type var side left text statusbar::netin font normal ] \
-		infosep [ list type vseparator side left ] \
-		title [ list type text side left height 1 font normal ] \
-		datetime [ list type var side right text statusbar::datetime font normal ] \
-		datesep [ list type vseparator side right ] \
-		metar [ list type var side right text metar::report(statusbar) font normal ] \
-		metarsep [ list type vseparator side right ] \
-		mixer [ list type var side right text statusbar::mixer font normal ] \
-		mixersep [ list type vseparator side right ] ]
+	    deskmode [ list type var side left text statusbar::deskmode font normal ] \
+	    deskmodesep [ list type vseparator side left ] \
+	    deskname [ list type var side left text statusbar::deskname font normal ] \
+	    desknamesep [ list type vseparator side left ] \
+	    desklist [ list type var side left text statusbar::desklist font normal ] \
+	    desklistsep [ list type vseparator side left ] \
+	    loadavg [ list type var side left text statusbar::loadavg font normal ] \
+	    usedmem [ list type var side left text statusbar::usedmem font normal ] \
+	    arcsize [ list type var side left text statusbar::arcsize font normal ] \
+	    netin [ list type var side left text statusbar::netin font normal ] \
+	    infosep [ list type vseparator side left ] \
+	    title [ list type text side left height 1 font normal ] \
+	    datetime [ list type var side right text statusbar::datetime font normal ] \
+	    datesep [ list type vseparator side right ] \
+	    metar [ list type var side right text metar::report(statusbar) font normal ] \
+	    metarsep [ list type vseparator side right ] \
+	    mixer [ list type var side right text statusbar::mixer font normal ] \
+	    mixersep [ list type vseparator side right ] ]
 
 	proc dark {} {
 		set theme [ list \
 			arcsize		CadetBlue3 \
 			background	{#3b4252} \
 			datetime	LightGray \
-			desktop		LightGray \
+			desklist	LightGray \
+			deskmode	CadetBlue3 \
+			deskname	PaleGreen3 \
 			loadavg		Gold \
 			metar		Gold \
 			mixer		PaleGreen3 \
-			mode		CadetBlue3 \
 			netin		LightGray \
 			netout		CadetBlue3 \
 			separator	Gray \
@@ -66,11 +70,12 @@ namespace eval statusbar {
 			arcsize		black \
 			background	gray90 \
 			datetime	black \
-			desktop		DarkBlue \
+			desklist	DarkBlue \
+			deskmode	DarkBlue \
+			deskname	black \
 			loadavg		purple \
 			metar		DarkGreen \
 			mixer		black \
-			mode		DarkBlue \
 			netin		DarkGreen \
 			netout		purple \
 			separator	black \
@@ -138,8 +143,9 @@ namespace eval statusbar {
 
 	proc read_message {channel} {
 		variable currenttheme
-		variable desktops
-		variable mode
+		variable desklist
+		variable deskname
+		variable deskmode
 		variable wintitle
 		variable metar
 
@@ -176,9 +182,11 @@ namespace eval statusbar {
 			$wintitle delete 1.0 end
 			$wintitle configure -state disabled
 		} elseif {$key == "desktop_list"} {
-			set desktops $value
+			set desklist $value
 		} elseif {$key == "desktop_mode"} {
-			set mode " $value"
+			set deskmode " $value"
+		} elseif {$key == "desktop_name"} {
+			set deskname $value
 		} elseif {$key == "mixer_volume"} {
 			statusbar::update_mixer
 		} elseif { $key == "toggle_metar_window" } {
@@ -270,9 +278,9 @@ namespace eval statusbar {
 			}
 		}
 
-		bind .bar.mode <1> { statusbar::wm_message "desktop-mode-prev" }
-		bind .bar.mode <3> { statusbar::wm_message "desktop-mode-next" }
-		bind .bar.desktop <MouseWheel> {
+		bind .bar.deskmode <1> { statusbar::wm_message "desktop-mode-prev" }
+		bind .bar.deskmode <3> { statusbar::wm_message "desktop-mode-next" }
+		bind .bar.desklist <MouseWheel> {
 			if {%D < 0} {
 				statusbar::wm_message "desktop-next"
 			} else {
