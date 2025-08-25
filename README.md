@@ -1,5 +1,5 @@
-# tkstatus
-Status bar for minimalist X11 window managers written in tcl/tk and C.
+# zstatus
+Status bar for X11 written in tcl/tk and C.
 
 ## Introduction
 This is a personal project specifically designed to run on my FreeBSD desktop with the zwm window manager. The main script uses tcl/tk 9.0.
@@ -10,10 +10,10 @@ For my own use, I've written these 4 small packages to provide all the functionn
 The resulting shared libraries should be installed under **TCLLIBPATH**. The path of the relevant external libraries such as __libmpdclient.so__ should be defined in **LD_PRELOAD**. In my case, this is done in the calling shell script __statusbar.sh__.
 
 ## Files
-### statusbar.sh
+### zstatus.sh
 This shell script should be called at startup in __.xinitrc__ or __.xsession__.
 
-### statusbar.tk
+### zstatus.tk
 This is the main script. It's highly likely that you'll want to modify it for your own system.
 
 ## Modules
