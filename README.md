@@ -1,8 +1,8 @@
 # zstatus
-Status bar for X11 written in tcl/tk and C.
+Status bar for ZWM written in tcl/tk and C.
 
 ## Introduction
-This is a personal project specifically designed to run on my FreeBSD desktop with the zwm window manager. The main script uses tcl/tk 9.0.
+This is a personal project designed for a FreeBSD desktop with the zwm window manager. The main script uses tcl/tk 9.0.
 
 The tcl language lacks the functions to access system information. But this is circumvented by using packages which are collections of C functions.
 For my own use, I've written these 4 small packages to provide all the functionnality I need for a status bar. These packages can be build with cmake and the relevant libraries and header files installed.
