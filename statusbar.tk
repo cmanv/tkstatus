@@ -16,36 +16,36 @@ namespace eval statusbar {
 	variable wintitle
 
 	# Unicode codes from remixicon
-	array set icons [ list	down 	\uea4a \
-				up 	\uea74 \
+	array set icons [ list	down	\uea4a \
+				up	\uea74 \
 				mixer	\uf229 ]
 
+	array set modes [ list  Monocle	M \
+				VTiled	V \
+				HTiled	H \
+				Stacked	S ]
+
 	# List of static items in the statusbar
-	set baritems [ list deskmode deskmodesep deskname desknamesep \
-			desklist desklistsep loadavg usedmem \
-			arcsize netin infosep title datetime \
-			datesep metar metarsep mixer mixersep ]
+	set baritems [ list deskmode lsep desklist lsep \
+			deskname lsep loadavg usedmem \
+			arcsize netin lsep title datetime \
+			rsep metar rsep mixer rsep ]
 
 	# Array describing the static items in the bar
 	array set widgetarray [ list \
 	    deskmode [ list type var side left text statusbar::deskmode font normal ] \
-	    deskmodesep [ list type vseparator side left ] \
 	    deskname [ list type var side left text statusbar::deskname font normal ] \
-	    desknamesep [ list type vseparator side left ] \
 	    desklist [ list type var side left text statusbar::desklist font normal ] \
-	    desklistsep [ list type vseparator side left ] \
 	    loadavg [ list type var side left text statusbar::loadavg font normal ] \
 	    usedmem [ list type var side left text statusbar::usedmem font normal ] \
 	    arcsize [ list type var side left text statusbar::arcsize font normal ] \
 	    netin [ list type var side left text statusbar::netin font normal ] \
-	    infosep [ list type vseparator side left ] \
 	    title [ list type text side left height 1 font normal ] \
 	    datetime [ list type var side right text statusbar::datetime font normal ] \
-	    datesep [ list type vseparator side right ] \
 	    metar [ list type var side right text metar::report(statusbar) font normal ] \
-	    metarsep [ list type vseparator side right ] \
 	    mixer [ list type var side right text statusbar::mixer font normal ] \
-	    mixersep [ list type vseparator side right ] ]
+	    rsep [ list type vseparator side right ] \
+	    lsep [ list type vseparator side left ] ]
 
 	proc dark {} {
 		set theme [ list \
@@ -104,11 +104,13 @@ namespace eval statusbar {
 		}
 
 		.bar configure -background $color(background)
+		set count 0
 		foreach item $baritems {
 			array set widget $widgetarray($item)
 			switch $widget(type) {
 				vseparator {
-					.bar.$item configure -background $color(separator)
+					incr count
+					.bar.sep$count configure -background $color(separator)
 				}
 				default {
 					.bar.$item configure -bg $color(background) -fg $color($item)
@@ -148,6 +150,7 @@ namespace eval statusbar {
 		variable deskmode
 		variable wintitle
 		variable metar
+		variable modes
 
 		if {[gets $channel line] < 0} {
 			close $channel
@@ -184,7 +187,11 @@ namespace eval statusbar {
 		} elseif {$key == "desktop_list"} {
 			set desklist $value
 		} elseif {$key == "desktop_mode"} {
-			set deskmode " $value"
+			if [info exists modes($value)] {
+				set deskmode " $modes($value)"
+			} else {
+				set deskmode " $value"
+			}
 		} elseif {$key == "desktop_name"} {
 			set deskname $value
 		} elseif {$key == "mixer_volume"} {
@@ -252,6 +259,7 @@ namespace eval statusbar {
 
 		frame .bar
 		pack .bar -fill both -expand 1
+		set count 0
 		foreach item $baritems {
 			array set widget $widgetarray($item)
 			switch $widget(type) {
@@ -272,8 +280,9 @@ namespace eval statusbar {
 						-textvar $widget(text)] -side $widget(side)
 				}
 				vseparator {
-					pack [frame .bar.$item -width 1] -fill y -padx 5 \
-						-side $widget(side)
+					incr count
+					pack [frame .bar.sep$count -width 1] \
+						-fill y -padx 5 -side $widget(side)
 				}
 			}
 		}
