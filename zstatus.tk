@@ -25,30 +25,33 @@ namespace eval zstatus {
 				Stacked	S ]
 
 	# Ordered list of widgets in the statusbar
-	set widgetlist [ list deskmode desklist \
-			deskname loadavg usedmem \
-			arcsize netin wintitle datetime \
-			metar mixer ]
+	set widgetlist [ list deskmode desklist deskname\
+			loadavg usedmem arcsize netin devices\
+			wintitle datetime metar maildir mixer musicpd ]
 
 	# Array describing the widgets in the statusbar
 	array set widgetarray [ list \
 	    deskmode [ list type var side left text zstatus::deskmode \
-			font normal separator 1]\
+			font normal sep 1]\
 	    desklist [ list type var side left text zstatus::desklist \
-			font normal separator 1]\
+			font normal sep 1]\
 	    deskname [ list type var side left text zstatus::deskname \
-			font normal separator 1]\
-	    loadavg [ list type var side left text zstatus::loadavg font normal ]\
-	    usedmem [ list type var side left text zstatus::usedmem font normal ]\
-	    arcsize [ list type var side left text zstatus::arcsize font normal ]\
-	    netin [ list type var side left text zstatus::netin font normal separator 1]\
-	    wintitle [ list type text ref wintitle side left font normal ]\
+			font normal sep 1]\
+	    loadavg [ list type var side left text zstatus::loadavg font normal sep 0]\
+	    usedmem [ list type var side left text zstatus::usedmem font normal sep 0]\
+	    arcsize [ list type var side left text zstatus::arcsize font normal sep 0]\
+	    netout [ list type var side left text zstatus::netout font normal sep 0]\
+	    netin [ list type var side left text zstatus::netin font normal sep 1]\
+	    wintitle [ list type text ref wintitle side left font normal sep 0]\
 	    datetime [ list type var side right text zstatus::datetime \
-			font normal separator 1]\
+			font normal sep 1]\
 	    metar [ list type var side right text metar::report(statusbar) \
-			font normal separator 1]\
+			font normal sep 1]\
 	    mixer [ list type var side right text zstatus::mixer \
-			font normal separator 1] ]
+			font normal sep 1]\
+	    devices [ list type dynamic side left sep 0] \
+	    maildir [ list type dynamic side right sep 0] \
+	    musicpd [ list type dynamic side right sep 0] ]
 
 	proc dark {} {
 		set theme [ list \
@@ -110,15 +113,17 @@ namespace eval zstatus {
 		$bar configure -background $color(background)
 		foreach item $widgetlist {
 			array set widget $widgetarray($item)
-			$bar.$item configure -bg $color(background) -fg $color($item)
-			if [info exists widget(separator)] {
-				$bar.after_$item configure -background $color(separator)
+			if {$widget(type) == "dynamic"} {
+				${item}::set_theme $theme
+			} else {
+				$bar.$item configure -bg $color(background)\
+						-fg $color($item)
+				if {$widget(sep) == 1} {
+					$bar.after_$item configure\
+						-background $color(separator)
+				}
 			}
 		}
-
-		devices::set_theme $theme
-		maildir::set_theme $theme
-		musicpd::set_theme $theme
 	}
 
 	# Update mixer after button event
@@ -220,6 +225,7 @@ namespace eval zstatus {
 		variable usedmem
 		variable arcsize
 		variable netin
+		variable netout
 		variable datetime
 		variable mixer
 
@@ -236,6 +242,7 @@ namespace eval zstatus {
 
 		set netstats [sysinfo::getnetstats em0]
 		set netin "$icons(down)[join [lindex $netstats 0]] "
+		set netout "$icons(up)[join [lindex $netstats 1]] "
 
 		set datetime [clock format [clock seconds] \
 			-locale $::env(LANG) -format {%d %b %H:%M }]
@@ -257,31 +264,40 @@ namespace eval zstatus {
 
 		set bar [frame .zstatus]
 		pack $bar -fill both -expand 1
+		set last $bar
 		foreach item $widgetlist {
 			array set widget $widgetarray($item)
 			switch $widget(type) {
-			label {
-				pack [label $bar.$item -font $widget(font) \
-					-text $widget(text)] -side $widget(side)
+				label {
+					pack [label $bar.$item -font $widget(font) \
+						-text $widget(text)] -side $widget(side)
+					set last $item
+				}
+				text {
+					variable $widget(ref)
+					set $widget(ref) [text $bar.$item \
+						-font $widget(font) \
+						-height 1 -borderwidth 0 \
+						-highlightthickness 0 -wrap word]
+					$bar.$item tag configure emoji -font emoji
+					pack $bar.$item -side $widget(side) -expand 1
+					$bar.$item configure -state disabled
+					set last $item
+				}
+				var {
+					pack [label $bar.$item -font $widget(font) \
+						-textvar $widget(text)] \
+						-side $widget(side)
+					set last $item
+				}
+				dynamic {
+					${item}::setup $bar $last $widget(side)
+				}
 			}
-			text {
-				variable $widget(ref)
-				set $widget(ref) [text $bar.$item \
-					-font $widget(font) \
-					-height 1 -borderwidth 0 \
-					-highlightthickness 0 -wrap word]
-				$bar.$item tag configure emoji -font emoji
-				pack $bar.$item -side $widget(side) -expand 1
-				$bar.$item configure -state disabled
-			}
-			var {
-				pack [label $bar.$item -font $widget(font) \
-					-textvar $widget(text)] -side $widget(side)
-			}
-			}
-			if [info exists widget(separator)] {
+			if {$widget(sep) == 1} {
 				pack [frame $bar.after_$item -width 1] \
 					-fill y -padx 5 -side $widget(side)
+				set last after_$item
 			}
 		}
 
@@ -320,10 +336,6 @@ namespace eval zstatus {
 			bind $bar.metar <1> { metar::toggle_window }
 			bind $bar.metar <2> { metar::update }
 		}
-
-		devices::setup $bar after_netin left
-		maildir::setup $bar after_metar right
-		musicpd::setup $bar after_mixer right
 
 		if {[file exists $themefile]} {
 			set_theme [string trim [utils::read_file $themefile]]
