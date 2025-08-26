@@ -24,6 +24,19 @@ namespace eval zstatus {
 				HTiled	H \
 				Stacked	S ]
 
+	# Array of messages that can be accepted
+	array set messagearray [ list \
+	    window_active [ list widget wintitle action set_wintitle ]\
+	    no_window_active [ list widget wintitle action clear_wintitle ]\
+	    desktop_list [ list widget desklist action set_desklist ]\
+	    desktop_mode [ list widget deskmode action set_deskmode ]\
+	    desktop_name [ list widget deskname action set_deskname ]\
+	    mixer_volume [ list widget mixer action set_mixer ]\
+	    metar_window [ list widget metar action metar::toggle_window ]\
+	    metar_update [ list widget metar action metar::update ]\
+	    musicpd_update [ list widget musicpd action musicpd::update ]\
+	    set_theme [ list widget none action update_theme ]]
+
 	# Ordered list of widgets in the statusbar
 	set widgetlist [ list deskmode desklist deskname\
 			loadavg usedmem arcsize netin devices\
@@ -126,13 +139,6 @@ namespace eval zstatus {
 		}
 	}
 
-	# Update mixer after button event
-	proc update_mixer {} {
-		variable mixer
-		variable icons
-		set mixer "$icons(mixer) [sysinfo::getmixervol]"
-	}
-
 	# Send a message to the window manager
 	proc wm_message { wmmessage } {
 		variable xscreen
@@ -146,22 +152,18 @@ namespace eval zstatus {
 		close $channel
 	}
 
-	proc read_message {channel} {
-		variable currenttheme
-		variable desklist
-		variable deskname
-		variable deskmode
-		variable wintitle
-		variable metar
-		variable modes
+	proc server_accept {channel} {
+		chan configure $channel -buffering none -blocking 0
+		chan event $channel readable [list zstatus::read_message $channel]
+	}
 
+	proc read_message {channel} {
 		if {[gets $channel line] < 0} {
 			close $channel
 			return
 		}
 		close $channel
 
-		set length 0
 		set line [string trimright $line]
 		set equal [string first "=" $line]
 		if {$equal == -1} {
@@ -170,84 +172,123 @@ namespace eval zstatus {
 		} elseif {$equal > 0} {
 			set key [string range $line 0 $equal-1]
 			set value [string range $line $equal+1 end]
-			set length [tcl::mathfunc::min [string length $value] 110]
 		} else {
 			return
 		}
-		if {$key == "window_active"} {
-			$wintitle configure -state normal
-			$wintitle delete 1.0 end
-			$wintitle configure -width $length
-			$wintitle insert 1.0 $value
-			foreach i [$wintitle search -all -regexp {[\u2000-\u28ff\U1f000-\U1faff]} 1.0 end] {
-				$wintitle tag add emoji $i
-			}
-			$wintitle configure -state disabled
-		} elseif {$key == "no_window_active"} {
-			$wintitle configure -state normal
-			$wintitle delete 1.0 end
-			$wintitle configure -state disabled
-		} elseif {$key == "desktop_list"} {
-			set desklist $value
-		} elseif {$key == "desktop_mode"} {
-			if [info exists modes($value)] {
-				set deskmode " $modes($value)"
-			} else {
-				set deskmode " $value"
-			}
-		} elseif {$key == "desktop_name"} {
-			set deskname $value
-		} elseif {$key == "mixer_volume"} {
-			zstatus::update_mixer
-		} elseif { $key == "toggle_metar_window" } {
-			metar::toggle_window
-		} elseif { $key == "update_metar_report" } {
-			metar::update
-		} elseif {$key == "set_theme"} {
-			if {$value != $currenttheme} {
-				set_theme $value
-				metar::set_theme $value
-			}
-		} elseif { $key == "musicpd_update" } {
-			musicpd::update
+
+		variable messagearray
+		if { ![info exists messagearray($key)] } { return }
+		variable bar
+		array set selected $messagearray($key)
+		if {$selected(widget) == "none" || [winfo exists $bar.$selected(widget)]} {
+			$selected(action) $value
 		}
 	}
 
-	proc server_accept {channel} {
-		chan configure $channel -buffering none -blocking 0
-		chan event $channel readable [list zstatus::read_message $channel]
+	proc set_wintitle {value} {
+		variable wintitle
+		set length [tcl::mathfunc::min [string length $value] 110]
+		$wintitle configure -state normal
+		$wintitle delete 1.0 end
+		$wintitle configure -width $length
+		$wintitle insert 1.0 $value
+		foreach i [$wintitle search -all -regexp {[\u2000-\u28ff\U1f000-\U1faff]} 1.0 end] {
+			$wintitle tag add emoji $i
+		}
+		$wintitle configure -state disabled
+	}
+
+	proc clear_wintitle {value} {
+		variable wintitle
+		$wintitle configure -state normal
+		$wintitle delete 1.0 end
+		$wintitle configure -state disabled
+	}
+
+	proc set_desklist {value} {
+		variable desklist
+		set desklist $value
+	}
+
+	proc set_deskmode {value} {
+		variable modes
+		variable deskmode
+		if [info exists modes($value)] {
+			set deskmode " $modes($value)"
+		} else {
+			set deskmode " $value"
+		}
+	}
+
+	proc set_deskname {value} {
+		variable deskname
+		set deskname $value
+	}
+
+	proc set_deskname {value} {
+		variable deskname
+		set deskname $value
+	}
+
+	proc set_mixer {} {
+		variable mixer
+		variable icons
+		set mixer "$icons(mixer) [sysinfo::getmixervol]"
+	}
+
+	proc update_theme {value} {
+		variable currenttheme
+		if {$value != $currenttheme} {
+			set_theme $value
+			metar::set_theme $value
+		}
 	}
 
 	# Update the statusbar
 	proc update {} {
+		variable bar
 		variable icons
-		variable loadavg
-		variable usedmem
-		variable arcsize
-		variable netin
-		variable netout
-		variable datetime
-		variable mixer
 
-		set loadavg "C: [sysinfo::getloadavg] "
-		set memstats [sysinfo::getmemstats]
-		set usedmem "M: [join [lindex $memstats 0]] "
-		set swap [join [lindex $memstats 1]]
-		if {[string length $swap]} {
-			set usedmem "$usedmem\($swap\) "
+		if [winfo exists $bar.loadavh] {
+			variable loadavg
+			set loadavg "C: [sysinfo::getloadavg] "
 		}
 
-		set arcstats [sysinfo::getarcstats]
-		set arcsize "ARC: [join [lindex $arcstats 0]] "
+		if [winfo exists $bar.usedmem] {
+			variable usedmem
+			set memstats [sysinfo::getmemstats]
+			set usedmem "M: [join [lindex $memstats 0]] "
+			set swap [join [lindex $memstats 1]]
+			if {[string length $swap]} {
+				set usedmem "$usedmem\($swap\) "
+			}
+		}
+
+		if [winfo exists $bar.arcsize] {
+			variable arcsize
+			set arcstats [sysinfo::getarcstats]
+			set arcsize "ARC: [join [lindex $arcstats 0]] "
+		}
 
 		set netstats [sysinfo::getnetstats em0]
-		set netin "$icons(down)[join [lindex $netstats 0]] "
-		set netout "$icons(up)[join [lindex $netstats 1]] "
+		if [winfo exists $bar.netin] {
+			variable netin
+			set netin "$icons(down)[join [lindex $netstats 0]] "
+		}
+		if [winfo exists $bar.netout] {
+			variable netout
+			set netout "$icons(up)[join [lindex $netstats 1]] "
+		}
 
-		set datetime [clock format [clock seconds] \
-			-locale $::env(LANG) -format {%d %b %H:%M }]
+		if [winfo exists $bar.datetime] {
+			variable datetime
+			set datetime [clock format [clock seconds] \
+				-locale $::env(LANG) -format {%d %b %H:%M }]
+		}
 
-		set mixer "$icons(mixer) [sysinfo::getmixervol]"
+		if [winfo exists $bar.mixer] {
+			set_mixer
+		}
 
 		devices::update
 		maildir::update
@@ -329,20 +370,19 @@ namespace eval zstatus {
 				} else {
 					exec mixer vol=+0.05
 				}
-				zstatus::update_mixer
+				zstatus::set_mixer
 			}
 		}
-		if [winfo exists $bar.metar] {
-			bind $bar.metar <1> { metar::toggle_window }
-			bind $bar.metar <2> { metar::update }
-		}
-
 		if {[file exists $themefile]} {
 			set_theme [string trim [utils::read_file $themefile]]
 		} else {
 			set_theme light
 		}
-		metar::setup $currenttheme
+		if [winfo exists $bar.metar] {
+			metar::setup $currenttheme
+			bind $bar.metar <1> { metar::toggle_window }
+			bind $bar.metar <2> { metar::update }
+		}
 
 		utils::every 2000 zstatus::update
 	}
