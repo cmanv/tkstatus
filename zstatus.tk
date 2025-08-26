@@ -26,26 +26,30 @@ namespace eval zstatus {
 				Stacked	S ]
 
 	# Ordered list of widgets in the statusbar
-	set barwidgets [ list deskmode lsep desklist lsep \
-			deskname lsep loadavg usedmem \
-			arcsize netin lsep title datetime \
-			rsep metar rsep mixer rsep ]
+	set barwidgets [ list deskmode desklist \
+			deskname loadavg usedmem \
+			arcsize netin title datetime \
+			metar mixer ]
 
 	# Array describing the widgets in the statusbar
 	array set widgetarray [ list \
-	    deskmode [ list type var side left text zstatus::deskmode font normal ] \
-	    deskname [ list type var side left text zstatus::deskname font normal ] \
-	    desklist [ list type var side left text zstatus::desklist font normal ] \
-	    loadavg [ list type var side left text zstatus::loadavg font normal ] \
-	    usedmem [ list type var side left text zstatus::usedmem font normal ] \
-	    arcsize [ list type var side left text zstatus::arcsize font normal ] \
-	    netin [ list type var side left text zstatus::netin font normal ] \
-	    title [ list type text side left height 1 font normal ] \
-	    datetime [ list type var side right text zstatus::datetime font normal ] \
-	    metar [ list type var side right text metar::report(statusbar) font normal ] \
-	    mixer [ list type var side right text zstatus::mixer font normal ] \
-	    rsep [ list type vseparator side right ] \
-	    lsep [ list type vseparator side left ] ]
+	    deskmode [ list type var side left text zstatus::deskmode \
+			font normal separator 1]\
+	    desklist [ list type var side left text zstatus::desklist \
+			font normal separator 1]\
+	    deskname [ list type var side left text zstatus::deskname \
+			font normal separator 1]\
+	    loadavg [ list type var side left text zstatus::loadavg font normal ]\
+	    usedmem [ list type var side left text zstatus::usedmem font normal ]\
+	    arcsize [ list type var side left text zstatus::arcsize font normal ]\
+	    netin [ list type var side left text zstatus::netin font normal separator 1]\
+	    title [ list type text side left height 1 font normal ]\
+	    datetime [ list type var side right text zstatus::datetime \
+			font normal separator 1]\
+	    metar [ list type var side right text metar::report(statusbar) \
+			font normal separator 1]\
+	    mixer [ list type var side right text zstatus::mixer \
+			font normal separator 1] ]
 
 	proc dark {} {
 		set theme [ list \
@@ -104,17 +108,11 @@ namespace eval zstatus {
 		}
 
 		.bar configure -background $color(background)
-		set count 0
 		foreach item $barwidgets {
 			array set widget $widgetarray($item)
-			switch $widget(type) {
-				vseparator {
-					incr count
-					.bar.sep$count configure -background $color(separator)
-				}
-				default {
-					.bar.$item configure -bg $color(background) -fg $color($item)
-				}
+			.bar.$item configure -bg $color(background) -fg $color($item)
+			if [info exists widget(separator)] {
+				.bar.after_$item configure -background $color(separator)
 			}
 		}
 
@@ -259,7 +257,6 @@ namespace eval zstatus {
 
 		frame .bar
 		pack .bar -fill both -expand 1
-		set count 0
 		foreach item $barwidgets {
 			array set widget $widgetarray($item)
 			switch $widget(type) {
@@ -279,21 +276,25 @@ namespace eval zstatus {
 					pack [label .bar.$item -font $widget(font) \
 						-textvar $widget(text)] -side $widget(side)
 				}
-				vseparator {
-					incr count
-					pack [frame .bar.sep$count -width 1] \
-						-fill y -padx 5 -side $widget(side)
-				}
+			}
+			if [info exists widget(separator)] {
+				pack [frame .bar.after_$item -width 1] \
+					-fill y -padx 5 -side $widget(side)
 			}
 		}
 
-		bind .bar.deskmode <1> { zstatus::wm_message "desktop-mode-prev" }
-		bind .bar.deskmode <3> { zstatus::wm_message "desktop-mode-next" }
+		bind .bar.deskmode <MouseWheel> {
+			if {%D < 0} {
+				zstatus::wm_message "desktop-mode-next"
+			} else {
+				zstatus::wm_message "desktop-mode-prev"
+			}
+		}
 		bind .bar.desklist <MouseWheel> {
 			if {%D < 0} {
-				zstatus::wm_message "desktop-next"
+				zstatus::wm_message "desktop-switch-next"
 			} else {
-				zstatus::wm_message "desktop-prev"
+				zstatus::wm_message "desktop-switch-prev"
 			}
 		}
 		bind .bar.loadavg <1> { exec xterm +sb -class top -e top & }
@@ -308,9 +309,9 @@ namespace eval zstatus {
 		bind .bar.metar <1> { metar::toggle_window }
 		bind .bar.metar <2> { metar::update }
 
-		devices::setup .bar infosep left
-		maildir::setup .bar metarsep right
-		musicpd::setup .bar mixersep right
+		devices::setup .bar after_netin left
+		maildir::setup .bar after_metar right
+		musicpd::setup .bar after_mixer right
 
 		if {[file exists $themefile]} {
 			set_theme [string trim [utils::read_file $themefile]]
