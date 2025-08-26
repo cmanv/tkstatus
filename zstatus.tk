@@ -13,7 +13,6 @@ namespace eval zstatus {
 	variable wmsocket	"$::env(XDG_CACHE_HOME)/zwm/socket"
 	variable themefile 	"$::env(XDG_STATE_HOME)/theme/current"
 	variable currenttheme light
-	variable wintitle
 
 	# Unicode codes from remixicon
 	array set icons [ list	down	\uea4a \
@@ -26,9 +25,9 @@ namespace eval zstatus {
 				Stacked	S ]
 
 	# Ordered list of widgets in the statusbar
-	set barwidgets [ list deskmode desklist \
+	set widgetlist [ list deskmode desklist \
 			deskname loadavg usedmem \
-			arcsize netin title datetime \
+			arcsize netin wintitle datetime \
 			metar mixer ]
 
 	# Array describing the widgets in the statusbar
@@ -43,7 +42,7 @@ namespace eval zstatus {
 	    usedmem [ list type var side left text zstatus::usedmem font normal ]\
 	    arcsize [ list type var side left text zstatus::arcsize font normal ]\
 	    netin [ list type var side left text zstatus::netin font normal separator 1]\
-	    title [ list type text side left height 1 font normal ]\
+	    wintitle [ list type text ref wintitle side left font normal ]\
 	    datetime [ list type var side right text zstatus::datetime \
 			font normal separator 1]\
 	    metar [ list type var side right text metar::report(statusbar) \
@@ -66,7 +65,7 @@ namespace eval zstatus {
 			netout		CadetBlue3 \
 			separator	Gray \
 			usedmem		PaleGreen3 \
-			title		LightGray ]
+			wintitle	LightGray ]
 	}
 
 	proc light {} {
@@ -84,14 +83,15 @@ namespace eval zstatus {
 			netout		purple \
 			separator	black \
 			usedmem		DarkBlue \
-			title		black ]
+			wintitle	black ]
 	}
 
 	# Set the theme on the alements of the bar
 	proc set_theme { theme } {
+		variable bar
 		variable currenttheme
-		variable barwidgets
 		variable widgetarray
+		variable widgetlist
 
 		switch $theme {
 			light {
@@ -107,12 +107,12 @@ namespace eval zstatus {
 			}
 		}
 
-		.bar configure -background $color(background)
-		foreach item $barwidgets {
+		$bar configure -background $color(background)
+		foreach item $widgetlist {
 			array set widget $widgetarray($item)
-			.bar.$item configure -bg $color(background) -fg $color($item)
+			$bar.$item configure -bg $color(background) -fg $color($item)
 			if [info exists widget(separator)] {
-				.bar.after_$item configure -background $color(separator)
+				$bar.after_$item configure -background $color(separator)
 			}
 		}
 
@@ -249,69 +249,81 @@ namespace eval zstatus {
 
 	# Setup the static items in the statusbar
 	proc setup {} {
-		variable barwidgets
+		variable bar
 		variable currenttheme
 		variable themefile
 		variable widgetarray
-		variable wintitle
+		variable widgetlist
 
-		frame .bar
-		pack .bar -fill both -expand 1
-		foreach item $barwidgets {
+		set bar [frame .zstatus]
+		pack $bar -fill both -expand 1
+		foreach item $widgetlist {
 			array set widget $widgetarray($item)
 			switch $widget(type) {
-				label {
-					pack [label .bar.$item -font $widget(font) \
-						-text $widget(text)] -side $widget(side)
-				}
-				text {
-					set wintitle [text .bar.$item -font $widget(font) \
-						-height $widget(height) -borderwidth 0 \
-						-highlightthickness 0 -wrap word]
-					$wintitle tag configure emoji -font emoji
-					pack $wintitle -side $widget(side) -expand 1
-					$wintitle configure -state disabled
-				}
-				var {
-					pack [label .bar.$item -font $widget(font) \
-						-textvar $widget(text)] -side $widget(side)
-				}
+			label {
+				pack [label $bar.$item -font $widget(font) \
+					-text $widget(text)] -side $widget(side)
+			}
+			text {
+				variable $widget(ref)
+				set $widget(ref) [text $bar.$item \
+					-font $widget(font) \
+					-height 1 -borderwidth 0 \
+					-highlightthickness 0 -wrap word]
+				$bar.$item tag configure emoji -font emoji
+				pack $bar.$item -side $widget(side) -expand 1
+				$bar.$item configure -state disabled
+			}
+			var {
+				pack [label $bar.$item -font $widget(font) \
+					-textvar $widget(text)] -side $widget(side)
+			}
 			}
 			if [info exists widget(separator)] {
-				pack [frame .bar.after_$item -width 1] \
+				pack [frame $bar.after_$item -width 1] \
 					-fill y -padx 5 -side $widget(side)
 			}
 		}
 
-		bind .bar.deskmode <MouseWheel> {
-			if {%D < 0} {
-				zstatus::wm_message "desktop-mode-next"
-			} else {
-				zstatus::wm_message "desktop-mode-prev"
+		if [winfo exists $bar.deskmode] {
+			bind $bar.deskmode <MouseWheel> {
+				if {%D < 0} {
+					zstatus::wm_message "desktop-mode-next"
+				} else {
+					zstatus::wm_message "desktop-mode-prev"
+				}
 			}
 		}
-		bind .bar.desklist <MouseWheel> {
-			if {%D < 0} {
-				zstatus::wm_message "desktop-switch-next"
-			} else {
-				zstatus::wm_message "desktop-switch-prev"
+		if [winfo exists $bar.desklist] {
+			bind $bar.desklist <MouseWheel> {
+				if {%D < 0} {
+					zstatus::wm_message "desktop-switch-next"
+				} else {
+					zstatus::wm_message "desktop-switch-prev"
+				}
 			}
 		}
-		bind .bar.loadavg <1> { exec xterm +sb -class top -e top & }
-		bind .bar.mixer <MouseWheel> {
-			if {%D < 0} {
-				exec mixer vol=-0.05
-			} else {
-				exec mixer vol=+0.05
-			}
-			zstatus::update_mixer
+		if [winfo exists $bar.loadavg] {
+			bind $bar.loadavg <1> { exec xterm +sb -class top -e top & }
 		}
-		bind .bar.metar <1> { metar::toggle_window }
-		bind .bar.metar <2> { metar::update }
+		if [winfo exists $bar.mixer] {
+			bind $bar.mixer <MouseWheel> {
+				if {%D < 0} {
+					exec mixer vol=-0.05
+				} else {
+					exec mixer vol=+0.05
+				}
+				zstatus::update_mixer
+			}
+		}
+		if [winfo exists $bar.metar] {
+			bind $bar.metar <1> { metar::toggle_window }
+			bind $bar.metar <2> { metar::update }
+		}
 
-		devices::setup .bar after_netin left
-		maildir::setup .bar after_metar right
-		musicpd::setup .bar after_mixer right
+		devices::setup $bar after_netin left
+		maildir::setup $bar after_metar right
+		musicpd::setup $bar after_mixer right
 
 		if {[file exists $themefile]} {
 			set_theme [string trim [utils::read_file $themefile]]
