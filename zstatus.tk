@@ -11,7 +11,7 @@ namespace eval zstatus {
 	variable xscreen 0
 	variable barsocket	"$::env(BAR_SOCKET)"
 	variable wmsocket	"$::env(XDG_CACHE_HOME)/zwm/socket"
-	variable themefile 	"$::env(XDG_STATE_HOME)/theme/current"
+	variable themefile	"$::env(XDG_STATE_HOME)/theme/current"
 	variable currenttheme	none
 
 	# Unicode codes from remixicon
@@ -44,27 +44,33 @@ namespace eval zstatus {
 
 	# Array describing the widgets in the statusbar
 	array set widgetarray [ list \
-	    deskmode [ list type var side left text zstatus::deskmode \
-			font normal sep 1]\
-	    desklist [ list type var side left text zstatus::desklist \
-			font normal sep 1]\
-	    deskname [ list type var side left text zstatus::deskname \
-			font normal sep 1]\
-	    loadavg [ list type var side left text zstatus::loadavg font normal sep 0]\
-	    usedmem [ list type var side left text zstatus::usedmem font normal sep 0]\
-	    arcsize [ list type var side left text zstatus::arcsize font normal sep 0]\
-	    netout [ list type var side left text zstatus::netout font normal sep 0]\
-	    netin [ list type var side left text zstatus::netin font normal sep 1]\
-	    wintitle [ list type text ref wintitle side left font normal sep 0]\
-	    datetime [ list type var side right text zstatus::datetime \
-			font normal sep 1]\
-	    metar [ list type var side right text metar::report(statusbar) \
-			font normal sep 1]\
-	    mixer [ list type var side right text zstatus::mixer \
-			font normal sep 1]\
-	    devices [ list type dynamic side left sep 0] \
-	    maildir [ list type dynamic side right sep 0] \
-	    musicpd [ list type dynamic side right sep 0] ]
+	    deskmode [ list type var side left text zstatus::deskmode\
+			font normal sep 1 periodic none]\
+	    desklist [ list type var side left text zstatus::desklist\
+			font normal sep 1 periodic none]\
+	    deskname [ list type var side left text zstatus::deskname\
+			font normal sep 1 periodic none]\
+	    loadavg [ list type var side left text zstatus::loadavg\
+			font normal sep 0 periodic set_loadavg]\
+	    usedmem [ list type var side left text zstatus::usedmem\
+			font normal sep 0 periodic set_usedmem]\
+	    arcsize [ list type var side left text zstatus::arcsize\
+			font normal sep 0 periodic set_arcsize]\
+	    netout [ list type var side left text zstatus::netout\
+			font normal sep 0 periodic set_netout]\
+	    netin [ list type var side left text zstatus::netin\
+			font normal sep 1 periodic set_netin]\
+	    wintitle [ list type text ref wintitle side left\
+			font normal sep 0 periodic none]\
+	    datetime [ list type var side right text zstatus::datetime\
+			font normal sep 1 periodic set_datetime]\
+	    metar [ list type var side right text metar::report(statusbar)\
+			font normal sep 1 periodic none]\
+	    mixer [ list type var side right text zstatus::mixer\
+			font normal sep 1 periodic set_mixer]\
+	    devices [ list type dynamic side left sep 0 periodic devices::update]\
+	    maildir [ list type dynamic side right sep 0 periodic maildir::update]\
+	    musicpd [ list type dynamic side right sep 0 periodic musicpd::update] ]
 
 	proc dark {} {
 		set theme [ list \
@@ -126,6 +132,7 @@ namespace eval zstatus {
 		variable widgetlist
 		$bar configure -background $color(background)
 		foreach item $widgetlist {
+			if ![info exists widgetarray($item)] { continue }
 			array set widget $widgetarray($item)
 			if {$widget(type) == "dynamic"} {
 				${item}::set_theme $theme
@@ -141,52 +148,6 @@ namespace eval zstatus {
 
 		if [winfo exists $bar.metar] {
 			metar::set_theme $theme
-		}
-	}
-
-	# Send a message to the window manager
-	proc wm_message {msg} {
-		variable xscreen
-		variable wmsocket
-
-		if {[catch {set channel [unix_sockets::connect $wmsocket]} ]} {
-			puts stderr "Could not open socket $wmsocket!\n"
-			return
-		}
-		puts $channel "$xscreen;$msg"
-		close $channel
-	}
-
-	proc server_accept {channel} {
-		chan configure $channel -buffering none -blocking 0
-		chan event $channel readable [list zstatus::read_message $channel]
-	}
-
-	proc read_message {channel} {
-		if {[gets $channel line] < 0} {
-			close $channel
-			return
-		}
-		close $channel
-
-		set line [string trimright $line]
-		set equal [string first "=" $line]
-		if {$equal == -1} {
-			set key $line
-			set value ""
-		} elseif {$equal > 0} {
-			set key [string range $line 0 $equal-1]
-			set value [string range $line $equal+1 end]
-		} else {
-			return
-		}
-
-		variable messagearray
-		if { ![info exists messagearray($key)] } { return }
-		variable bar
-		array set selected $messagearray($key)
-		if {$selected(widget) == "none" || [winfo exists $bar.$selected(widget)]} {
-			$selected(action) $value
 		}
 	}
 
@@ -235,68 +196,115 @@ namespace eval zstatus {
 		set deskname $value
 	}
 
+	proc set_loadavg {} {
+		variable loadavg
+		set loadavg "C: [sysinfo::getloadavg] "
+	}
+
+	proc set_usedmem {} {
+		variable usedmem
+		set memstats [sysinfo::getmemstats]
+		set usedmem "M: [join [lindex $memstats 0]] "
+		set swap [join [lindex $memstats 1]]
+		if {[string length $swap]} {
+			set usedmem "$usedmem\($swap\) "
+		}
+	}
+
+	proc set_arcsize {} {
+		variable arcsize
+		set arcstats [sysinfo::getarcstats]
+		set arcsize "ARC: [join [lindex $arcstats 0]] "
+	}
+
+	proc set_netin {} {
+		set netstats [sysinfo::getnetstats em0]
+		variable icons
+		variable netin
+		set netin "$icons(down)[join [lindex $netstats 0]] "
+	}
+
+	proc set_netout {} {
+		set netstats [sysinfo::getnetstats em0]
+		variable icons
+		variable netout
+		set netout "$icons(up)[join [lindex $netstats 1]] "
+	}
+
+	proc set_datetime {} {
+		variable datetime
+		set datetime [clock format [clock seconds] \
+			-locale $::env(LANG) -format {%d %b %H:%M }]
+	}
+
 	proc set_mixer {} {
 		variable mixer
 		variable icons
 		set mixer "$icons(mixer) [sysinfo::getmixervol]"
 	}
 
-	# Update the statusbar
-	proc update {} {
-		variable bar
-		variable icons
+	# Send a message to the window manager
+	proc wm_message {msg} {
+		variable xscreen
+		variable wmsocket
 
-		if [winfo exists $bar.loadavh] {
-			variable loadavg
-			set loadavg "C: [sysinfo::getloadavg] "
+		if {[catch {set channel [unix_sockets::connect $wmsocket]} ]} {
+			puts stderr "Could not open socket $wmsocket!\n"
+			return
+		}
+		puts $channel "$xscreen;$msg"
+		close $channel
+	}
+
+	proc server_accept {channel} {
+		chan configure $channel -buffering none -blocking 0
+		chan event $channel readable [list zstatus::read_message $channel]
+	}
+
+	proc read_message {channel} {
+		if {[gets $channel line] < 0} {
+			close $channel
+			return
+		}
+		close $channel
+
+		set line [string trimright $line]
+		set equal [string first "=" $line]
+		if {$equal == -1} {
+			set key $line
+			set value ""
+		} elseif {$equal > 0} {
+			set key [string range $line 0 $equal-1]
+			set value [string range $line $equal+1 end]
+		} else {
+			return
 		}
 
-		if [winfo exists $bar.usedmem] {
-			variable usedmem
-			set memstats [sysinfo::getmemstats]
-			set usedmem "M: [join [lindex $memstats 0]] "
-			set swap [join [lindex $memstats 1]]
-			if {[string length $swap]} {
-				set usedmem "$usedmem\($swap\) "
+		variable messagearray
+		if { ![info exists messagearray($key)] } { return }
+		variable bar
+		array set selected $messagearray($key)
+		if {$selected(widget) == "none" || [winfo exists $bar.$selected(widget)]} {
+			$selected(action) $value
+		}
+	}
+
+	# Periodic update
+	proc update {} {
+		variable widgetlist
+		variable widgetarray
+		foreach item $widgetlist {
+			if ![info exists widgetarray($item)] { continue }
+			array set widget $widgetarray($item)
+			if { $widget(periodic) != "none" } {
+				$widget(periodic)
 			}
 		}
-
-		if [winfo exists $bar.arcsize] {
-			variable arcsize
-			set arcstats [sysinfo::getarcstats]
-			set arcsize "ARC: [join [lindex $arcstats 0]] "
-		}
-
-		set netstats [sysinfo::getnetstats em0]
-		if [winfo exists $bar.netin] {
-			variable netin
-			set netin "$icons(down)[join [lindex $netstats 0]] "
-		}
-		if [winfo exists $bar.netout] {
-			variable netout
-			set netout "$icons(up)[join [lindex $netstats 1]] "
-		}
-
-		if [winfo exists $bar.datetime] {
-			variable datetime
-			set datetime [clock format [clock seconds] \
-				-locale $::env(LANG) -format {%d %b %H:%M }]
-		}
-
-		if [winfo exists $bar.mixer] {
-			set_mixer
-		}
-
-		devices::update
-		maildir::update
-		musicpd::update
 	}
 
 	# Setup the static items in the statusbar
 	proc setup {} {
 		variable bar
-		variable currenttheme
-		variable themefile
 		variable widgetarray
 		variable widgetlist
 
@@ -304,6 +312,7 @@ namespace eval zstatus {
 		pack $bar -fill both -expand 1
 		set last $bar
 		foreach item $widgetlist {
+			if ![info exists widgetarray($item)] { continue }
 			array set widget $widgetarray($item)
 			switch $widget(type) {
 				label {
@@ -376,6 +385,7 @@ namespace eval zstatus {
 			bind $bar.metar <2> { metar::update }
 		}
 
+		variable themefile
 		if {[file exists $themefile]} {
 			set_theme [string trim [utils::read_file $themefile]]
 		} else {
