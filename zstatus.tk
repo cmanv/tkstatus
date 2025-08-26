@@ -294,7 +294,6 @@ namespace eval zstatus {
 		variable widgetlist
 		variable widgetarray
 		foreach item $widgetlist {
-			if ![info exists widgetarray($item)] { continue }
 			array set widget $widgetarray($item)
 			if { $widget(periodic) != "none" } {
 				$widget(periodic)
