@@ -85,10 +85,9 @@ proc ::metar::set_grid_theme { grid } {
 	$grid.precips_val configure -bg $theme(background) -fg $theme(text2)
 }
 
-proc ::metar::set_theme { currenttheme } {
+proc ::metar::set_theme {newtheme} {
 	variable theme
-
-	array set theme [$currenttheme]
+	array set theme [$newtheme]
 	.metar.window configure -background $theme(background)
 	set_header_theme .metar.window.header
 	set_summary_theme .metar.window.summary
@@ -100,28 +99,25 @@ proc ::metar::create_header { header } {
 	variable theme
 	variable report
 
-	pack [frame $header -background $theme(background)] -anchor w -padx 15 -pady 5 -side top
-	pack [frame $header.keys -background $theme(background)] -side left
-	pack [frame $header.keys.station -background $theme(background)] -side top -anchor w
-	pack [label $header.keys.station.text -font fitalic -bg $theme(background) \
-		-fg $theme(label1) -text "Station :" ]
-	pack [frame $header.keys.date -background $theme(background)]  -side top -anchor w
-	pack [label $header.keys.date.text -font fitalic -bg $theme(background) \
-		-fg $theme(label1) -text "Émis le :"]
-	pack [frame $header.keys.status -background $theme(background)] -side top -anchor w
-	pack [label $header.keys.status.text -font fitalic -bg $theme(background) \
-		-fg $theme(label1) -text "Statut :"]
+	pack [frame $header] -anchor w -padx 15 -pady 5 -side top
+	pack [frame $header.keys] -side left
+	pack [frame $header.keys.station] -side top -anchor w
+	pack [label $header.keys.station.text -font fitalic -text "Station :" ]
+	pack [frame $header.keys.date]  -side top -anchor w
+	pack [label $header.keys.date.text -font fitalic -text "Émis le :"]
+	pack [frame $header.keys.status] -side top -anchor w
+	pack [label $header.keys.status.text -font fitalic -text "Statut :"]
 
-	pack [frame $header.values -background $theme(background) ] -padx 10 -side left -fill x
-	pack [frame $header.values.station -background $theme(background)] -side top -anchor w
-	pack [label $header.values.station.text -font fnormal -bg $theme(background) \
-		-fg $theme(text1) -textvar metar::station(name)]
-	pack [frame $header.values.date -background $theme(background)] -side top -anchor w
-	pack [label $header.values.date.text -font fnormal -bg $theme(background) \
-		-fg $theme(text1) -textvar metar::report(date)]
-	pack [frame $header.values.status -background $theme(background)] -side top -anchor w
-	pack [label $header.values.status.text -font fnormal -bg $theme(background) \
-		-fg $theme(text1) -textvar metar::report(request_message)]
+	pack [frame $header.values] -padx 10 -side left -fill x
+	pack [frame $header.values.station] -side top -anchor w
+	pack [label $header.values.station.text -font fnormal\
+		-textvar metar::station(name)]
+	pack [frame $header.values.date] -side top -anchor w
+	pack [label $header.values.date.text -font fnormal\
+		-textvar metar::report(date)]
+	pack [frame $header.values.status] -side top -anchor w
+	pack [label $header.values.status.text -font fnormal\
+		-textvar metar::report(request_message)]
 }
 
 proc ::metar::create_summary { summary } {
@@ -129,103 +125,85 @@ proc ::metar::create_summary { summary } {
 	variable report
 	variable station
 
-	pack [frame $summary -background $theme(background)] -anchor w -padx 15 -pady 5 -side top
-	pack [frame $summary.temp -background $theme(background)] -side left
-	pack [frame $summary.temp.status -background $theme(background)] -side top -anchor w
-	pack [label $summary.temp.status.icon -font ficon -bg $theme(background) \
-		-fg $theme(text2) -textvar metar::report(weather_icon) ] -side left
-	pack [label $summary.temp.status.text -font flarge -bg $theme(background) \
-		-fg $theme(text2) -textvar metar::report(summary) ] -side left -padx 10
-	pack [frame $summary.temp.remark -background $theme(background)] -side top -anchor w
-	pack [label $summary.temp.remark.key -font fitalic -bg $theme(background) \
-		-fg $theme(label1) -textvar metar::report(note) ] -side left
-	pack [label $summary.temp.remark.value -font fnormal -bg $theme(background) \
-		-fg $theme(text2) -textvar metar::report(note_val) ] -side left -padx 5
-	pack [frame $summary.separator -width 1 -background $theme(separator) ] \
-		-padx 10 -fill y -side left
-	pack [frame $summary.icon1 -background $theme(background)] -fill y -side left
-	pack [label $summary.icon1.sunrise -font ficon -bg $theme(background) -fg $theme(icon)\
-			-text "\uedd0"]
-	pack [label $summary.icon1.sunset -font ficon -bg $theme(background) -fg $theme(icon)\
-			-text "\uedd1"]
-	pack [frame $summary.icon2 -background $theme(background)] -fill y -side left
-	pack [label $summary.icon2.up -font ficon -bg $theme(background) -fg $theme(text1)\
-			-text "\uea75"]
-	pack [label $summary.icon2.down -font ficon -bg $theme(background) -fg $theme(text1)\
-			-text "\uea4b"]
-	pack [frame $summary.hours -background $theme(background)] -fill y -side left
-	pack [label $summary.hours.sunrise -font fnormal -bg $theme(background) -fg $theme(text1) \
-			 -textvar metar::station(sunrise) ] -anchor w -pady 2
-	pack [label $summary.hours.sunset -font fnormal -bg $theme(background) -fg $theme(text1) \
-			 -textvar metar::station(sunset) ] -anchor w -pady 2
-
+	pack [frame $summary] -anchor w -padx 15 -pady 5 -side top
+	pack [frame $summary.temp] -side left
+	pack [frame $summary.temp.status] -side top -anchor w
+	pack [label $summary.temp.status.icon -font ficon\
+		-textvar metar::report(weather_icon) ] -side left
+	pack [label $summary.temp.status.text -font flarge \
+		-textvar metar::report(summary) ] -side left -padx 10
+	pack [frame $summary.temp.remark] -side top -anchor w
+	pack [label $summary.temp.remark.key -font fitalic\
+		-textvar metar::report(note) ] -side left
+	pack [label $summary.temp.remark.value -font fnormal\
+		-textvar metar::report(note_val) ] -side left -padx 5
+	pack [frame $summary.separator -width 1] -padx 10 -fill y -side left
+	pack [frame $summary.icon1] -fill y -side left
+	pack [label $summary.icon1.sunrise -font ficon -text "\uedd0"]
+	pack [label $summary.icon1.sunset -font ficon -text "\uedd1"]
+	pack [frame $summary.icon2] -fill y -side left
+	pack [label $summary.icon2.up -font ficon -text "\uea75"]
+	pack [label $summary.icon2.down -font ficon -text "\uea4b"]
+	pack [frame $summary.hours] -fill y -side left
+	pack [label $summary.hours.sunrise -font fnormal\
+		 -textvar metar::station(sunrise) ] -anchor w -pady 2
+	pack [label $summary.hours.sunset -font fnormal\
+		 -textvar metar::station(sunset) ] -anchor w -pady 2
 }
 
 proc ::metar::create_info_grid { grid } {
 	variable theme
 	variable report
 
-	pack [frame $grid -background $theme(background)] -anchor w -padx 15 -side top
+	pack [frame $grid] -anchor w -padx 15 -side top
 	grid columnconfigure $grid 1 -weight 1
 
-	label $grid.wind -font fitalic -bg $theme(background) -fg $theme(label1) -text "Vent :"
-	label $grid.wind_val -font fnormal -bg $theme(background) -fg $theme(text2)\
-		-textvar metar::report(wind)
+	label $grid.wind -font fitalic -text "Vent :"
+	label $grid.wind_val -font fnormal -textvar metar::report(wind)
 	set row 0
 	grid configure $grid.wind -row $row -column 0 -sticky w
 	grid configure $grid.wind_val -row $row -column 1 -sticky w
 
-	label $grid.gust -font fitalic -bg $theme(background) -fg $theme(label1) -text "Rafale :"
-	label $grid.gust_val -font fnormal -bg $theme(background) -fg $theme(text2)\
-		-textvar metar::report(gust)
+	label $grid.gust -font fitalic -text "Rafale :"
+	label $grid.gust_val -font fnormal -textvar metar::report(gust)
 	incr row
 	grid configure $grid.gust -row $row -column 0 -sticky w
 	grid configure $grid.gust_val -row $row -column 1 -sticky w
 
-	label $grid.dew -font fitalic -bg $theme(background) -fg $theme(label1)\
-		-text "Point de rosée :"
-	label $grid.dew_val -font fnormal -bg $theme(background) -fg $theme(text2)\
-		-textvar metar::report(dew)
+	label $grid.dew -font fitalic -text "Point de rosée :"
+	label $grid.dew_val -font fnormal -textvar metar::report(dew)
 	incr row
 	grid configure $grid.dew -row $row -column 0 -sticky w
 	grid configure $grid.dew_val -row $row -column 1 -sticky w
 
-	label $grid.rhumidity -font fitalic -bg $theme(background) -fg $theme(label1)\
-		-text "Humidité relative :"
-	label $grid.rhumidity_val -font fnormal -bg $theme(background) -fg $theme(text2)\
-		-textvar metar::report(rel_humidity)
+	label $grid.rhumidity -font fitalic -text "Humidité relative :"
+	label $grid.rhumidity_val -font fnormal -textvar metar::report(rel_humidity)
 	incr row
 	grid configure $grid.rhumidity -row $row -column 0 -sticky w
 	grid configure $grid.rhumidity_val -row $row -column 1 -sticky w
 
-	label $grid.pressure -font fitalic -bg $theme(background) -fg $theme(label1)\
-		-text "Pression :"
-	label $grid.pressure_val -font fnormal -bg $theme(background) -fg $theme(text2)\
-		-textvar metar::report(pressure)
+	label $grid.pressure -font fitalic -text "Pression :"
+	label $grid.pressure_val -font fnormal -textvar metar::report(pressure)
 	incr row
 	grid configure $grid.pressure -row $row -column 0 -sticky w
 	grid configure $grid.pressure_val -row $row -column 1 -sticky w
 
-	label $grid.visibility -font fitalic -bg $theme(background) -fg $theme(label1)\
-		-text "Visibilité :"
-	label $grid.visibility_val -font fnormal -bg $theme(background) -fg $theme(text2)\
-		-textvar metar::report(visibility)
+	label $grid.visibility -font fitalic -text "Visibilité :"
+	label $grid.visibility_val -font fnormal -textvar metar::report(visibility)
 	incr row
 	grid configure $grid.visibility -row $row -column 0 -sticky w
 	grid configure $grid.visibility_val -row $row -column 1 -sticky w
 
-	label $grid.clouds -font fitalic -bg $theme(background) -fg $theme(label1) \
-		-text "Nuages :"
-	text $grid.clouds_val -font fnormal -bg $theme(background) -fg $theme(text2) \
-		-borderwidth 0 -highlightthickness 0 -wrap none
+	label $grid.clouds -font fitalic -text "Nuages :"
+	text $grid.clouds_val -font fnormal -borderwidth 0 -highlightthickness 0\
+			 -wrap none
 	incr row
 	grid configure $grid.clouds -row $row -column 0 -sticky nw
 	grid configure $grid.clouds_val -row $row -column 1 -sticky w
 
-	label $grid.precips -font fitalic -bg $theme(background) -fg $theme(label1) \
-		-text "Précipitations :"
-	text $grid.precips_val -font fnormal -bg $theme(background) -fg $theme(text2) \
-		-borderwidth 0 -highlightthickness 0 -wrap none
+	label $grid.precips -font fitalic -text "Précipitations :"
+	text $grid.precips_val -font fnormal -borderwidth 0 -highlightthickness 0\
+			 -wrap none
 	incr row
 	grid configure $grid.precips -row $row -column 0 -sticky nw
 	grid configure $grid.precips_val -row $row -column 1 -sticky w
@@ -300,11 +278,12 @@ proc ::metar::create_window {} {
 	variable theme
 
 	set state_visible 0
-	pack [frame .metar.window -background $theme(background) -bd 1 ] -fill both -ipady 5
+	pack [frame .metar.window -bd 1 ] -fill both -ipady 5
 	create_header .metar.window.header
 	create_summary .metar.window.summary
-	pack [label .metar.window.title2 -font flarge -bg $theme(background) -fg $theme(label1) \
-		-text "Conditions météorologiques :" ] -side top -anchor w -pady 5 -padx 15
+	pack [label .metar.window.title2 -font flarge \
+		-text "Conditions météorologiques :" ] \
+		-side top -anchor w -pady 5 -padx 15
 	create_info_grid .metar.window.grid
 }
 
@@ -331,10 +310,7 @@ proc ::metar::update {} {
 	update_grid .metar.window.grid
 }
 
-proc ::metar::setup { currenttheme } {
-	variable theme
-
-	array set theme [$currenttheme]
+proc ::metar::setup {} {
 	font create fitalic -family Sans -size 12 -slant italic
 	font create fnormal -family Sans -size 12
 	font create fbold -family Sans -size 12 -weight bold

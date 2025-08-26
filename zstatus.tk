@@ -12,7 +12,7 @@ namespace eval zstatus {
 	variable barsocket	"$::env(BAR_SOCKET)"
 	variable wmsocket	"$::env(XDG_CACHE_HOME)/zwm/socket"
 	variable themefile 	"$::env(XDG_STATE_HOME)/theme/current"
-	variable currenttheme light
+	variable currenttheme	none
 
 	# Unicode codes from remixicon
 	array set icons [ list	down	\uea4a \
@@ -35,7 +35,7 @@ namespace eval zstatus {
 	    metar_window [ list widget metar action metar::toggle_window ]\
 	    metar_update [ list widget metar action metar::update ]\
 	    musicpd_update [ list widget musicpd action musicpd::update ]\
-	    set_theme [ list widget none action update_theme ]]
+	    set_theme [ list widget none action set_theme ]]
 
 	# Ordered list of widgets in the statusbar
 	set widgetlist [ list deskmode desklist deskname\
@@ -103,11 +103,9 @@ namespace eval zstatus {
 	}
 
 	# Set the theme on the alements of the bar
-	proc set_theme { theme } {
-		variable bar
+	proc set_theme {theme} {
 		variable currenttheme
-		variable widgetarray
-		variable widgetlist
+		if {$theme == $currenttheme} { return }
 
 		switch $theme {
 			light {
@@ -123,6 +121,9 @@ namespace eval zstatus {
 			}
 		}
 
+		variable bar
+		variable widgetarray
+		variable widgetlist
 		$bar configure -background $color(background)
 		foreach item $widgetlist {
 			array set widget $widgetarray($item)
@@ -137,10 +138,14 @@ namespace eval zstatus {
 				}
 			}
 		}
+
+		if [winfo exists $bar.metar] {
+			metar::set_theme $theme
+		}
 	}
 
 	# Send a message to the window manager
-	proc wm_message { wmmessage } {
+	proc wm_message {msg} {
 		variable xscreen
 		variable wmsocket
 
@@ -148,7 +153,7 @@ namespace eval zstatus {
 			puts stderr "Could not open socket $wmsocket!\n"
 			return
 		}
-		puts $channel "$xscreen;$wmmessage"
+		puts $channel "$xscreen;$msg"
 		close $channel
 	}
 
@@ -234,14 +239,6 @@ namespace eval zstatus {
 		variable mixer
 		variable icons
 		set mixer "$icons(mixer) [sysinfo::getmixervol]"
-	}
-
-	proc update_theme {value} {
-		variable currenttheme
-		if {$value != $currenttheme} {
-			set_theme $value
-			metar::set_theme $value
-		}
 	}
 
 	# Update the statusbar
@@ -373,17 +370,17 @@ namespace eval zstatus {
 				zstatus::set_mixer
 			}
 		}
+		if [winfo exists $bar.metar] {
+			metar::setup
+			bind $bar.metar <1> { metar::toggle_window }
+			bind $bar.metar <2> { metar::update }
+		}
+
 		if {[file exists $themefile]} {
 			set_theme [string trim [utils::read_file $themefile]]
 		} else {
 			set_theme light
 		}
-		if [winfo exists $bar.metar] {
-			metar::setup $currenttheme
-			bind $bar.metar <1> { metar::toggle_window }
-			bind $bar.metar <2> { metar::update }
-		}
-
 		utils::every 2000 zstatus::update
 	}
 }
