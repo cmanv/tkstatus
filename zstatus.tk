@@ -44,33 +44,33 @@ namespace eval zstatus {
 
 	# Array describing the widgets in the statusbar
 	array set widgetarray [ list \
-	    deskmode [ list type var side left text zstatus::deskmode\
-			font normal sep 1 periodic none]\
+	    arcsize [ list type var side left text zstatus::arcsize\
+			font normal sep 0 periodic set_arcsize]\
+	    datetime [ list type var side right text zstatus::datetime\
+			font normal sep 1 periodic set_datetime]\
 	    desklist [ list type var side left text zstatus::desklist\
+			font normal sep 1 periodic none]\
+	    deskmode [ list type var side left text zstatus::deskmode\
 			font normal sep 1 periodic none]\
 	    deskname [ list type var side left text zstatus::deskname\
 			font normal sep 1 periodic none]\
+	    devices [ list type dynamic side left sep 0 periodic devices::update]\
 	    loadavg [ list type var side left text zstatus::loadavg\
 			font normal sep 0 periodic set_loadavg]\
-	    usedmem [ list type var side left text zstatus::usedmem\
-			font normal sep 0 periodic set_usedmem]\
-	    arcsize [ list type var side left text zstatus::arcsize\
-			font normal sep 0 periodic set_arcsize]\
-	    netout [ list type var side left text zstatus::netout\
-			font normal sep 0 periodic set_netout]\
-	    netin [ list type var side left text zstatus::netin\
-			font normal sep 1 periodic set_netin]\
-	    wintitle [ list type text ref wintitle side left\
-			font normal sep 0 periodic none]\
-	    datetime [ list type var side right text zstatus::datetime\
-			font normal sep 1 periodic set_datetime]\
+	    maildir [ list type dynamic side right sep 0 periodic maildir::update]\
 	    metar [ list type var side right text metar::report(statusbar)\
 			font normal sep 1 periodic none]\
 	    mixer [ list type var side right text zstatus::mixer\
 			font normal sep 1 periodic set_mixer]\
-	    devices [ list type dynamic side left sep 0 periodic devices::update]\
-	    maildir [ list type dynamic side right sep 0 periodic maildir::update]\
-	    musicpd [ list type dynamic side right sep 0 periodic musicpd::update] ]
+	    musicpd [ list type dynamic side right sep 0 periodic musicpd::update]\
+	    netin [ list type var side left text zstatus::netin\
+			font normal sep 1 periodic set_netin]\
+	    netout [ list type var side left text zstatus::netout\
+			font normal sep 0 periodic set_netout]\
+	    usedmem [ list type var side left text zstatus::usedmem\
+			font normal sep 0 periodic set_usedmem]\
+	    wintitle [ list type text ref wintitle side left\
+			font normal sep 0 periodic none] ]
 
 	proc dark {} {
 		set theme [ list \
@@ -312,7 +312,11 @@ namespace eval zstatus {
 		pack $bar -fill both -expand 1
 		set last $bar
 		foreach item $widgetlist {
-			if ![info exists widgetarray($item)] { continue }
+			# Purge non existing widgets from the list
+			if ![info exists widgetarray($item)] {
+				lremove $widgetlist [lsearch $widgetlist $item]
+				continue
+			}
 			array set widget $widgetarray($item)
 			switch $widget(type) {
 				label {
