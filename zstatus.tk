@@ -9,7 +9,7 @@ package require SysInfo
 
 namespace eval zstatus {
 	variable xscreen 0
-	variable barsocket	"$::env(BAR_SOCKET)"
+	variable socket		"$::env(BAR_SOCKET)"
 	variable wmsocket	"$::env(XDG_CACHE_HOME)/zwm/socket"
 	variable themefile	"$::env(XDG_STATE_HOME)/theme/current"
 	variable currenttheme	none
@@ -31,7 +31,7 @@ namespace eval zstatus {
 	    desktop_list [ list widget desklist action set_desklist ]\
 	    desktop_mode [ list widget deskmode action set_deskmode ]\
 	    desktop_name [ list widget deskname action set_deskname ]\
-	    mixer_volume [ list widget mixer action set_mixer ]\
+	    mixer_volume [ list widget mixer action mixer_volume ]\
 	    metar_window [ list widget metar action metar::toggle_window ]\
 	    metar_update [ list widget metar action metar::update ]\
 	    musicpd_update [ list widget musicpd action musicpd::update ]\
@@ -42,24 +42,24 @@ namespace eval zstatus {
 			loadavg usedmem arcsize netin devices\
 			wintitle datetime metar maildir mixer musicpd ]
 
-	# Array describing the widgets in the statusbar
+	# Array of available widgets
 	array set widgetarray [ list \
 	    arcsize [ list type var side left text zstatus::arcsize\
 			font normal sep 0 periodic set_arcsize]\
 	    datetime [ list type var side right text zstatus::datetime\
 			font normal sep 1 periodic set_datetime]\
 	    desklist [ list type var side left text zstatus::desklist\
-			font normal sep 1 periodic none]\
+			font normal sep 1 periodic nop]\
 	    deskmode [ list type var side left text zstatus::deskmode\
-			font normal sep 1 periodic none]\
+			font normal sep 1 periodic nop]\
 	    deskname [ list type var side left text zstatus::deskname\
-			font normal sep 1 periodic none]\
+			font normal sep 1 periodic nop]\
 	    devices [ list type dynamic side left sep 0 periodic devices::update]\
 	    loadavg [ list type var side left text zstatus::loadavg\
 			font normal sep 0 periodic set_loadavg]\
 	    maildir [ list type dynamic side right sep 0 periodic maildir::update]\
 	    metar [ list type var side right text metar::report(statusbar)\
-			font normal sep 1 periodic none]\
+			font normal sep 1 periodic nop]\
 	    mixer [ list type var side right text zstatus::mixer\
 			font normal sep 1 periodic set_mixer]\
 	    musicpd [ list type dynamic side right sep 0 periodic musicpd::update]\
@@ -70,7 +70,7 @@ namespace eval zstatus {
 	    usedmem [ list type var side left text zstatus::usedmem\
 			font normal sep 0 periodic set_usedmem]\
 	    wintitle [ list type text ref wintitle side left\
-			font normal sep 0 periodic none] ]
+			font normal sep 0 periodic nop] ]
 
 	proc dark {} {
 		set theme [ list \
@@ -196,6 +196,10 @@ namespace eval zstatus {
 		set deskname $value
 	}
 
+	proc mixer_volume {value} {
+		set_mixer
+	}
+
 	proc set_loadavg {} {
 		variable loadavg
 		set loadavg "C: [sysinfo::getloadavg] "
@@ -289,15 +293,16 @@ namespace eval zstatus {
 		}
 	}
 
+	# No-op proc
+	proc nop {} {}
+
 	# Periodic update
 	proc update {} {
 		variable widgetlist
 		variable widgetarray
 		foreach item $widgetlist {
 			array set widget $widgetarray($item)
-			if { $widget(periodic) != "none" } {
-				$widget(periodic)
-			}
+			$widget(periodic)
 		}
 	}
 
@@ -409,8 +414,8 @@ font create emoji -family NotoColorEmoji -size 11
 
 wm attributes . -topmost 1 -type dock
 wm geometry . "[winfo vrootwidth .]x26+0+0"
-wm title . "zstatus version 20250825"
+wm title . "zstatus version 20250826"
 
 zstatus::setup
-set listen [unix_sockets::listen $zstatus::barsocket zstatus::server_accept]
+set listen [unix_sockets::listen $zstatus::socket zstatus::server_accept]
 vwait forever
