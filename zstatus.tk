@@ -44,35 +44,35 @@ namespace eval zstatus {
 
 	# Array of available widgets
 	array set widgetarray [ list \
-	    arcsize [ list type var text zstatus::arcsize periodic set_arcsize\
+	    arcsize [ list type var source zstatus::arcsize periodic set_arcsize\
 			font normal light black dark CadetBlue3 ]\
-	    datetime [ list type var text zstatus::datetime periodic set_datetime\
+	    datetime [ list type var source zstatus::datetime periodic set_datetime\
 			font normal light black dark LightGray ]\
-	    desklist [ list type var text zstatus::desklist periodic nop\
+	    desklist [ list type var source zstatus::desklist periodic nop\
 			font normal light DarkBlue dark LightGray ]\
-	    deskmode [ list type var text zstatus::deskmode periodic nop\
+	    deskmode [ list type var source zstatus::deskmode periodic nop\
 			font normal light DarkBlue dark CadetBlue3 ]\
-	    deskname [ list type var text zstatus::deskname periodic nop\
+	    deskname [ list type var source zstatus::deskname periodic nop\
 			font normal light black dark PaleGreen3 ]\
 	    devices [ list type dynamic periodic devices::update\
 			font normal light DarkBlue dark LightGray ]\
-	    loadavg [ list type var text zstatus::loadavg periodic set_loadavg\
+	    loadavg [ list type var source zstatus::loadavg periodic set_loadavg\
 			font normal light purple dark Gold ]\
 	    maildir [ list type dynamic periodic maildir::update\
 			font normal light DarkBlue dark LightGray ]\
-	    metar [ list type var text metar::report(statusbar) periodic nop\
+	    metar [ list type var source metar::report(statusbar) periodic nop\
 			font normal light DarkGreen dark Gold ]\
-	    mixer [ list type var text zstatus::mixer periodic set_mixer\
+	    mixer [ list type var source zstatus::mixer periodic set_mixer\
 			font normal light black dark PaleGreen3 ]\
 	    musicpd [ list type dynamic periodic musicpd::update\
 			font normal light DarkBlue dark LightGray ]\
-	    netin [ list type var text zstatus::netin periodic set_netin\
+	    netin [ list type var source zstatus::netin periodic set_netin\
 			font normal light DarkGreen dark LightGray ]\
-	    netout [ list type var text zstatus::netout periodic set_netout\
+	    netout [ list type var source zstatus::netout periodic set_netout\
 			font normal light purple dark CadetBlue3 ]\
 	    sep [ list type separator periodic nop\
 			font normal light black dark Gray ]\
-	    usedmem [ list type var text zstatus::usedmem periodic set_usedmem\
+	    usedmem [ list type var source zstatus::usedmem periodic set_usedmem\
 			font normal light DarkBlue dark PaleGreen3 ]\
 	    wintitle [ list type text ref wintitle font normal periodic nop\
 			font normal light black dark LightGray ]]
@@ -287,7 +287,7 @@ namespace eval zstatus {
 			switch $widget(type) {
 				label {
 					pack [label $bar.$item -font $widget(font) \
-						-text $widget(text)] -side $side
+						-text $widget(source)] -side $side
 					set last $item
 				}
 				text {
@@ -303,7 +303,7 @@ namespace eval zstatus {
 				}
 				var {
 					pack [label $bar.$item -font $widget(font) \
-						-textvar $widget(text)] -side $side
+						-textvar $widget(source)] -side $side
 					set last $item
 				}
 				separator {
