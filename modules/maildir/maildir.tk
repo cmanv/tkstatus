@@ -200,7 +200,7 @@ proc maildir::newmail { account } {
 	set count 0
 	array set mailbox $mailboxes($account)
 	foreach file [glob -nocomplain -dir "$mailbox(path)" *] {
-		set mesg [utils::read_file $file]]
+		set mesg [utils::read_file $file]
 		if {[string length $mesg] < 2} {
 			continue
 		}

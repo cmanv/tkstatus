@@ -38,39 +38,39 @@ namespace eval zstatus {
 	    set_theme [ list widget none action set_theme ]]
 
 	# Ordered list of widgets in the statusbar
-	set widgetlist [ list deskmode desklist deskname\
-			loadavg usedmem arcsize netin devices\
-			wintitle datetime metar maildir mixer musicpd ]
+	set lwidgets [ list deskmode sep desklist sep deskname sep\
+			loadavg usedmem arcsize netin sep devices wintitle ]
+	set rwidgets [ list datetime sep metar sep maildir mixer sep musicpd ]
 
 	# Array of available widgets
 	array set widgetarray [ list \
-	    arcsize [ list type var side left text zstatus::arcsize\
-			font normal sep 0 periodic set_arcsize]\
-	    datetime [ list type var side right text zstatus::datetime\
-			font normal sep 1 periodic set_datetime]\
-	    desklist [ list type var side left text zstatus::desklist\
-			font normal sep 1 periodic nop]\
-	    deskmode [ list type var side left text zstatus::deskmode\
-			font normal sep 1 periodic nop]\
-	    deskname [ list type var side left text zstatus::deskname\
-			font normal sep 1 periodic nop]\
-	    devices [ list type dynamic side left sep 0 periodic devices::update]\
-	    loadavg [ list type var side left text zstatus::loadavg\
-			font normal sep 0 periodic set_loadavg]\
-	    maildir [ list type dynamic side right sep 0 periodic maildir::update]\
-	    metar [ list type var side right text metar::report(statusbar)\
-			font normal sep 1 periodic nop]\
-	    mixer [ list type var side right text zstatus::mixer\
-			font normal sep 1 periodic set_mixer]\
-	    musicpd [ list type dynamic side right sep 0 periodic musicpd::update]\
-	    netin [ list type var side left text zstatus::netin\
-			font normal sep 1 periodic set_netin]\
-	    netout [ list type var side left text zstatus::netout\
-			font normal sep 0 periodic set_netout]\
-	    usedmem [ list type var side left text zstatus::usedmem\
-			font normal sep 0 periodic set_usedmem]\
-	    wintitle [ list type text ref wintitle side left\
-			font normal sep 0 periodic nop] ]
+	    arcsize [ list type var text zstatus::arcsize font normal\
+			periodic set_arcsize] \
+	    datetime [ list type var text zstatus::datetime font normal\
+			periodic set_datetime] \
+	    desklist [ list type var text zstatus::desklist font normal\
+			periodic nop] \
+	    deskmode [ list type var text zstatus::deskmode font normal\
+			periodic nop]\
+	    deskname [ list type var text zstatus::deskname font normal\
+			periodic nop]\
+	    devices [ list type dynamic periodic devices::update]\
+	    loadavg [ list type var text zstatus::loadavg font normal\
+			periodic set_loadavg]\
+	    maildir [ list type dynamic periodic maildir::update]\
+	    metar [ list type var text metar::report(statusbar) font normal\
+			periodic nop]\
+	    mixer [ list type var text zstatus::mixer font normal\
+			periodic set_mixer]\
+	    musicpd [ list type dynamic periodic musicpd::update]\
+	    netin [ list type var text zstatus::netin font normal\
+			periodic set_netin]\
+	    netout [ list type var text zstatus::netout font normal\
+			periodic set_netout]\
+	    sep [ list type separator periodic nop]\
+	    usedmem [ list type var text zstatus::usedmem font normal\
+			periodic set_usedmem]\
+	    wintitle [ list type text ref wintitle font normal periodic nop] ]
 
 	proc dark {} {
 		set theme [ list \
@@ -131,18 +131,18 @@ namespace eval zstatus {
 		variable widgetarray
 		variable widgetlist
 		$bar configure -background $color(background)
+		set count 0
 		foreach item $widgetlist {
-			if ![info exists widgetarray($item)] { continue }
 			array set widget $widgetarray($item)
 			if {$widget(type) == "dynamic"} {
 				${item}::set_theme $theme
+			} elseif {$widget(type) == "separator"} {
+				incr count
+				$bar.$item$count configure\
+					-background $color(separator)
 			} else {
 				$bar.$item configure -bg $color(background)\
 						-fg $color($item)
-				if {$widget(sep) == 1} {
-					$bar.after_$item configure\
-						-background $color(separator)
-				}
 			}
 		}
 
@@ -306,26 +306,28 @@ namespace eval zstatus {
 		}
 	}
 
-	# Setup the static items in the statusbar
-	proc setup {} {
+	proc add_widgets {side} {
 		variable bar
-		variable widgetarray
 		variable widgetlist
+		variable lwidgets
+		variable rwidgets
+		variable widgetlist
+		variable widgetarray
+		variable sepcount
 
-		set bar [frame .zstatus]
-		pack $bar -fill both -expand 1
-		set last $bar
-		foreach item $widgetlist {
-			# Purge non existing widgets from the list
-			if ![info exists widgetarray($item)] {
-				lremove $widgetlist [lsearch $widgetlist $item]
-				continue
-			}
+		if {$side == "left"} {
+			set widgets $lwidgets
+		} else {
+			set widgets $rwidgets
+		}
+
+		foreach item $widgets {
+			if ![info exists widgetarray($item)] { continue }
 			array set widget $widgetarray($item)
 			switch $widget(type) {
 				label {
 					pack [label $bar.$item -font $widget(font) \
-						-text $widget(text)] -side $widget(side)
+						-text $widget(text)] -side $side
 					set last $item
 				}
 				text {
@@ -335,26 +337,44 @@ namespace eval zstatus {
 						-height 1 -borderwidth 0 \
 						-highlightthickness 0 -wrap word]
 					$bar.$item tag configure emoji -font emoji
-					pack $bar.$item -side $widget(side) -expand 1
+					pack $bar.$item -side $side -expand 1
 					$bar.$item configure -state disabled
 					set last $item
 				}
 				var {
 					pack [label $bar.$item -font $widget(font) \
-						-textvar $widget(text)] \
-						-side $widget(side)
+						-textvar $widget(text)] -side $side
 					set last $item
 				}
+				separator {
+					incr sepcount
+					pack [frame $bar.$item$sepcount -width 1] \
+						-fill y -padx 5 -side $side
+					set last $item$sepcount
+				}
 				dynamic {
-					${item}::setup $bar $last $widget(side)
+					${item}::setup $bar $last $side
 				}
 			}
-			if {$widget(sep) == 1} {
-				pack [frame $bar.after_$item -width 1] \
-					-fill y -padx 5 -side $widget(side)
-				set last after_$item
-			}
+			lappend widgetlist $item
 		}
+	}
+
+	# Setup the static items in the statusbar
+	proc setup {} {
+		variable bar
+		variable widgetarray
+		variable widgetlist
+		variable sepcount
+
+		set bar [frame .zstatus]
+		pack $bar -fill both -expand 1
+		set last $bar
+
+		set sepcount 0
+		set widgetlist {}
+		add_widgets left
+		add_widgets right
 
 		if [winfo exists $bar.deskmode] {
 			bind $bar.deskmode <MouseWheel> {
