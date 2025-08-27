@@ -27,7 +27,7 @@ namespace eval zstatus {
 	# Array of messages that can be accepted
 	array set messagearray [ list \
 	    window_active [ list widget wintitle action set_wintitle arg 1]\
-	    no_window_active [ list widget wintitle action clear_wintitle arg 1]\
+	    no_window_active [ list widget wintitle action unset_wintitle arg 1]\
 	    desktop_list [ list widget desklist action set_desklist arg 1]\
 	    desktop_mode [ list widget deskmode action set_deskmode arg 1]\
 	    desktop_name [ list widget deskname action set_deskname arg 1]\
@@ -44,110 +44,69 @@ namespace eval zstatus {
 
 	# Array of available widgets
 	array set widgetarray [ list \
-	    arcsize [ list type var text zstatus::arcsize font normal\
-			periodic set_arcsize] \
-	    datetime [ list type var text zstatus::datetime font normal\
-			periodic set_datetime] \
-	    desklist [ list type var text zstatus::desklist font normal\
-			periodic nop] \
-	    deskmode [ list type var text zstatus::deskmode font normal\
-			periodic nop]\
-	    deskname [ list type var text zstatus::deskname font normal\
-			periodic nop]\
-	    devices [ list type dynamic periodic devices::update]\
-	    loadavg [ list type var text zstatus::loadavg font normal\
-			periodic set_loadavg]\
-	    maildir [ list type dynamic periodic maildir::update]\
-	    metar [ list type var text metar::report(statusbar) font normal\
-			periodic nop]\
-	    mixer [ list type var text zstatus::mixer font normal\
-			periodic set_mixer]\
-	    musicpd [ list type dynamic periodic musicpd::update]\
-	    netin [ list type var text zstatus::netin font normal\
-			periodic set_netin]\
-	    netout [ list type var text zstatus::netout font normal\
-			periodic set_netout]\
-	    sep [ list type separator periodic nop]\
-	    usedmem [ list type var text zstatus::usedmem font normal\
-			periodic set_usedmem]\
-	    wintitle [ list type text ref wintitle font normal periodic nop] ]
+	    arcsize [ list type var text zstatus::arcsize periodic set_arcsize\
+			font normal light black dark CadetBlue3 ]\
+	    datetime [ list type var text zstatus::datetime periodic set_datetime\
+			font normal light black dark LightGray ]\
+	    desklist [ list type var text zstatus::desklist periodic nop\
+			font normal light DarkBlue dark LightGray ]\
+	    deskmode [ list type var text zstatus::deskmode periodic nop\
+			font normal light DarkBlue dark CadetBlue3 ]\
+	    deskname [ list type var text zstatus::deskname periodic nop\
+			font normal light black dark PaleGreen3 ]\
+	    devices [ list type dynamic periodic devices::update\
+			font normal light DarkBlue dark LightGray ]\
+	    loadavg [ list type var text zstatus::loadavg periodic set_loadavg\
+			font normal light purple dark Gold ]\
+	    maildir [ list type dynamic periodic maildir::update\
+			font normal light DarkBlue dark LightGray ]\
+	    metar [ list type var text metar::report(statusbar) periodic nop\
+			font normal light DarkGreen dark Gold ]\
+	    mixer [ list type var text zstatus::mixer periodic set_mixer\
+			font normal light black dark PaleGreen3 ]\
+	    musicpd [ list type dynamic periodic musicpd::update\
+			font normal light DarkBlue dark LightGray ]\
+	    netin [ list type var text zstatus::netin periodic set_netin\
+			font normal light DarkGreen dark LightGray ]\
+	    netout [ list type var text zstatus::netout periodic set_netout\
+			font normal light purple dark CadetBlue3 ]\
+	    sep [ list type separator periodic nop\
+			font normal light black dark Gray ]\
+	    usedmem [ list type var text zstatus::usedmem periodic set_usedmem\
+			font normal light DarkBlue dark PaleGreen3 ]\
+	    wintitle [ list type text ref wintitle font normal periodic nop\
+			font normal light black dark LightGray ]]
 
-	proc dark {} {
-		set theme [ list \
-			arcsize		CadetBlue3 \
-			background	{#3b4252} \
-			datetime	LightGray \
-			desklist	LightGray \
-			deskmode	CadetBlue3 \
-			deskname	PaleGreen3 \
-			loadavg		Gold \
-			metar		Gold \
-			mixer		PaleGreen3 \
-			netin		LightGray \
-			netout		CadetBlue3 \
-			separator	Gray \
-			usedmem		PaleGreen3 \
-			wintitle	LightGray ]
-	}
-
-	proc light {} {
-		set theme [ list \
-			arcsize		black \
-			background	gray90 \
-			datetime	black \
-			desklist	DarkBlue \
-			deskmode	DarkBlue \
-			deskname	black \
-			loadavg		purple \
-			metar		DarkGreen \
-			mixer		black \
-			netin		DarkGreen \
-			netout		purple \
-			separator	black \
-			usedmem		DarkBlue \
-			wintitle	black ]
-	}
+	array set barcolor [ list light gray90 dark {#3b4252} ]
 
 	# Set the theme on the alements of the bar
 	proc set_theme {theme} {
 		variable currenttheme
+		variable barcolor
 		if {$theme == $currenttheme} { return }
-
-		switch $theme {
-			light {
-				set currenttheme light
-				array set color [light]
-			}
-			dark {
-				set currenttheme dark
-				array set color [dark]
-			}
-			default {
-				return
-			}
-		}
+		set currenttheme $theme
 
 		variable bar
 		variable widgetarray
 		variable widgetlist
-		$bar configure -background $color(background)
+		$bar configure -background $barcolor($currenttheme)
 		set count 0
 		foreach item $widgetlist {
 			array set widget $widgetarray($item)
 			if {$widget(type) == "dynamic"} {
-				${item}::set_theme $theme
+				${item}::set_theme $currenttheme
 			} elseif {$widget(type) == "separator"} {
 				incr count
 				$bar.$item$count configure\
-					-background $color(separator)
+					-background $widget($currenttheme)
 			} else {
-				$bar.$item configure -bg $color(background)\
-						-fg $color($item)
+				$bar.$item configure -bg $barcolor($currenttheme)\
+						-fg $widget($currenttheme)
 			}
 		}
 
 		if [winfo exists $bar.metar] {
-			metar::set_theme $theme
+			metar::set_theme $currenttheme
 		}
 	}
 
@@ -165,7 +124,7 @@ namespace eval zstatus {
 		$wintitle configure -state disabled
 	}
 
-	proc clear_wintitle {value} {
+	proc unset_wintitle {value} {
 		variable wintitle
 		$wintitle configure -state normal
 		$wintitle delete 1.0 end
