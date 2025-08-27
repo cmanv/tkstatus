@@ -26,16 +26,16 @@ namespace eval zstatus {
 
 	# Array of messages that can be accepted
 	array set messagearray [ list \
-	    window_active [ list widget wintitle action set_wintitle ]\
-	    no_window_active [ list widget wintitle action clear_wintitle ]\
-	    desktop_list [ list widget desklist action set_desklist ]\
-	    desktop_mode [ list widget deskmode action set_deskmode ]\
-	    desktop_name [ list widget deskname action set_deskname ]\
-	    mixer_volume [ list widget mixer action mixer_volume ]\
-	    metar_window [ list widget metar action metar::toggle_window ]\
-	    metar_update [ list widget metar action metar::update ]\
-	    musicpd_update [ list widget musicpd action musicpd::update ]\
-	    set_theme [ list widget none action set_theme ]]
+	    window_active [ list widget wintitle action set_wintitle arg 1]\
+	    no_window_active [ list widget wintitle action clear_wintitle arg 1]\
+	    desktop_list [ list widget desklist action set_desklist arg 1]\
+	    desktop_mode [ list widget deskmode action set_deskmode arg 1]\
+	    desktop_name [ list widget deskname action set_deskname arg 1]\
+	    mixer_volume [ list widget mixer action set_mixer arg 0]\
+	    metar_window [ list widget metar action metar::toggle_window arg 0]\
+	    metar_update [ list widget metar action metar::update arg 0]\
+	    musicpd_update [ list widget musicpd action musicpd::update arg 0]\
+	    set_theme [ list widget none action set_theme arg 1]]
 
 	# Ordered list of widgets in the statusbar
 	set lwidgets [ list deskmode sep desklist sep deskname sep\
@@ -158,7 +158,8 @@ namespace eval zstatus {
 		$wintitle delete 1.0 end
 		$wintitle configure -width $length
 		$wintitle insert 1.0 $value
-		foreach i [$wintitle search -all -regexp {[\u2000-\u28ff\U1f000-\U1faff]} 1.0 end] {
+		foreach i [$wintitle search -all \
+			-regexp {[\u2000-\u28ff\U1f000-\U1faff]} 1.0 end] {
 			$wintitle tag add emoji $i
 		}
 		$wintitle configure -state disabled
@@ -194,10 +195,6 @@ namespace eval zstatus {
 	proc set_deskname {value} {
 		variable deskname
 		set deskname $value
-	}
-
-	proc mixer_volume {value} {
-		set_mixer
 	}
 
 	proc set_loadavg {} {
@@ -288,8 +285,12 @@ namespace eval zstatus {
 		if { ![info exists messagearray($key)] } { return }
 		variable bar
 		array set selected $messagearray($key)
-		if {$selected(widget) == "none" || [winfo exists $bar.$selected(widget)]} {
-			$selected(action) $value
+		if {$selected(widget)=="none" || [winfo exists $bar.$selected(widget)]} {
+			if {$selected(arg) == 1} {
+				$selected(action) $value
+			} else {
+				$selected(action)
+			}
 		}
 	}
 
