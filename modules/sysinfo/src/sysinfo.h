@@ -20,5 +20,6 @@ extern int SysInfo_GetArcStatsObjCmd( ClientData d, Tcl_Interp *i, int c, Tcl_Ob
 extern int SysInfo_GetAcpiTempObjCmd( ClientData d, Tcl_Interp *i, int c, Tcl_Obj *const o[]);
 extern int SysInfo_GetCpuTempObjCmd( ClientData d, Tcl_Interp *i, int c, Tcl_Obj *const o[]);
 extern int SysInfo_GetCpuFreqObjCmd( ClientData d, Tcl_Interp *i, int c, Tcl_Obj *const o[]);
-extern int SysInfo_GetNetStatsObjCmd( ClientData d, Tcl_Interp *i, int c, Tcl_Obj *const o[]);
+extern int SysInfo_GetNetInObjCmd( ClientData d, Tcl_Interp *i, int c, Tcl_Obj *const o[]);
+extern int SysInfo_GetNetOutObjCmd( ClientData d, Tcl_Interp *i, int c, Tcl_Obj *const o[]);
 extern int SysInfo_GetMixerVolObjCmd( ClientData d, Tcl_Interp *i, int c, Tcl_Obj *const o[]);

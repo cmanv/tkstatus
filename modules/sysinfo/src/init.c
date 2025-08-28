@@ -57,8 +57,14 @@ Sysinfo_Init(Tcl_Interp *interp)
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"sysinfo::getnetstats",
-				SysInfo_GetNetStatsObjCmd,
+				"sysinfo::getnetin",
+				SysInfo_GetNetInObjCmd,
+				(ClientData) NULL,
+				(Tcl_CmdDeleteProc*) NULL);
+
+	Tcl_CreateObjCommand(	interp,
+				"sysinfo::getnetout",
+				SysInfo_GetNetOutObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);
 

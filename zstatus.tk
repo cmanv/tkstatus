@@ -172,17 +172,17 @@ proc zstatus::set_arcsize {} {
 }
 
 proc zstatus::set_netin {} {
-	set netstats [sysinfo::getnetstats em0]
 	variable icons
 	variable netin
-	set netin "$icons(down)[join [lindex $netstats 0]] "
+	set inval [sysinfo::getnetin em0]
+	set netin "$icons(down)[join [lindex $inval 0]] "
 }
 
 proc zstatus::set_netout {} {
-	set netstats [sysinfo::getnetstats em0]
 	variable icons
 	variable netout
-	set netout "$icons(up)[join [lindex $netstats 1]] "
+	set outval [sysinfo::getnetout em0]
+	set netout "$icons(up)[join [lindex $outval 0]] "
 }
 
 proc zstatus::set_datetime {} {

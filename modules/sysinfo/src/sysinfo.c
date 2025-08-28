@@ -260,7 +260,7 @@ int SysInfo_GetCpuFreqObjCmd( ClientData clientData, Tcl_Interp *interp,
 	return TCL_OK;
 }
 
-int SysInfo_GetNetStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
+int SysInfo_GetNetOutObjCmd( ClientData clientData, Tcl_Interp *interp,
 				int objc, Tcl_Obj *const objv[])
 {
 	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
@@ -280,36 +280,71 @@ int SysInfo_GetNetStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 		return TCL_ERROR;
 	}
 
-	double inbound = 0, outbound = 0;
+	double outbound = 0;
 	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
 		if (strcmp(ifa->ifa_name, iface)) continue;
 		ifd = (struct if_data *)ifa->ifa_data;
-		inbound = (double)(ifd->ifi_ibytes>>10);
 		outbound = (double)(ifd->ifi_obytes>>10);
 		break;
 	}
 	freeifaddrs(ifap);
 
-	char iunit[3], ounit[3];
-	strcpy(iunit, "Ko");
+	char ounit[3];
 	strcpy(ounit, "Ko");
-	if (inbound>=1024) { inbound /= 1024; strcpy(iunit, "Mo"); }
 	if (outbound>=1024) { outbound /= 1024; strcpy(ounit, "Mo"); }
-	if (inbound>=1024) { inbound /= 1024; strcpy(iunit, "Go"); }
 	if (outbound>=1024) { outbound /= 1024; strcpy(ounit, "Go"); }
 
-	char ifmt[8], ofmt[8];
-	strcpy(ifmt, "%.0f %s");
-	if (inbound < 100) strcpy(ifmt, "%.1f %s");
-	if (inbound < 10) strcpy(ifmt, "%.2f %s");
+	char ofmt[8];
 	strcpy(ofmt, "%.0f %s");
 	if (outbound < 100) strcpy(ofmt, "%.1f %s");
 	if (outbound < 10) strcpy(ofmt, "%.2f %s");
 
-	if (Tcl_ListObjAppendElement(interp, resultObj, Tcl_ObjPrintf(ifmt, inbound, iunit)) != TCL_OK) {
+	if (Tcl_ListObjAppendElement(interp, resultObj, Tcl_ObjPrintf(ofmt, outbound, ounit)) != TCL_OK) {
 		return TCL_ERROR;
 	}
-	if (Tcl_ListObjAppendElement(interp, resultObj, Tcl_ObjPrintf(ofmt, outbound, ounit)) != TCL_OK) {
+	return TCL_OK;
+}
+
+int SysInfo_GetNetInObjCmd( ClientData clientData, Tcl_Interp *interp,
+				int objc, Tcl_Obj *const objv[])
+{
+	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
+	char iface[33];
+	struct ifaddrs *ifap, *ifa;
+	struct if_data *ifd;
+
+	if (objc < 2) {
+		Tcl_SetStringObj(resultObj, "getnetstats: Interface manquante.", -1);
+		return TCL_ERROR;
+	}
+
+	strlcpy(iface, Tcl_GetString(objv[1]), 32);
+
+	if (getifaddrs(&ifap) < 0) {
+		Tcl_SetStringObj(resultObj, Tcl_PosixError(interp), -1);
+		return TCL_ERROR;
+	}
+
+	double inbound = 0;
+	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+		if (strcmp(ifa->ifa_name, iface)) continue;
+		ifd = (struct if_data *)ifa->ifa_data;
+		inbound = (double)(ifd->ifi_ibytes>>10);
+		break;
+	}
+	freeifaddrs(ifap);
+
+	char iunit[3];
+	strcpy(iunit, "Ko");
+	if (inbound>=1024) { inbound /= 1024; strcpy(iunit, "Mo"); }
+	if (inbound>=1024) { inbound /= 1024; strcpy(iunit, "Go"); }
+
+	char ifmt[8];
+	strcpy(ifmt, "%.0f %s");
+	if (inbound < 100) strcpy(ifmt, "%.1f %s");
+	if (inbound < 10) strcpy(ifmt, "%.2f %s");
+
+	if (Tcl_ListObjAppendElement(interp, resultObj, Tcl_ObjPrintf(ifmt, inbound, iunit)) != TCL_OK) {
 		return TCL_ERROR;
 	}
 	return TCL_OK;
