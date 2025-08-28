@@ -18,7 +18,7 @@ add_subdirectory(modules/metar)
 add_subdirectory(modules/musicpd)
 add_subdirectory(modules/sysinfo)
 add_subdirectory(modules/utils)
-add_subdirectory(modules/zconf)
+add_subdirectory(modules/zconfig)
 
 # Install files
 install(PROGRAMS ${zstatus_SOURCE_DIR}/zstatus.tk DESTINATION bin)

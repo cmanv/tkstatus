@@ -6,7 +6,7 @@ package require maildir
 package require metar
 package require musicpd
 package require SysInfo
-package require zconf
+package require zconfig
 
 namespace eval zstatus {
 	variable currenttheme	none
@@ -373,7 +373,7 @@ namespace eval zstatus {
 }
 
 tk appname "zstatus"
-array set config [zconf::readconfig]
+array set config [zconfig::read default]
 
 font create normal -family $config(fontname)\
 		 -size $config(fontsize)

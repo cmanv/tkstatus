@@ -8,7 +8,7 @@ namespace eval maildir {
 	variable mailicon \ueec0
 	variable activepopup 0
 	variable timezone America/Montreal
-	variable lang fr
+	variable lang "$::env(LANG)"
 	namespace export setup update set_theme
 }
 
