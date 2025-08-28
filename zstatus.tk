@@ -88,7 +88,7 @@ proc zstatus::set_theme {theme} {
 	foreach item $widgetlist {
 		array set widget $widgetarray($item)
 		if {$widget(type) == "dynamic"} {
-			$item\::set_theme $currenttheme
+			${item}::set_theme $currenttheme
 		} elseif {$widget(type) == "separator"} {
 			incr count
 			$bar.$item$count configure\
@@ -304,7 +304,7 @@ proc zstatus::add_widgets {side} {
 				set last $item$sepcount
 			}
 			dynamic {
-				$item\::setup $bar $last $side
+				${item}::setup $bar $last $side
 			}
 		}
 		lappend widgetlist $item
@@ -370,7 +370,7 @@ proc zstatus::setup {} {
 # Treat command line options
 set options {
 	{config.arg "default" "user configuration file"}
-        {theme.arg  "light"  "default theme"}
+        {theme.arg  ""  "default theme"}
 }
 set usage ": zstatus.tk -config <configfile> -theme <theme> \n"
 
@@ -383,6 +383,16 @@ try {
 
 # Read configuration
 array set config [zconfig::read $params(config)]
+
+set theme ""
+if [info exists config(theme)] {
+	set theme $config(theme)
+} elseif [info exists params(theme)] {
+	set theme $params(theme)
+}
+if {$theme != "dark" && $theme != "light"} {
+	set theme light
+}
 
 # Setup tk app
 tk appname "@PACKAGE_NAME@"
@@ -399,6 +409,6 @@ font create bold -family $config(fontname)\
 font create emoji -family $config(emojifontname)\
 		 -size $config(emojifontsize)
 zstatus::setup
-zstatus::set_theme $params(theme)
+zstatus::set_theme $theme
 set listen [unix_sockets::listen $config(socket) zstatus::server_accept]
 vwait forever

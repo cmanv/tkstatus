@@ -21,8 +21,8 @@ add_subdirectory(modules/utils)
 add_subdirectory(modules/zconfig)
 
 # Project config file
-configure_file(${zstatus_SOURCE_DIR}/zstatus.tk ${zstatus_BINARY_DIR}/${PACKAGE_NAME})
+configure_file(${zstatus_SOURCE_DIR}/zstatus.tk ${zstatus_BINARY_DIR}/zstatus.tk @ONLY)
 # Install files
-install(PROGRAMS ${zstatus_BINARY_DIR}/zstatus DESTINATION bin)
+install(PROGRAMS ${zstatus_BINARY_DIR}/zstatus.tk DESTINATION bin)
 install(PROGRAMS ${zstatus_SOURCE_DIR}/zstatus-send DESTINATION bin)
 install(PROGRAMS ${zstatus_SOURCE_DIR}/zstatus.sh DESTINATION bin)
