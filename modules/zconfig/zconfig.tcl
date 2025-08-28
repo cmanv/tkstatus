@@ -1,9 +1,10 @@
 #!/usr/bin/env tclsh9.0
 package require utils
 namespace eval zconfig {
-	variable defaultfile "$::env(HOME)/.config/zstatus/config"
+	variable defaultfile "$::env(XDG_CONFIG_HOME)/zstatus/config"
 
 	array set config [ list \
+		delay		2000\
 		fontname	NotoSans\
 		fontsize	11\
 		emojifontname	NotoSansEmoji\

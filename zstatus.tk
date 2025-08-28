@@ -364,7 +364,7 @@ proc zstatus::setup {} {
 		bind $bar.metar <2> { metar::update }
 	}
 
-	utils::every 2000 zstatus::update
+	utils::every $::config(delay) zstatus::update
 }
 
 # Treat command line options
