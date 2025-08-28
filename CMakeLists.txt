@@ -22,4 +22,5 @@ add_subdirectory(modules/zconfig)
 
 # Install files
 install(PROGRAMS ${zstatus_SOURCE_DIR}/zstatus.tk DESTINATION bin)
+install(PROGRAMS ${zstatus_SOURCE_DIR}/zstatus-send DESTINATION bin)
 install(PROGRAMS ${zstatus_SOURCE_DIR}/zstatus.sh DESTINATION bin)
