@@ -14,15 +14,20 @@ namespace eval zconfig {
 		wmsocket 	"$::env(XDG_CACHE_HOME)/zwm/socket"\
 		themefile 	"$::env(XDG_STATE_HOME)/theme/current"]
 
-	namespace export read general
+	namespace export read get
 }
 
-proc zconfig::general {configfile} {
+proc zconfig::get {context key configfile} {
 	variable defaultfile
 	variable config
 
-	if {$configfile == {default}} {
+	if {$configfile == "default"} {
 		set configfile $defaultfile
+	}
+
+	set value ""
+	if [info exists config($key)] {
+		set value $config($key)
 	}
 
 	if [file exists $configfile] {
@@ -32,17 +37,19 @@ proc zconfig::general {configfile} {
 			if ![string length $line] { continue }
 			if [regexp {^#} $line] { continue }
 			if [regexp {^\[([a-z_]+)\]} $line -> section] {
-				if {$section != "general"} {
+				if {$section != $context} {
 					set section ""
-					continue
 				}
+				continue
 			}
 			if ![string length $section] { continue }
-			process_general $line
+			if [regexp "^$key=(.+)" $line -> $value] {
+				break
+			}
 		}
 	}
 
-	return [array get config]
+	return $value
 }
 
 proc zconfig::read {configfile} {
