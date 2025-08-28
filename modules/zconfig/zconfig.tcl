@@ -58,7 +58,7 @@ proc zconfig::read {configfile} {
 	variable lwidgets {}
 	variable rwidgets {}
 
-	set sections {general left_widgets right_widgets}
+	set sections {main left_widgets right_widgets}
 	set default_lwidgets {deskmode separator desklist separator\
 			deskname separator wintitle}
 	set default_rwidgets {datetime}
@@ -96,7 +96,7 @@ proc zconfig::read {configfile} {
 	return [array get config]
 }
 
-proc zconfig::process_general {line} {
+proc zconfig::process_main {line} {
 	variable config
 	if [regexp {^([^=]+)=(.+)} $line -> key value] {
 		set config($key) $value
