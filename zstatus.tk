@@ -1,4 +1,5 @@
 #!/usr/bin/env wish9.0
+package require cmdline
 package require unix_sockets
 package require utils
 package require devices
@@ -70,310 +71,326 @@ namespace eval zstatus {
 			font normal light black dark LightGray }]
 
 	array set barcolor [ list light gray90 dark {#3b4252} ]
+}
 
-	# Set the theme on the alements of the bar
-	proc set_theme {theme} {
-		variable currenttheme
-		variable barcolor
-		if {$theme == $currenttheme} { return }
-		set currenttheme $theme
+# Set the theme on the alements of the bar
+proc zstatus::set_theme {theme} {
+	variable currenttheme
+	variable barcolor
+	if {$theme == $currenttheme} { return }
+	set currenttheme $theme
 
-		variable bar
-		variable widgetarray
-		variable widgetlist
-		$bar configure -background $barcolor($currenttheme)
-		set count 0
-		foreach item $widgetlist {
-			array set widget $widgetarray($item)
-			if {$widget(type) == "dynamic"} {
-				${item}::set_theme $currenttheme
-			} elseif {$widget(type) == "separator"} {
-				incr count
-				$bar.$item$count configure\
-					-background $widget($currenttheme)
-			} else {
-				$bar.$item configure -bg $barcolor($currenttheme)\
-						-fg $widget($currenttheme)
-			}
-		}
-
-		if [winfo exists $bar.metar] {
-			metar::set_theme $currenttheme
-		}
-	}
-
-	proc set_wintitle {value} {
-		variable wintitle
-		set length [tcl::mathfunc::min [string length $value] 110]
-		$wintitle configure -state normal
-		$wintitle delete 1.0 end
-		$wintitle configure -width $length
-		$wintitle insert 1.0 $value
-		foreach i [$wintitle search -all \
-			-regexp {[\u2000-\u28ff\U1f000-\U1faff]} 1.0 end] {
-			$wintitle tag add emoji $i
-		}
-		$wintitle configure -state disabled
-	}
-
-	proc unset_wintitle {value} {
-		variable wintitle
-		$wintitle configure -state normal
-		$wintitle delete 1.0 end
-		$wintitle configure -state disabled
-	}
-
-	proc set_desklist {value} {
-		variable desklist
-		set desklist $value
-	}
-
-	proc set_deskmode {value} {
-		variable modes
-		variable deskmode
-		if [info exists modes($value)] {
-			set deskmode " $modes($value)"
+	variable bar
+	variable widgetarray
+	variable widgetlist
+	$bar configure -background $barcolor($currenttheme)
+	set count 0
+	foreach item $widgetlist {
+		array set widget $widgetarray($item)
+		if {$widget(type) == "dynamic"} {
+			$item\::set_theme $currenttheme
+		} elseif {$widget(type) == "separator"} {
+			incr count
+			$bar.$item$count configure\
+				-background $widget($currenttheme)
 		} else {
-			set deskmode " $value"
+			$bar.$item configure -bg $barcolor($currenttheme)\
+					-fg $widget($currenttheme)
 		}
 	}
 
-	proc set_deskname {value} {
-		variable deskname
-		set deskname $value
-	}
-
-	proc set_deskname {value} {
-		variable deskname
-		set deskname $value
-	}
-
-	proc set_loadavg {} {
-		variable loadavg
-		set loadavg "C: [sysinfo::getloadavg] "
-	}
-
-	proc set_usedmem {} {
-		variable usedmem
-		set memstats [sysinfo::getmemstats]
-		set usedmem "M: [join [lindex $memstats 0]] "
-		set swap [join [lindex $memstats 1]]
-		if {[string length $swap]} {
-			set usedmem "$usedmem\($swap\) "
-		}
-	}
-
-	proc set_arcsize {} {
-		variable arcsize
-		set arcstats [sysinfo::getarcstats]
-		set arcsize "ARC: [join [lindex $arcstats 0]] "
-	}
-
-	proc set_netin {} {
-		set netstats [sysinfo::getnetstats em0]
-		variable icons
-		variable netin
-		set netin "$icons(down)[join [lindex $netstats 0]] "
-	}
-
-	proc set_netout {} {
-		set netstats [sysinfo::getnetstats em0]
-		variable icons
-		variable netout
-		set netout "$icons(up)[join [lindex $netstats 1]] "
-	}
-
-	proc set_datetime {} {
-		variable datetime
-		set datetime [clock format [clock seconds] \
-			-locale $::env(LANG) -format {%d %b %H:%M }]
-	}
-
-	proc set_mixer {} {
-		variable mixer
-		variable icons
-		set mixer "$icons(mixer) [sysinfo::getmixervol]"
-	}
-
-	# Send a message to the window manager
-	proc wm_message {msg} {
-		set xscreen $::config(xscreen)
-		set wmsocket $::config(zwmsocket)
-
-		if [catch {set channel [unix_sockets::connect $wmsocket]}] {
-			puts stderr "Could not open socket $wmsocket!\n"
-			return
-		}
-		puts $channel "$xscreen;$msg"
-		close $channel
-	}
-
-	proc server_accept {channel} {
-		chan configure $channel -buffering none -blocking 0
-		chan event $channel readable [list zstatus::read_message $channel]
-	}
-
-	proc read_message {channel} {
-		if {[gets $channel line] < 0} {
-			close $channel
-			return
-		}
-		close $channel
-
-		set line [string trimright $line]
-		set equal [string first "=" $line]
-		if {$equal == -1} {
-			set key $line
-			set value ""
-		} elseif {$equal > 0} {
-			set key [string range $line 0 $equal-1]
-			set value [string range $line $equal+1 end]
-		} else {
-			return
-		}
-
-		variable messagearray
-		if { ![info exists messagearray($key)] } { return }
-		variable bar
-		array set selected $messagearray($key)
-		if {$selected(widget)=="none" || [winfo exists $bar.$selected(widget)]} {
-			if {$selected(arg) == 1} {
-				$selected(action) $value
-			} else {
-				$selected(action)
-			}
-		}
-	}
-
-	# No-op proc
-	proc nop {} {}
-
-	# Periodic update
-	proc update {} {
-		variable widgetlist
-		variable widgetarray
-		foreach item $widgetlist {
-			array set widget $widgetarray($item)
-			$widget(periodic)
-		}
-	}
-
-	proc add_widgets {side} {
-		variable bar
-		variable widgetlist
-		variable widgetarray
-		variable sepcount
-
-		if {$side == "left"} {
-			set widgets $::config(lwidgets)
-		} else {
-			set widgets $::config(rwidgets)
-		}
-
-		foreach item $widgets {
-			if ![info exists widgetarray($item)] { continue }
-			array set widget $widgetarray($item)
-			switch $widget(type) {
-				label {
-					pack [label $bar.$item -font $widget(font) \
-						-text $widget(source)] -side $side
-					set last $item
-				}
-				text {
-					variable $widget(ref)
-					set $widget(ref) [text $bar.$item \
-						-font $widget(font) \
-						-height 1 -borderwidth 0 \
-						-highlightthickness 0 -wrap word]
-					$bar.$item tag configure emoji -font emoji
-					pack $bar.$item -side $side -expand 1
-					$bar.$item configure -state disabled
-					set last $item
-				}
-				var {
-					pack [label $bar.$item -font $widget(font) \
-						-textvar $widget(source)] -side $side
-					set last $item
-				}
-				separator {
-					incr sepcount
-					pack [frame $bar.$item$sepcount -width 1] \
-						-fill y -padx 5 -side $side
-					set last $item$sepcount
-				}
-				dynamic {
-					${item}::setup $bar $last $side
-				}
-			}
-			lappend widgetlist $item
-		}
-	}
-
-	# Setup the static items in the statusbar
-	proc setup {} {
-		variable bar
-		variable widgetarray
-		variable widgetlist
-		variable sepcount
-
-		set bar [frame .zstatus]
-		pack $bar -fill both -expand 1
-		set last $bar
-
-		set sepcount 0
-		set widgetlist {}
-		add_widgets left
-		add_widgets right
-
-		if [winfo exists $bar.deskmode] {
-			bind $bar.deskmode <MouseWheel> {
-				if {%D < 0} {
-					zstatus::wm_message "desktop-mode-next"
-				} else {
-					zstatus::wm_message "desktop-mode-prev"
-				}
-			}
-		}
-		if [winfo exists $bar.desklist] {
-			bind $bar.desklist <MouseWheel> {
-				if {%D < 0} {
-					zstatus::wm_message "desktop-switch-next"
-				} else {
-					zstatus::wm_message "desktop-switch-prev"
-				}
-			}
-		}
-		if [winfo exists $bar.loadavg] {
-			bind $bar.loadavg <1> { exec xterm +sb -class top -e top & }
-		}
-		if [winfo exists $bar.mixer] {
-			bind $bar.mixer <MouseWheel> {
-				if {%D < 0} {
-					exec mixer vol=-0.05
-				} else {
-					exec mixer vol=+0.05
-				}
-				zstatus::set_mixer
-			}
-		}
-		if [winfo exists $bar.metar] {
-			metar::setup
-			bind $bar.metar <1> { metar::toggle_window }
-			bind $bar.metar <2> { metar::update }
-		}
-
-		set themefile $::config(themefile)
-		if {[file exists $themefile]} {
-			set_theme [string trim [utils::read_file $themefile]]
-		} else {
-			set_theme light
-		}
-		utils::every 2000 zstatus::update
+	if [winfo exists $bar.metar] {
+		metar::set_theme $currenttheme
 	}
 }
 
-tk appname "zstatus"
-array set config [zconfig::read default]
+proc zstatus::set_wintitle {value} {
+	variable wintitle
+	set length [tcl::mathfunc::min [string length $value] 110]
+	$wintitle configure -state normal
+	$wintitle delete 1.0 end
+	$wintitle configure -width $length
+	$wintitle insert 1.0 $value
+	foreach i [$wintitle search -all \
+		-regexp {[\u2000-\u28ff\U1f000-\U1faff]} 1.0 end] {
+		$wintitle tag add emoji $i
+	}
+	$wintitle configure -state disabled
+}
+
+proc zstatus::unset_wintitle {value} {
+	variable wintitle
+	$wintitle configure -state normal
+	$wintitle delete 1.0 end
+	$wintitle configure -state disabled
+}
+
+proc zstatus::set_desklist {value} {
+	variable desklist
+	set desklist $value
+}
+
+proc zstatus::set_deskmode {value} {
+	variable modes
+	variable deskmode
+	if [info exists modes($value)] {
+		set deskmode " $modes($value)"
+	} else {
+		set deskmode " $value"
+	}
+}
+
+proc zstatus::set_deskname {value} {
+	variable deskname
+	set deskname $value
+}
+
+proc zstatus::set_deskname {value} {
+	variable deskname
+	set deskname $value
+}
+
+proc zstatus::set_loadavg {} {
+	variable loadavg
+	set loadavg "C: [sysinfo::getloadavg] "
+}
+
+proc zstatus::set_usedmem {} {
+	variable usedmem
+	set memstats [sysinfo::getmemstats]
+	set usedmem "M: [join [lindex $memstats 0]] "
+	set swap [join [lindex $memstats 1]]
+	if {[string length $swap]} {
+		set usedmem "$usedmem\($swap\) "
+	}
+}
+
+proc zstatus::set_arcsize {} {
+	variable arcsize
+	set arcstats [sysinfo::getarcstats]
+	set arcsize "ARC: [join [lindex $arcstats 0]] "
+}
+
+proc zstatus::set_netin {} {
+	set netstats [sysinfo::getnetstats em0]
+	variable icons
+	variable netin
+	set netin "$icons(down)[join [lindex $netstats 0]] "
+}
+
+proc zstatus::set_netout {} {
+	set netstats [sysinfo::getnetstats em0]
+	variable icons
+	variable netout
+	set netout "$icons(up)[join [lindex $netstats 1]] "
+}
+
+proc zstatus::set_datetime {} {
+	variable datetime
+	set datetime [clock format [clock seconds] \
+		-locale $::env(LANG) -format {%d %b %H:%M }]
+}
+
+proc zstatus::set_mixer {} {
+	variable mixer
+	variable icons
+	set mixer "$icons(mixer) [sysinfo::getmixervol]"
+}
+
+# Send a message to the window manager
+proc zstatus::wm_message {msg} {
+	set xscreen $::config(xscreen)
+	set wmsocket $::config(zwmsocket)
+
+	if [catch {set channel [unix_sockets::connect $wmsocket]}] {
+		puts stderr "Could not open socket $wmsocket!\n"
+		return
+	}
+	puts $channel "$xscreen;$msg"
+	close $channel
+}
+
+proc zstatus::server_accept {channel} {
+	chan configure $channel -buffering none -blocking 0
+	chan event $channel readable [list zstatus::read_message $channel]
+}
+
+proc zstatus::read_message {channel} {
+	if {[gets $channel line] < 0} {
+		close $channel
+		return
+	}
+	close $channel
+
+	set line [string trimright $line]
+	set equal [string first "=" $line]
+	if {$equal == -1} {
+		set key $line
+		set value ""
+	} elseif {$equal > 0} {
+		set key [string range $line 0 $equal-1]
+		set value [string range $line $equal+1 end]
+	} else {
+		return
+	}
+
+	variable messagearray
+	if { ![info exists messagearray($key)] } { return }
+	variable bar
+	array set selected $messagearray($key)
+	if {$selected(widget)=="none" || [winfo exists $bar.$selected(widget)]} {
+		if {$selected(arg) == 1} {
+			$selected(action) $value
+		} else {
+			$selected(action)
+		}
+	}
+}
+
+# No-op proc
+proc zstatus::nop {} {}
+
+# Periodic update
+proc zstatus::update {} {
+	variable widgetlist
+	variable widgetarray
+	foreach item $widgetlist {
+		array set widget $widgetarray($item)
+		$widget(periodic)
+	}
+}
+
+proc zstatus::add_widgets {side} {
+	variable bar
+	variable widgetlist
+	variable widgetarray
+	variable sepcount
+
+	if {$side == "left"} {
+		set widgets $::config(lwidgets)
+	} else {
+		set widgets $::config(rwidgets)
+	}
+
+	foreach item $widgets {
+		if ![info exists widgetarray($item)] { continue }
+		array set widget $widgetarray($item)
+		switch $widget(type) {
+			label {
+				pack [label $bar.$item -font $widget(font) \
+					-text $widget(source)] -side $side
+				set last $item
+			}
+			text {
+				variable $widget(ref)
+				set $widget(ref) [text $bar.$item \
+					-font $widget(font) \
+					-height 1 -borderwidth 0 \
+					-highlightthickness 0 -wrap word]
+				$bar.$item tag configure emoji -font emoji
+				pack $bar.$item -side $side -expand 1
+				$bar.$item configure -state disabled
+				set last $item
+			}
+			var {
+				pack [label $bar.$item -font $widget(font) \
+					-textvar $widget(source)] -side $side
+				set last $item
+			}
+			separator {
+				incr sepcount
+				pack [frame $bar.$item$sepcount -width 1] \
+					-fill y -padx 5 -side $side
+				set last $item$sepcount
+			}
+			dynamic {
+				$item\::setup $bar $last $side
+			}
+		}
+		lappend widgetlist $item
+	}
+}
+
+# Setup the statusbar
+proc zstatus::setup {} {
+	variable bar
+	variable widgetarray
+	variable widgetlist
+	variable sepcount
+
+	set bar [frame .zstatus]
+	pack $bar -fill both -expand 1
+	set last $bar
+
+	set sepcount 0
+	set widgetlist {}
+	add_widgets left
+	add_widgets right
+
+	if [winfo exists $bar.deskmode] {
+		bind $bar.deskmode <MouseWheel> {
+			if {%D < 0} {
+				zstatus::wm_message "desktop-mode-next"
+			} else {
+				zstatus::wm_message "desktop-mode-prev"
+			}
+		}
+	}
+	if [winfo exists $bar.desklist] {
+		bind $bar.desklist <MouseWheel> {
+			if {%D < 0} {
+				zstatus::wm_message "desktop-switch-next"
+			} else {
+				zstatus::wm_message "desktop-switch-prev"
+			}
+		}
+	}
+	if [winfo exists $bar.loadavg] {
+		bind $bar.loadavg <1> { exec xterm +sb -class top -e top & }
+	}
+	if [winfo exists $bar.mixer] {
+		bind $bar.mixer <MouseWheel> {
+			if {%D < 0} {
+				exec mixer vol=-0.05
+			} else {
+				exec mixer vol=+0.05
+			}
+			zstatus::set_mixer
+		}
+	}
+	if [winfo exists $bar.metar] {
+		metar::setup
+		bind $bar.metar <1> { metar::toggle_window }
+		bind $bar.metar <2> { metar::update }
+	}
+
+	utils::every 2000 zstatus::update
+}
+
+# Treat command line options
+set options {
+	{config.arg "default" "user configuration file"}
+        {theme.arg  "light"  "default theme"}
+}
+set usage ": zstatus.tk -config <configfile> -theme <theme> \n"
+
+try {
+	array set params [::cmdline::getoptions argv $options $usage]
+} trap {CMDLINE USAGE} {msg o} {
+	puts $msg
+	exit 1
+}
+
+# Read configuration
+array set config [zconfig::read $params(config)]
+set config(appname) 	PACKAGE_NAME
+set config(appversion)	PACKAGE_VERSION
+
+# Setup tk app
+tk appname "@PACKAGE_NAME@"
+wm title . "@PACKAGE_NAME@ @PACKAGE_VERSION@"
+wm geometry . $config(geometry)
+wm attributes . -topmost 1 -type dock
 
 font create normal -family $config(fontname)\
 		 -size $config(fontsize)
@@ -383,11 +400,7 @@ font create bold -family $config(fontname)\
 		-size $config(fontsize) -weight bold
 font create emoji -family $config(emojifontname)\
 		 -size $config(emojifontsize)
-
-wm attributes . -topmost 1 -type dock
-wm geometry . $config(geometry)
-wm title . "zstatus version 20250826"
-
 zstatus::setup
+zstatus::set_theme $params(theme)
 set listen [unix_sockets::listen $config(socket) zstatus::server_accept]
 vwait forever

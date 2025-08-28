@@ -6,9 +6,9 @@ namespace eval zconfig {
 	array set config [ list \
 		fontname	NotoSans\
 		fontsize	11\
-		geometry	"1600x26+0+0i"\
 		emojifontname	NotoSansEmoji\
 		emojifontsize	11\
+		geometry	"1600x26+0+0"\
 		xscreen		0\
 		socket		"$::env(XDG_CACHE_HOME)/zstatus/socket"\
 		wmsocket 	"$::env(XDG_CACHE_HOME)/zwm/socket"\
