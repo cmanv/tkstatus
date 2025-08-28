@@ -7,7 +7,8 @@ namespace eval maildir {
 	variable path "$::env(HOME)/.maildir"
 	variable mailicon \ueec0
 	variable activepopup 0
-
+	variable timezone America/Montreal
+	variable lang fr
 	namespace export setup update set_theme
 }
 
@@ -129,9 +130,12 @@ proc maildir::setup { widget position side } {
 }
 
 proc maildir::convert_date { rfc822 } {
+	variable lang
+	variable timezone
+
 	set ctime [clock scan $rfc822]
 	set date [clock format $ctime -format {%a %d %b %Y %T %Z} \
-			-timezone $::timezone -locale $::lang]
+			-timezone $timezone -locale $lang]
 	return $date
 }
 

@@ -6,12 +6,9 @@ package require maildir
 package require metar
 package require musicpd
 package require SysInfo
+package require zconf
 
 namespace eval zstatus {
-	variable xscreen 0
-	variable socket		"$::env(BAR_SOCKET)"
-	variable wmsocket	"$::env(XDG_CACHE_HOME)/zwm/socket"
-	variable themefile	"$::env(XDG_STATE_HOME)/theme/current"
 	variable currenttheme	none
 
 	# Unicode codes from remixicon
@@ -37,45 +34,40 @@ namespace eval zstatus {
 	    musicpd_update [ list widget musicpd action musicpd::update arg 0]\
 	    set_theme [ list widget none action set_theme arg 1]]
 
-	# Ordered list of widgets in the statusbar
-	set lwidgets [ list deskmode sep desklist sep deskname sep\
-			loadavg usedmem arcsize netin sep devices wintitle ]
-	set rwidgets [ list datetime sep metar sep maildir mixer sep musicpd ]
-
 	# Array of available widgets
-	array set widgetarray [ list \
-	    arcsize [ list type var source zstatus::arcsize periodic set_arcsize\
-			font normal light black dark CadetBlue3 ]\
-	    datetime [ list type var source zstatus::datetime periodic set_datetime\
-			font normal light black dark LightGray ]\
-	    desklist [ list type var source zstatus::desklist periodic nop\
-			font normal light DarkBlue dark LightGray ]\
-	    deskmode [ list type var source zstatus::deskmode periodic nop\
-			font normal light DarkBlue dark CadetBlue3 ]\
-	    deskname [ list type var source zstatus::deskname periodic nop\
-			font normal light black dark PaleGreen3 ]\
-	    devices [ list type dynamic periodic devices::update\
-			font normal light DarkBlue dark LightGray ]\
-	    loadavg [ list type var source zstatus::loadavg periodic set_loadavg\
-			font normal light purple dark Gold ]\
-	    maildir [ list type dynamic periodic maildir::update\
-			font normal light DarkBlue dark LightGray ]\
-	    metar [ list type var source metar::report(statusbar) periodic nop\
-			font normal light DarkGreen dark Gold ]\
-	    mixer [ list type var source zstatus::mixer periodic set_mixer\
-			font normal light black dark PaleGreen3 ]\
-	    musicpd [ list type dynamic periodic musicpd::update\
-			font normal light DarkBlue dark LightGray ]\
-	    netin [ list type var source zstatus::netin periodic set_netin\
-			font normal light DarkGreen dark LightGray ]\
-	    netout [ list type var source zstatus::netout periodic set_netout\
-			font normal light purple dark CadetBlue3 ]\
-	    sep [ list type separator periodic nop\
-			font normal light black dark Gray ]\
-	    usedmem [ list type var source zstatus::usedmem periodic set_usedmem\
-			font normal light DarkBlue dark PaleGreen3 ]\
-	    wintitle [ list type text ref wintitle font normal periodic nop\
-			font normal light black dark LightGray ]]
+	array set widgetarray [ list\
+	    arcsize { type var source zstatus::arcsize periodic set_arcsize\
+			font normal light black dark CadetBlue3 }\
+	    datetime { type var source zstatus::datetime periodic set_datetime\
+			font normal light black dark LightGray }\
+	    desklist { type var source zstatus::desklist periodic nop\
+			font normal light DarkBlue dark LightGray }\
+	    deskmode { type var source zstatus::deskmode periodic nop\
+			font normal light DarkBlue dark CadetBlue3 }\
+	    deskname { type var source zstatus::deskname periodic nop\
+			font normal light black dark PaleGreen3 }\
+	    devices { type dynamic periodic devices::update\
+			font normal light DarkBlue dark LightGray }\
+	    loadavg { type var source zstatus::loadavg periodic set_loadavg\
+			font normal light purple dark Gold }\
+	    maildir { type dynamic periodic maildir::update\
+			font normal light DarkBlue dark LightGray }\
+	    metar { type var source metar::report(statusbar) periodic nop\
+			font normal light DarkGreen dark Gold }\
+	    mixer { type var source zstatus::mixer periodic set_mixer\
+			font normal light black dark PaleGreen3 }\
+	    musicpd { type dynamic periodic musicpd::update\
+			font normal light DarkBlue dark LightGray }\
+	    netin { type var source zstatus::netin periodic set_netin\
+			font normal light DarkGreen dark LightGray }\
+	    netout { type var source zstatus::netout periodic set_netout\
+			font normal light purple dark CadetBlue3 }\
+	    separator { type separator periodic nop\
+			font normal light black dark Gray }\
+	    usedmem { type var source zstatus::usedmem periodic set_usedmem\
+			font normal light DarkBlue dark PaleGreen3 }\
+	    wintitle { type text ref wintitle font normal periodic nop\
+			font normal light black dark LightGray }]
 
 	array set barcolor [ list light gray90 dark {#3b4252} ]
 
@@ -205,10 +197,10 @@ namespace eval zstatus {
 
 	# Send a message to the window manager
 	proc wm_message {msg} {
-		variable xscreen
-		variable wmsocket
+		set xscreen $::config(xscreen)
+		set wmsocket $::config(zwmsocket)
 
-		if {[catch {set channel [unix_sockets::connect $wmsocket]} ]} {
+		if [catch {set channel [unix_sockets::connect $wmsocket]}] {
 			puts stderr "Could not open socket $wmsocket!\n"
 			return
 		}
@@ -269,16 +261,13 @@ namespace eval zstatus {
 	proc add_widgets {side} {
 		variable bar
 		variable widgetlist
-		variable lwidgets
-		variable rwidgets
-		variable widgetlist
 		variable widgetarray
 		variable sepcount
 
 		if {$side == "left"} {
-			set widgets $lwidgets
+			set widgets $::config(lwidgets)
 		} else {
-			set widgets $rwidgets
+			set widgets $::config(rwidgets)
 		}
 
 		foreach item $widgets {
@@ -373,7 +362,7 @@ namespace eval zstatus {
 			bind $bar.metar <2> { metar::update }
 		}
 
-		variable themefile
+		set themefile $::config(themefile)
 		if {[file exists $themefile]} {
 			set_theme [string trim [utils::read_file $themefile]]
 		} else {
@@ -383,19 +372,22 @@ namespace eval zstatus {
 	}
 }
 
-set lang fr
-set timezone :America/Montreal
-
 tk appname "zstatus"
-font create normal -family NotoSans -size 11
-font create italic -family NotoSans -size 11 -slant italic
-font create bold -family NotoSans -size 11 -weight bold
-font create emoji -family NotoColorEmoji -size 11
+array set config [zconf::readconfig]
+
+font create normal -family $config(fontname)\
+		 -size $config(fontsize)
+font create italic -family $config(fontname)\
+		-size $config(fontsize) -slant italic
+font create bold -family $config(fontname)\
+		-size $config(fontsize) -weight bold
+font create emoji -family $config(emojifontname)\
+		 -size $config(emojifontsize)
 
 wm attributes . -topmost 1 -type dock
-wm geometry . "[winfo vrootwidth .]x26+0+0"
+wm geometry . $config(geometry)
 wm title . "zstatus version 20250826"
 
 zstatus::setup
-set listen [unix_sockets::listen $zstatus::socket zstatus::server_accept]
+set listen [unix_sockets::listen $config(socket) zstatus::server_accept]
 vwait forever
