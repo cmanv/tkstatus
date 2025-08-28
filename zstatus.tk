@@ -383,8 +383,6 @@ try {
 
 # Read configuration
 array set config [zconfig::read $params(config)]
-set config(appname) 	PACKAGE_NAME
-set config(appversion)	PACKAGE_VERSION
 
 # Setup tk app
 tk appname "@PACKAGE_NAME@"
