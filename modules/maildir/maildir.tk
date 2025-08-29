@@ -23,7 +23,7 @@ proc maildir::dark {} {
 		yahoo		PaleGreen3 ]
 }
 
-proc maildir::light {} {
+proc maildir::day {} {
 	set theme [ list \
 		background	gray90 \
 		mailinfo	black \

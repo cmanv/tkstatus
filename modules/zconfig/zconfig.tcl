@@ -18,38 +18,38 @@ namespace eval zconfig {
 	# Array of available widgets
 	array set widgets [ list\
 	    arcsize { type var source zstatus::arcsize periodic set_arcsize\
-			font normal light black dark CadetBlue3 }\
+			font normal day black dark WhiteSmoke }\
 	    datetime [ list type var source zstatus::datetime periodic set_datetime\
-			format {%d %b %H:%M } font normal light black dark LightGray ]\
+			format {%d %b %H:%M } font normal day black dark WhiteSmoke ]\
 	    desklist { type var source zstatus::desklist periodic nop\
-			font normal light DarkBlue dark LightGray }\
+			font normal day black dark WhiteSmoke }\
 	    deskmode { type var source zstatus::deskmode periodic nop\
-			font normal light DarkBlue dark CadetBlue3 }\
+			font normal day black dark WhiteSmoke }\
 	    deskname { type var source zstatus::deskname periodic nop\
-			font normal light black dark PaleGreen3 }\
+			font normal day black dark WhiteSmoke }\
 	    devices { type dynamic periodic devices::update\
-			font normal light DarkBlue dark LightGray }\
+			font normal day black dark WhiteSmoke }\
 	    loadavg { type var source zstatus::loadavg periodic set_loadavg\
-			font normal light purple dark Gold }\
+			font normal day black dark WhiteSmoke }\
 	    maildir { type dynamic periodic maildir::update\
-			font normal light DarkBlue dark LightGray }\
+			font normal day black dark WhiteSmoke }\
 	    memused { type var source zstatus::memused periodic set_memused\
-			font normal light DarkBlue dark PaleGreen3 }\
+			font normal day black dark WhiteSmoke }\
 	    metar { type var source metar::report(statusbar) periodic nop\
-			font normal light DarkGreen dark Gold }\
+			font normal day black dark WhiteSmoke }\
 	    mixer { type var source zstatus::mixer periodic set_mixer\
-			font normal light black dark PaleGreen3 }\
+			font normal day black dark WhiteSmoke }\
 	    musicpd { type dynamic periodic musicpd::update\
-			font normal light DarkBlue dark LightGray }\
+			font normal day black dark WhiteSmoke }\
 	    netin { type var source zstatus::netin periodic set_netin\
-			interface em0 font normal light DarkGreen dark LightGray }\
+			interface em0 font normal day black dark WhiteSmoke }\
 	    netout { type var source zstatus::netout periodic set_netout\
-			interface em0 font normal light purple dark CadetBlue3 }\
-	    separator { type separator periodic nop light black dark Gray }\
+			interface em0 font normal day black dark WhiteSmoke }\
+	    separator { type separator periodic nop day black dark LightGray }\
 	    wintitle { type text ref wintitle font normal periodic nop\
-			maxlength 110 font normal light black dark LightGray }]
+			maxlength 110 font normal day black dark WhiteSmoke }]
 
-	array set barcolor [ list light gray90 dark {#3b4252} ]
+	array set barcolor [ list day gray90 dark {#3b4252} ]
 
 	namespace export read get
 }

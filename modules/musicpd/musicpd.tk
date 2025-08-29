@@ -22,7 +22,7 @@ proc musicpd::dark {} {
 		separator	OliveDrab ]
 }
 
-proc musicpd::light {} {
+proc musicpd::day {} {
 	set theme [ list \
 		background	gray90 \
 		musicpd		DarkBlue \

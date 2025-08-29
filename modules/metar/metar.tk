@@ -13,7 +13,7 @@ proc ::metar::dark {} {
 			{separator} {#5e81ac} ]
 }
 
-proc ::metar::light {} {
+proc ::metar::day {} {
 	set theme [ list {background} {#e0e0e0} \
 			{foreground} {black} \
 			{label1} {black} \

@@ -35,7 +35,7 @@ namespace eval zstatus {
 	    musicpd_update [ list widget musicpd action musicpd::update arg 0]\
 	    set_theme [ list widget none action set_theme arg 1]]
 
-	array set barcolor [ list light gray90 dark {#3b4252} ]
+	array set barcolor [ list day gray90 dark {#3b4252} ]
 }
 
 # Set the theme on the alements of the bar
@@ -364,8 +364,8 @@ if [info exists config(theme)] {
 } elseif [info exists params(theme)] {
 	set theme $params(theme)
 }
-if {$theme != "dark" && $theme != "light"} {
-	set theme light
+if {$theme != "day" && $theme != "dark"} {
+	set theme day
 }
 
 # Setup tk app
