@@ -34,32 +34,30 @@ namespace eval zstatus {
 	    metar_update [ list widget metar action metar::update arg 0]\
 	    musicpd_update [ list widget musicpd action musicpd::update arg 0]\
 	    set_theme [ list widget none action set_theme arg 1]]
-
-	array set barcolor [ list day gray90 dark {#3b4252} ]
 }
 
 # Set the theme on the alements of the bar
 proc zstatus::set_theme {theme} {
 	variable currenttheme
-	variable barcolor
 	if {$theme == $currenttheme} { return }
 	set currenttheme $theme
 
 	variable bar
-	variable widgetarray
 	variable widgetlist
-	$bar configure -background $barcolor($currenttheme)
+	array set statusbar $::widgetarray(statusbar)
+
 	set count 0
+	$bar configure -background $statusbar($currenttheme)
 	foreach item $widgetlist {
-		array set widget $widgetarray($item)
+		array set widget $::widgetarray($item)
 		if {$widget(type) == "dynamic"} {
 			${item}::set_theme $currenttheme
 		} elseif {$widget(type) == "separator"} {
 			incr count
 			$bar.$item$count configure\
 				-background $widget($currenttheme)
-		} else {
-			$bar.$item configure -bg $barcolor($currenttheme)\
+		} elseif {$widget(type) != "bar"} {
+			$bar.$item configure -bg $statusbar($currenttheme)\
 					-fg $widget($currenttheme)
 		}
 	}
@@ -70,8 +68,7 @@ proc zstatus::set_theme {theme} {
 }
 
 proc zstatus::set_wintitle {value} {
-	variable widgetarray
-	array set widget $widgetarray(wintitle)
+	array set widget $::widgetarray(wintitle)
 	set length [tcl::mathfunc::min [string length $value] $widget(maxlength)]
 	variable wintitle
 	$wintitle configure -state normal
@@ -139,8 +136,7 @@ proc zstatus::set_arcsize {} {
 }
 
 proc zstatus::set_netin {} {
-	variable widgetarray
-	array set widget $widgetarray(netin)
+	array set widget $::widgetarray(netin)
 	set inval [sysinfo::getnetin $widget(interface)]
 	variable netin
 	variable icons
@@ -148,8 +144,7 @@ proc zstatus::set_netin {} {
 }
 
 proc zstatus::set_netout {} {
-	variable widgetarray
-	array set widget $widgetarray(netout)
+	array set widget $::widgetarray(netout)
 	set outval [sysinfo::getnetout $widget(interface)]
 	variable netout
 	variable icons
@@ -157,8 +152,7 @@ proc zstatus::set_netout {} {
 }
 
 proc zstatus::set_datetime {} {
-	variable widgetarray
-	array set widget $widgetarray(datetime)
+	array set widget $::widgetarray(datetime)
 	variable datetime
 	set datetime [clock format [clock seconds] \
 		-locale $::config(lang) -format $widget(format)]
@@ -226,9 +220,8 @@ proc zstatus::nop {} {}
 # Periodic update
 proc zstatus::update {} {
 	variable widgetlist
-	variable widgetarray
 	foreach item $widgetlist {
-		array set widget $widgetarray($item)
+		array set widget $::widgetarray($item)
 		$widget(periodic)
 	}
 }
@@ -236,7 +229,6 @@ proc zstatus::update {} {
 proc zstatus::add_widgets {side} {
 	variable bar
 	variable widgetlist
-	variable widgetarray
 	variable sepcount
 
 	if {$side == "left"} {
@@ -246,8 +238,8 @@ proc zstatus::add_widgets {side} {
 	}
 
 	foreach item $widgets {
-		if ![info exists widgetarray($item)] { continue }
-		array set widget $widgetarray($item)
+		if ![info exists ::widgetarray($item)] { continue }
+		array set widget $::widgetarray($item)
 		switch $widget(type) {
 			label {
 				pack [label $bar.$item -font $widget(font) \
@@ -287,7 +279,6 @@ proc zstatus::add_widgets {side} {
 # Setup the statusbar
 proc zstatus::setup {} {
 	variable bar
-	variable widgetarray
 	variable widgetlist
 	variable sepcount
 
@@ -295,7 +286,6 @@ proc zstatus::setup {} {
 	pack $bar -fill both -expand 1
 	set last $bar
 
-	array set widgetarray $::config(widgets)
 	set sepcount 0
 	set widgetlist {}
 	add_widgets left
@@ -357,6 +347,7 @@ try {
 
 # Read configuration
 array set config [zconfig::read $params(config)]
+array set widgetarray $::config(widgets)
 
 set theme ""
 if [info exists config(theme)] {
