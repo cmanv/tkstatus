@@ -33,6 +33,8 @@ namespace eval zconfig {
 			font normal light purple dark Gold }\
 	    maildir { type dynamic periodic maildir::update\
 			font normal light DarkBlue dark LightGray }\
+	    memused { type var source zstatus::memused periodic set_memused\
+			font normal light DarkBlue dark PaleGreen3 }\
 	    metar { type var source metar::report(statusbar) periodic nop\
 			font normal light DarkGreen dark Gold }\
 	    mixer { type var source zstatus::mixer periodic set_mixer\
@@ -44,14 +46,8 @@ namespace eval zconfig {
 	    netout { type var source zstatus::netout periodic set_netout\
 			interface em0 font normal light purple dark CadetBlue3 }\
 	    separator { type separator periodic nop light black dark Gray }\
-	    memused { type var source zstatus::memused periodic set_memused\
-			font normal light DarkBlue dark PaleGreen3 }\
 	    wintitle { type text ref wintitle font normal periodic nop\
 			maxlength 110 font normal light black dark LightGray }]
-
-	variable default_left {deskmode separator desklist separator\
-			deskname separator wintitle}
-	variable default_right {datetime separator}
 
 	array set barcolor [ list light gray90 dark {#3b4252} ]
 
@@ -95,17 +91,17 @@ proc zconfig::get {key configfile} {
 
 proc zconfig::read {configfile} {
 	variable defaultfile
-	variable default_left
-	variable default_right
-	variable widgets_left
-	variable widgets_right
 	variable widgets
 	variable config
 
 	set contexts { main widgets_left widgets_right\
 		arcsize datetime desklist deskmode deskname devices\
-		loadavg maildir metar mixer musicpd netin netout\
-		separator memused wintitle }
+		loadavg maildir memused metar mixer musicpd netin netout\
+		separator wintitle }
+
+	set default_left {deskmode separator desklist separator\
+			deskname separator wintitle}
+	set default_right {datetime separator}
 
 	if {$configfile == {default}} {
 		set configfile $defaultfile
