@@ -6,12 +6,11 @@ set(PACKAGE_NAME "zstatus")
 set(PACKAGE_VERSION "alpha1")
 message (STATUS "*** Building ${PACKAGE_NAME} ${PACKAGE_VERSION} ***")
 
-#find_package(TCL)
+# Tcl version
 set(TCL_LIBRARY_VERSION "9.0")
 set(TCL_INCLUDE_PATH "/usr/local/include/tcl9.0")
 
-# Subdirs
-
+# Add modules
 add_subdirectory(modules/devices)
 add_subdirectory(modules/maildir)
 add_subdirectory(modules/metar)
@@ -20,8 +19,9 @@ add_subdirectory(modules/sysinfo)
 add_subdirectory(modules/utils)
 add_subdirectory(modules/zconfig)
 
-# Project config file
+# Substitute some variable names
 configure_file(${zstatus_SOURCE_DIR}/zstatus.tk ${zstatus_BINARY_DIR}/zstatus.tk @ONLY)
+
 # Install files
 install(PROGRAMS ${zstatus_BINARY_DIR}/zstatus.tk DESTINATION bin)
 install(PROGRAMS ${zstatus_SOURCE_DIR}/zstatus-send DESTINATION bin)
