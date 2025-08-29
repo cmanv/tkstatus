@@ -35,41 +35,6 @@ namespace eval zstatus {
 	    musicpd_update [ list widget musicpd action musicpd::update arg 0]\
 	    set_theme [ list widget none action set_theme arg 1]]
 
-	# Array of available widgets
-	array set widgetarray [ list\
-	    arcsize { type var source zstatus::arcsize periodic set_arcsize\
-			font normal light black dark CadetBlue3 }\
-	    datetime { type var source zstatus::datetime periodic set_datetime\
-			font normal light black dark LightGray }\
-	    desklist { type var source zstatus::desklist periodic nop\
-			font normal light DarkBlue dark LightGray }\
-	    deskmode { type var source zstatus::deskmode periodic nop\
-			font normal light DarkBlue dark CadetBlue3 }\
-	    deskname { type var source zstatus::deskname periodic nop\
-			font normal light black dark PaleGreen3 }\
-	    devices { type dynamic periodic devices::update\
-			font normal light DarkBlue dark LightGray }\
-	    loadavg { type var source zstatus::loadavg periodic set_loadavg\
-			font normal light purple dark Gold }\
-	    maildir { type dynamic periodic maildir::update\
-			font normal light DarkBlue dark LightGray }\
-	    metar { type var source metar::report(statusbar) periodic nop\
-			font normal light DarkGreen dark Gold }\
-	    mixer { type var source zstatus::mixer periodic set_mixer\
-			font normal light black dark PaleGreen3 }\
-	    musicpd { type dynamic periodic musicpd::update\
-			font normal light DarkBlue dark LightGray }\
-	    netin { type var source zstatus::netin periodic set_netin\
-			font normal light DarkGreen dark LightGray }\
-	    netout { type var source zstatus::netout periodic set_netout\
-			font normal light purple dark CadetBlue3 }\
-	    separator { type separator periodic nop\
-			font normal light black dark Gray }\
-	    usedmem { type var source zstatus::usedmem periodic set_usedmem\
-			font normal light DarkBlue dark PaleGreen3 }\
-	    wintitle { type text ref wintitle font normal periodic nop\
-			font normal light black dark LightGray }]
-
 	array set barcolor [ list light gray90 dark {#3b4252} ]
 }
 
@@ -105,8 +70,10 @@ proc zstatus::set_theme {theme} {
 }
 
 proc zstatus::set_wintitle {value} {
+	variable widgetarray
+	array set widget $widgetarray(wintitle)
+	set length [tcl::mathfunc::min [string length $value] $widget(maxlength)]
 	variable wintitle
-	set length [tcl::mathfunc::min [string length $value] 110]
 	$wintitle configure -state normal
 	$wintitle delete 1.0 end
 	$wintitle configure -width $length
@@ -155,13 +122,13 @@ proc zstatus::set_loadavg {} {
 	set loadavg "C: [sysinfo::getloadavg] "
 }
 
-proc zstatus::set_usedmem {} {
-	variable usedmem
+proc zstatus::set_memused {} {
+	variable memused
 	set memstats [sysinfo::getmemstats]
-	set usedmem "M: [join [lindex $memstats 0]] "
+	set memused "M: [join [lindex $memstats 0]] "
 	set swap [join [lindex $memstats 1]]
 	if {[string length $swap]} {
-		set usedmem "$usedmem\($swap\) "
+		set memused "$memused\($swap\) "
 	}
 }
 
@@ -172,23 +139,29 @@ proc zstatus::set_arcsize {} {
 }
 
 proc zstatus::set_netin {} {
-	variable icons
+	variable widgetarray
+	array set widget $widgetarray(netin)
+	set inval [sysinfo::getnetin $widget(interface)]
 	variable netin
-	set inval [sysinfo::getnetin em0]
+	variable icons
 	set netin "$icons(down)[join [lindex $inval 0]] "
 }
 
 proc zstatus::set_netout {} {
-	variable icons
+	variable widgetarray
+	array set widget $widgetarray(netout)
+	set outval [sysinfo::getnetout $widget(interface)]
 	variable netout
-	set outval [sysinfo::getnetout em0]
+	variable icons
 	set netout "$icons(up)[join [lindex $outval 0]] "
 }
 
 proc zstatus::set_datetime {} {
+	variable widgetarray
+	array set widget $widgetarray(datetime)
 	variable datetime
 	set datetime [clock format [clock seconds] \
-		-locale $::env(LANG) -format {%d %b %H:%M }]
+		-locale $::config(lang) -format $widget(format)]
 }
 
 proc zstatus::set_mixer {} {
@@ -267,9 +240,9 @@ proc zstatus::add_widgets {side} {
 	variable sepcount
 
 	if {$side == "left"} {
-		set widgets $::config(lwidgets)
+		set widgets $::config(widgets_left)
 	} else {
-		set widgets $::config(rwidgets)
+		set widgets $::config(widgets_right)
 	}
 
 	foreach item $widgets {
@@ -322,6 +295,7 @@ proc zstatus::setup {} {
 	pack $bar -fill both -expand 1
 	set last $bar
 
+	array set widgetarray $::config(widgets)
 	set sepcount 0
 	set widgetlist {}
 	add_widgets left

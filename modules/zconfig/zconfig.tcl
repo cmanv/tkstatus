@@ -4,6 +4,7 @@ namespace eval zconfig {
 	variable defaultfile "$::env(XDG_CONFIG_HOME)/zstatus/config"
 
 	array set config [ list \
+		lang		$::env(LANG)\
 		delay		2000\
 		fontname	NotoSans\
 		fontsize	11\
@@ -12,13 +13,52 @@ namespace eval zconfig {
 		geometry	"1600x26+0+0"\
 		xscreen		0\
 		socket		"$::env(XDG_CACHE_HOME)/zstatus/socket"\
-		wmsocket 	"$::env(XDG_CACHE_HOME)/zwm/socket"\
-		themefile 	"$::env(XDG_STATE_HOME)/theme/current"]
+		wmsocket 	"$::env(XDG_CACHE_HOME)/zwm/socket"]
+
+	# Array of available widgets
+	array set widgets [ list\
+	    arcsize { type var source zstatus::arcsize periodic set_arcsize\
+			font normal light black dark CadetBlue3 }\
+	    datetime [ list type var source zstatus::datetime periodic set_datetime\
+			format {%d %b %H:%M } font normal light black dark LightGray ]\
+	    desklist { type var source zstatus::desklist periodic nop\
+			font normal light DarkBlue dark LightGray }\
+	    deskmode { type var source zstatus::deskmode periodic nop\
+			font normal light DarkBlue dark CadetBlue3 }\
+	    deskname { type var source zstatus::deskname periodic nop\
+			font normal light black dark PaleGreen3 }\
+	    devices { type dynamic periodic devices::update\
+			font normal light DarkBlue dark LightGray }\
+	    loadavg { type var source zstatus::loadavg periodic set_loadavg\
+			font normal light purple dark Gold }\
+	    maildir { type dynamic periodic maildir::update\
+			font normal light DarkBlue dark LightGray }\
+	    metar { type var source metar::report(statusbar) periodic nop\
+			font normal light DarkGreen dark Gold }\
+	    mixer { type var source zstatus::mixer periodic set_mixer\
+			font normal light black dark PaleGreen3 }\
+	    musicpd { type dynamic periodic musicpd::update\
+			font normal light DarkBlue dark LightGray }\
+	    netin { type var source zstatus::netin periodic set_netin\
+			interface em0 font normal light DarkGreen dark LightGray }\
+	    netout { type var source zstatus::netout periodic set_netout\
+			interface em0 font normal light purple dark CadetBlue3 }\
+	    separator { type separator periodic nop light black dark Gray }\
+	    memused { type var source zstatus::memused periodic set_memused\
+			font normal light DarkBlue dark PaleGreen3 }\
+	    wintitle { type text ref wintitle font normal periodic nop\
+			maxlength 110 font normal light black dark LightGray }]
+
+	variable default_left {deskmode separator desklist separator\
+			deskname separator wintitle}
+	variable default_right {datetime separator}
+
+	array set barcolor [ list light gray90 dark {#3b4252} ]
 
 	namespace export read get
 }
 
-proc zconfig::get {context key configfile} {
+proc zconfig::get {key configfile} {
 	variable defaultfile
 	variable config
 
@@ -32,18 +72,18 @@ proc zconfig::get {context key configfile} {
 	}
 
 	if [file exists $configfile] {
-		set section ""
+		set context ""
 		set lines [utils::read_file $configfile]
 		foreach line $lines {
 			if ![string length $line] { continue }
 			if [regexp {^#} $line] { continue }
-			if [regexp {^\[([a-z_]+)\]} $line -> section] {
-				if {$section != $context} {
-					set section ""
+			if [regexp {^\[([a-z_]+)\]} $line -> context] {
+				if {$context != "main"} {
+					set context ""
 				}
 				continue
 			}
-			if ![string length $section] { continue }
+			if ![string length $context] { continue }
 			if [regexp "^$key=(.+)" $line -> $value] {
 				break
 			}
@@ -55,63 +95,62 @@ proc zconfig::get {context key configfile} {
 
 proc zconfig::read {configfile} {
 	variable defaultfile
+	variable default_left
+	variable default_right
+	variable widgets_left
+	variable widgets_right
+	variable widgets
 	variable config
-	variable lwidgets {}
-	variable rwidgets {}
 
-	set sections {main left_widgets right_widgets}
-	set default_lwidgets {deskmode separator desklist separator\
-			deskname separator wintitle}
-	set default_rwidgets {datetime}
+	set contexts { main widgets_left widgets_right\
+		arcsize datetime desklist deskmode deskname devices\
+		loadavg maildir metar mixer musicpd netin netout\
+		separator memused wintitle }
 
 	if {$configfile == {default}} {
 		set configfile $defaultfile
 	}
 
+	set config(widgets_left) {}
+	set config(widgets_right) {}
+
 	if [file exists $configfile] {
-		set section ""
+		set context ""
 		set lines [utils::read_file $configfile]
 		foreach line $lines {
 			if ![string length $line] { continue }
 			if [regexp {^#} $line] { continue }
-			if [regexp {^\[([a-z_]+)\]} $line -> section] {
-				if {[lsearch $sections $section] < 0} {
-					set section ""
+			if [regexp {^\[([a-z_]+)\]} $line -> context] {
+				if {[lsearch $contexts $context] < 0} {
+					set context ""
 				}
 				continue
 			}
-			if ![string length $section] { continue }
-			process_$section $line
+			if ![string length $context] { continue }
+			if {$context == "widgets_left" || $context == "widgets_right"} {
+				lappend config($context) $line
+			} elseif [regexp -nocase {^([a-z_]+)=(.+)} $line -> key value] {
+				if {$context == "main"} {
+					set config($key) $value
+				} else {
+					array set widget $widgets($context)
+					set widget($key) $value
+					set widgets($context) [array get widget]
+				}
+			}
 		}
 	}
 
-	if ![llength $lwidgets] {
-		set lwidgets $default_lwidgets
+	if {[llength $config(widgets_left)] == 0} {
+		set config(widgets_left) $default_left
 	}
-	if ![llength $rwidgets] {
-		set rwidgets $default_rwidgets
+	if {[llength $config(widgets_right)] == 0} {
+		set config(widgets_right) $default_right
 	}
-	set config(lwidgets) $lwidgets
-	set config(rwidgets) $rwidgets
+
+	set config(widgets) [array get widgets]
 
 	return [array get config]
-}
-
-proc zconfig::process_main {line} {
-	variable config
-	if [regexp {^([^=]+)=(.+)} $line -> key value] {
-		set config($key) $value
-	}
-}
-
-proc zconfig::process_left_widgets {line} {
-	variable lwidgets
-	lappend lwidgets $line
-}
-
-proc zconfig::process_right_widgets {line} {
-	variable rwidgets
-	lappend rwidgets $line
 }
 
 package provide zconfig 0.1

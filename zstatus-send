@@ -2,7 +2,7 @@
 package require unix_sockets
 package require zconfig
 
-set socket [zconfig::get main socket default]
+set socket [zconfig::get socket default]
 set action [lindex $::argv 0]
 if {[catch {set channel [unix_sockets::connect $socket]}]} {
 	puts stderr "Could not connect to socket $socket!\n"
