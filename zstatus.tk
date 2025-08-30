@@ -13,21 +13,21 @@ namespace eval zstatus {
 	variable currenttheme	none
 
 	# Unicode codes from remixicon
-	array set icons { down \uea4a up \uea74 mixer \uf229 }
-	array set modes { Monocle M VTiled V HTiled H Stacked S }
+	array set icons {down \uea4a up \uea74 mixer \uf229}
+	array set modes {Monocle M VTiled V HTiled H Stacked S}
 
 	# Array of messages that can be accepted
-	array set messagearray [ list \
-	    window_active [ list widget wintitle action set_wintitle arg 1]\
-	    no_window_active [ list widget wintitle action unset_wintitle arg 1]\
-	    desktop_list [ list widget desklist action set_desklist arg 1]\
-	    desktop_mode [ list widget deskmode action set_deskmode arg 1]\
-	    desktop_name [ list widget deskname action set_deskname arg 1]\
-	    mixer_volume [ list widget mixer action set_mixer arg 0]\
-	    metar_window [ list widget metar action metar::toggle_window arg 0]\
-	    metar_update [ list widget metar action metar::update arg 0]\
-	    musicpd_update [ list widget musicpd action musicpd::update arg 0]\
-	    set_theme [ list widget none action set_theme arg 1]]
+	array set messagearray {
+	    window_active {widget wintitle action set_wintitle arg 1}\
+	    no_window_active {widget wintitle action unset_wintitle arg 1}\
+	    desktop_list {widget desklist action set_desklist arg 1}\
+	    desktop_mode {widget deskmode action set_deskmode arg 1}\
+	    desktop_name {widget deskname action set_deskname arg 1}\
+	    mixer_volume {widget mixer action set_mixer arg 0}\
+	    metar_window {widget metar action metar::toggle_window arg 0}\
+	    metar_update {widget metar action metar::update arg 0}\
+	    musicpd_update {widget musicpd action musicpd::update arg 0}\
+	    set_theme {widget none action set_theme arg 1}}
 }
 
 # Set the theme on the alements of the bar

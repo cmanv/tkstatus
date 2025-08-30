@@ -95,10 +95,14 @@ proc zconfig::read {configfile} {
 	variable widgets
 	variable config
 
+	# List of valid contexts in config file
 	set contexts { main widgets_left widgets_right\
 		arcsize datetime desklist deskmode deskname devices\
 		loadavg mail maildir memused metar mixer musicpd\
 		netin netout separator wintitle}
+
+	# Cant change these from config file
+	set immutables {type source ref periodic}
 
 	if {$configfile == {default}} {
 		set configfile $defaultfile
@@ -135,6 +139,9 @@ proc zconfig::read {configfile} {
 			if {$context == "widgets_left" || $context == "widgets_right"} {
 				lappend config($context) $line
 			} elseif [regexp {^([a-z_]+)=(.+)} $line -> key value] {
+				if {[lsearch $immutables $key] >= 0} {
+					continue
+				}
 				if {$context == "main"} {
 					set config($key) $value
 				} elseif {$context == "maildir"} {
