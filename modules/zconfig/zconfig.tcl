@@ -150,4 +150,4 @@ proc zconfig::read {configfile} {
 	return [array get config]
 }
 
-package provide zconfig 0.1
+package provide zconfig @PACKAGE_VERSION@

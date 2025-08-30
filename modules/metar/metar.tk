@@ -331,4 +331,4 @@ proc ::metar::setup {} {
 	utils::every 600000 ::metar::update
 }
 
-package provide metar 1.0
+package provide metar @PACKAGE_VERSION@

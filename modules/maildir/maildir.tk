@@ -244,5 +244,4 @@ proc maildir::newmail { account } {
 		incr count
 	}
 }
-
-package provide maildir 0.1
+package provide maildir @PACKAGE_VERSION@

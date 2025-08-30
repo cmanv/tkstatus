@@ -89,4 +89,4 @@ proc devices::setup { base position side } {
 	}
 }
 
-package provide devices 0.1
+package provide devices @PACKAGE_VERSION@

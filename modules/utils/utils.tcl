@@ -17,4 +17,4 @@ namespace eval utils {
 	namespace export every read_file
 }
 
-package provide utils 0.1
+package provide utils @PACKAGE_VERSION@

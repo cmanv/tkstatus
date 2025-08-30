@@ -13,7 +13,8 @@ set(TCL_INCLUDE_PATH "/usr/local/include/tcl9.0")
 
 # Substitute some variable names
 configure_file(${zconfig_SOURCE_DIR}/${PACKAGE_INDEX} ${zconfig_BINARY_DIR}/${PACKAGE_INDEX} @ONLY)
+configure_file(${zconfig_SOURCE_DIR}/zconfig.tcl ${zconfig_BINARY_DIR}/zconfig.tcl @ONLY)
 
 # Install files
 install(FILES ${zconfig_BINARY_DIR}/${PACKAGE_INDEX} DESTINATION ${PACKAGE_LIB})
-install(FILES ${zconfig_SOURCE_DIR}/zconfig.tcl DESTINATION ${PACKAGE_LIB})
+install(FILES ${zconfig_BINARY_DIR}/zconfig.tcl DESTINATION ${PACKAGE_LIB})
