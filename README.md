@@ -1,13 +1,14 @@
 # zstatus
 Status bar for ZWM written in tcl/tk and C.
 
+TODO: rewrite this thing, as it is really outdated.
+
 ## Introduction
 This is a personal project designed for a FreeBSD desktop with the zwm window manager. The main script uses tcl/tk 9.0.
 
 The tcl language lacks the functions to access system information. But this is circumvented by using packages which are collections of C functions.
-For my own use, I've written these 4 small packages to provide all the functionnality I need for a status bar. These packages can be build with cmake and the relevant libraries and header files installed.
 
-The resulting shared libraries should be installed under **TCLLIBPATH**. The path of the relevant external libraries such as __libmpdclient.so__ should be defined in **LD_PRELOAD**. In my case, this is done in the calling shell script __statusbar.sh__.
+The shared libraries should be installed under **TCLLIBPATH**. The path of the relevant external libraries such as __libmpdclient.so__ should be defined in **LD_PRELOAD**. In my case, this is done in the calling shell script __zstatus.sh__.
 
 ## Files
 ### zstatus.sh
@@ -20,11 +21,11 @@ This is the main script. It's highly likely that you'll want to modify it for yo
 ### devices
 This module is used to report on the presence of removable devices on the system, such a disks or printers.
 
-### maildir 
-Report on the presence of new mail in the inbox folders of maildirs directories in the system.
+### mail
+Report on the presence of new mail in specified maildirs directories.
 
 ### metar
-This module is used to display a short weather report from a METAR station. The reports are in french. ;)
+This module is used to display a short weather report from a METAR station. Currently, the reports are in french only. ;)
 
 ### musicpd
 This module is used to return the currently playing song on the Music Player Daemon. It requires the __libmpdclient__ package and corresponding header files to build.
@@ -35,29 +36,29 @@ Connects to the currently running Music Player Daemon. The host can be a Unix so
 * mpd::currenttitle :
 Returns the title of the song currently playing.
 
-### sysinfo
+### sysbsd
 This module is system specific. The provided version was written for FreeBSD 14.X.
 The following functions are provided:
 
-* sysinfo::getloadavg :
+* sysbsd::getloadavg :
 Load average for the last minute.
 
-* sysinfo::getusedmemswap :
+* sysbsd::getusedmemswap :
 Returns the used memory defined as active memory + wired memory. The amount of swap used is provided within parenthesis if any.
 
-* sysinfo::getacpitemp :
+* sysbsd::getacpitemp :
 Returns the content of __hw.acpi.thermal.tz0.temperature__ in celcius.
 
-* sysinfo::getnetstats(if) :
+* sysbsd::getnetstats(if) :
 Returns the amount data downloaded end uploaded on the given interface.
 
-* sysinfo::getmixervol :
+* sysbsd::getmixervol :
 Returns the current volume of the mixer.
  
 ## Themes
 
-The bar has a light and dark theme built-in. (the dark theme being based on **Nord**)
-The theme is auto-selected based on the content of the file __~/.cache/theme/default__. The content of this file can be controlled by a script for switching between a dark or light theme.
+The bar has a light and dark theme built-in. The theme can be selected by running the script __zstatus-send__. For example:
+_zstatus-theme select-theme=dark_
 
 ![Light theme](png/statusbar-light.png)
 
