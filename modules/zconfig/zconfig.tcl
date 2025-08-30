@@ -27,11 +27,11 @@ namespace eval zconfig {
 			font normal day black dark LightGray }\
 	    deskname { type var source zstatus::deskname periodic nop\
 			font normal day black dark LightGray }\
-	    devices { type dynamic periodic devices::update\
+	    devices { type transient periodic devices::update\
 			font normal day black dark LightGray }\
 	    loadavg { type var source zstatus::loadavg periodic set_loadavg\
 			font normal day black dark LightGray }\
-	    maildir { type dynamic periodic maildir::update\
+	    maildir { type transient periodic maildir::update\
 			font normal day black dark LightGray }\
 	    memused { type var source zstatus::memused periodic set_memused\
 			font normal day black dark LightGray }\
@@ -39,7 +39,7 @@ namespace eval zconfig {
 			font normal day black dark LightGray }\
 	    mixer { type var source zstatus::mixer periodic set_mixer\
 			font normal day black dark LightGray }\
-	    musicpd { type dynamic periodic musicpd::update\
+	    musicpd { type transient periodic musicpd::update\
 			font normal day black dark LightGray }\
 	    netin { type var source zstatus::netin periodic set_netin\
 			interface em0 font normal day black dark LightGray }\
@@ -49,8 +49,6 @@ namespace eval zconfig {
 	    statusbar { type bar periodic nop day gray90 dark gray10 }\
 	    wintitle { type text ref wintitle font normal periodic nop\
 			maxlength 110 font normal day black dark LightGray }]
-
-	array set barcolor [ list day gray90 dark {#3b4252} ]
 
 	namespace export read get
 }

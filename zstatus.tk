@@ -50,7 +50,7 @@ proc zstatus::set_theme {theme} {
 	$bar configure -background $statusbar($currenttheme)
 	foreach item $widgetlist {
 		array set widget $::widgetarray($item)
-		if {$widget(type) == "dynamic"} {
+		if {$widget(type) == "transient"} {
 			${item}::set_theme $currenttheme
 		} elseif {$widget(type) == "separator"} {
 			incr count
@@ -268,7 +268,7 @@ proc zstatus::add_widgets {side} {
 					-fill y -padx 5 -side $side
 				set last $item$sepcount
 			}
-			dynamic {
+			transient {
 				${item}::setup $bar $last $side
 			}
 		}
