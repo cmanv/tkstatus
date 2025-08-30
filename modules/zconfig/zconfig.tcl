@@ -5,6 +5,7 @@ namespace eval zconfig {
 
 	array set config [ list \
 		lang		$::env(LANG)\
+		timezone	America/Montreal\
 		delay		2000\
 		fontname	NotoSans\
 		fontsize	11\
@@ -16,39 +17,39 @@ namespace eval zconfig {
 		wmsocket 	"$::env(XDG_CACHE_HOME)/zwm/socket"]
 
 	# Array of available widgets
-	array set widgets [ list\
+	array set widgets {\
 	    arcsize { type var source zstatus::arcsize periodic set_arcsize\
-			font normal day black dark LightGray }\
-	    datetime [ list type var source zstatus::datetime periodic set_datetime\
-			format {%d %b %H:%M } font normal day black dark LightGray ]\
+			font normal light black dark LightGray }\
+	    datetime { type var source zstatus::datetime periodic set_datetime\
+			format {%d %b %H:%M } font normal light black dark LightGray}\
 	    desklist { type var source zstatus::desklist periodic nop\
-			font normal day black dark LightGray }\
+			font normal light black dark LightGray }\
 	    deskmode { type var source zstatus::deskmode periodic nop\
-			font normal day black dark LightGray }\
+			font normal light black dark LightGray }\
 	    deskname { type var source zstatus::deskname periodic nop\
-			font normal day black dark LightGray }\
+			font normal light black dark LightGray }\
 	    devices { type transient periodic devices::update\
-			font normal day black dark LightGray }\
+			font normal light black dark LightGray }\
 	    loadavg { type var source zstatus::loadavg periodic set_loadavg\
-			font normal day black dark LightGray }\
-	    maildir { type transient periodic maildir::update\
-			font normal day black dark LightGray }\
+			font normal light black dark LightGray }\
+	    mail { type transient periodic mail::update\
+			font normal light black dark LightGray }\
 	    memused { type var source zstatus::memused periodic set_memused\
-			font normal day black dark LightGray }\
+			font normal light black dark LightGray }\
 	    metar { type var source metar::report(statusbar) periodic nop\
-			font normal day black dark LightGray }\
+			font normal light black dark LightGray }\
 	    mixer { type var source zstatus::mixer periodic set_mixer\
-			font normal day black dark LightGray }\
+			font normal light black dark LightGray }\
 	    musicpd { type transient periodic musicpd::update\
-			font normal day black dark LightGray }\
+			font normal light black dark LightGray }\
 	    netin { type var source zstatus::netin periodic set_netin\
-			interface em0 font normal day black dark LightGray }\
+			interface em0 font normal light black dark LightGray }\
 	    netout { type var source zstatus::netout periodic set_netout\
-			interface em0 font normal day black dark LightGray }\
-	    separator { type separator periodic nop day black dark gray }\
-	    statusbar { type bar periodic nop day gray90 dark gray10 }\
+			interface em0 font normal light black dark LightGray }\
+	    separator { type separator periodic nop light black dark gray }\
+	    statusbar { type bar periodic nop light gray90 dark gray10 }\
 	    wintitle { type text ref wintitle font normal periodic nop\
-			maxlength 110 font normal day black dark LightGray }]
+			maxlength 110 font normal light black dark LightGray }}
 
 	namespace export read get
 }
@@ -95,21 +96,20 @@ proc zconfig::read {configfile} {
 
 	set contexts { main widgets_left widgets_right\
 		arcsize datetime desklist deskmode deskname devices\
-		loadavg maildir memused metar mixer musicpd netin netout\
-		separator wintitle }
-
-	set default_left {deskmode separator desklist separator\
-			deskname separator wintitle}
-	set default_right {datetime separator}
+		loadavg mail maildir memused metar mixer musicpd\
+		netin netout separator wintitle}
 
 	if {$configfile == {default}} {
 		set configfile $defaultfile
 	}
 
-	set config(widgets_left) {}
-	set config(widgets_right) {}
+	set config(widgets_left) {deskmode separator desklist separator\
+			deskname separator wintitle}
+	set config(widgets_right) {datetime}
+	array set mailboxes {}
 
 	if [file exists $configfile] {
+		set index 0
 		set context ""
 		set lines [utils::read_file $configfile]
 		foreach line $lines {
@@ -119,14 +119,29 @@ proc zconfig::read {configfile} {
 				if {[lsearch $contexts $context] < 0} {
 					set context ""
 				}
+				if {$context == "widgets_left"} {
+					set config(widgets_left) {}
+				}
+				if {$context == "widgets_right"} {
+					set config(widgets_right) {}
+				}
+				if {$context == "maildir"} {
+					incr index
+				}
 				continue
 			}
 			if ![string length $context] { continue }
 			if {$context == "widgets_left" || $context == "widgets_right"} {
 				lappend config($context) $line
-			} elseif [regexp -nocase {^([a-z_]+)=(.+)} $line -> key value] {
+			} elseif [regexp {^([a-z_]+)=(.+)} $line -> key value] {
 				if {$context == "main"} {
 					set config($key) $value
+				} elseif {$context == "maildir"} {
+					if [info exists mailboxes($index)] {
+						array set mailbox $mailboxes($index)
+					}
+					set mailbox($key) $value
+					set mailboxes($index) [array get mailbox]
 				} else {
 					array set widget $widgets($context)
 					set widget($key) $value
@@ -136,13 +151,22 @@ proc zconfig::read {configfile} {
 		}
 	}
 
-	if {[llength $config(widgets_left)] == 0} {
-		set config(widgets_left) $default_left
+	# Validate mailboxes
+	foreach index [array names mailboxes] {
+		array set mailbox $mailboxes($index)
+		if ![info exists mailbox(light)] {
+			set mailbox(light) black
+		}
+		if ![info exists mailbox(dark)] {
+			set mailbox(dark) LightGray
+		}
+		if {![info exists mailbox(name)] || ![info exists mailbox(path)]} {
+			array unset mailboxes $index
+		} else {
+			set mailboxes($index) [array get mailbox]
+		}
 	}
-	if {[llength $config(widgets_right)] == 0} {
-		set config(widgets_right) $default_right
-	}
-
+	set config(mailboxes) [array get mailboxes]
 	set config(widgets) [array get widgets]
 
 	return [array get config]

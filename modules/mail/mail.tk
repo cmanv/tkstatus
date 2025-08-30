@@ -2,67 +2,47 @@
 package require mime
 package require utils
 
-namespace eval maildir {
-	variable accountlist [ list b2b2c gmail unix yahoo ]
-	variable path "$::env(HOME)/.maildir"
+namespace eval mail {
 	variable mailicon \ueec0
 	variable activepopup 0
-	variable timezone America/Montreal
 	namespace export setup update set_theme
 }
 
-proc maildir::dark {} {
-	set theme [ list \
-		background	{#3b4252} \
-		mailinfo	LightGrey \
-		mailsep		OliveDrab \
-		b2b2c		orange \
-		gmail		SkyBlue2 \
-		unix		tan \
-		yahoo		PaleGreen3 ]
-}
-
-proc maildir::day {} {
-	set theme [ list \
-		background	gray90 \
-		mailinfo	black \
-		mailsep		black \
-		b2b2c		chocolate \
-		gmail		SteelBlue \
-		unix		brown \
-		yahoo		DarkGreen ]
-}
-
-proc maildir::set_theme { currenttheme } {
-	variable accountlist
+proc mail::set_theme { newtheme } {
 	variable mailframe
 	variable mailsep
-	variable theme
 
-	array set theme [$currenttheme]
-	$mailframe configure -background $theme(background)
-	$mailsep configure -background $theme(mailsep)
-	foreach account $accountlist {
-		$mailframe.$account configure -bg $theme(background) -fg $theme($account)
+	variable statusbar
+	variable separator
+	variable mailboxes
+
+	variable theme
+	set theme $newtheme
+
+	$mailframe configure -background $statusbar($theme)
+	$mailsep configure -background $separator($theme)
+	foreach index [array names mailboxes] {
+		array set mailbox $mailboxes($index)
+		$mailframe.$index configure -fg $mailbox($theme)\
+			 -bg $statusbar($theme)
 	}
 }
 
 # Look for new messages in the mailboxes
-proc maildir::update {} {
-	variable accountlist
-	variable mailboxes
+proc mail::update {} {
 	variable mailframe
 	variable mailsep
 	variable mailpos
 	variable mailside
 	variable mailicon
+	variable mailboxes
 
-	foreach account $accountlist {
-		array set mailbox $mailboxes($account)
-		set newmail [llength [glob -nocomplain -dir "$mailbox(path)" *]]
+	foreach index [array names mailboxes] {
+		array set mailbox $mailboxes($index)
+		set newmail [llength [glob -nocomplain -dir "$mailbox(path)/new" *]]
 		if {$newmail && $newmail != $mailbox(newmail)} {
-			$mailframe.$account configure -text "$mailicon ($newmail)"
-			set mailbox(newmail) $newmail
+			$mailframe.$index configure -text "$mailicon ($newmail)"
+			set account(newmail) $newmail
 			if {!$mailbox(visible)} {
 				if {![string length [pack slaves $mailframe]]} {
 					pack $mailframe -after $mailpos \
@@ -70,10 +50,10 @@ proc maildir::update {} {
 					pack $mailsep -after $mailframe \
 						-fill y -padx 5 -side $mailside
 				}
-				pack $mailframe.$account -side left
+				pack $mailframe.$index -side left
 				set mailbox(visible) 1
 			}
-			set mailboxes($account) [array get mailbox]
+			set mailboxes($index) [array get mailbox]
 		} else {
 			if {!$newmail && $mailbox(visible)} {
 				pack forget $mailframe.$account
@@ -82,63 +62,64 @@ proc maildir::update {} {
 				}
 				set mailbox(newmail) 0
 				set mailbox(visible) 0
-				set mailboxes($account) [array get mailbox]
+				set mailboxes($index) [array get mailbox]
 			}
 		}
 	}
-
 }
 
 # Setup the mailboxes
-proc maildir::setup { widget position side } {
-	variable accountlist
-	variable path
+proc mail::setup { base position side } {
+	variable mail
 	variable mailboxes
+	variable statusbar
+	variable separator
+
+	array set mail $::widgetarray(mail)
+	array set mailboxes $::config(mailboxes)
+	array set statusbar $::widgetarray(statusbar)
+	array set separator $::widgetarray(separator)
+
 	variable mailframe
 	variable mailsep
 	variable mailpos
 	variable mailside
 
-	set mailframe $widget.mailboxes
-	set mailsep $widget.mailsep
-	set mailpos $widget.$position
+	set mailframe $base.mailframe
+	set mailsep $base.mailsep
+	set mailpos $base.$position
 	set mailside $side
 
 	frame $mailframe
 	frame $mailsep -width 1
 
-	array set mailboxes {}
-	foreach account $accountlist {
-		array set mailbox {}
-		set mailbox(path) "$path/$account/inbox/new"
+	foreach index [array names mailboxes] {
+		array set mailbox $mailboxes($index)
 		set mailbox(visible) 0
 		set mailbox(newmail) 0
-		set mailboxes($account) [array get mailbox]
+		set mailboxes($index) [array get mailbox]
 
-		label $mailframe.$account -font normal -text ""
-		bind $mailframe.$account <Enter> "maildir::newmail $account"
-		bind $mailframe.$account <Leave> {
+		label $mailframe.$index -font normal -text ""
+		bind $mailframe.$index <Enter> "mail::new $index"
+		bind $mailframe.$index <Leave> {
 			destroy .mailpopup
-			set maildir::activepopup 0
+			set mail::activepopup 0
 		}
-		bind $mailframe.$account <1> {
+		bind $mailframe.$index <1> {
 			exec emacsclient -c -e -F "((width . 120) (height . 30))" \
 				"(mu4e)" > /dev/null 2>@1 &
 		}
 	}
 }
 
-proc maildir::convert_date { rfc822 } {
-	variable lang
-	variable timezone
-
+proc mail::convert_date { rfc822 } {
 	set ctime [clock scan $rfc822]
 	set date [clock format $ctime -format {%a %d %b %Y %T %Z} \
-			-timezone $timezone -locale $::config(lang)]
+			-timezone $::config(timezone) -locale $::config(lang)]
 	return $date
 }
 
-proc maildir::convert_header { header } {
+proc mail::convert_header { header } {
 	set tokens [regexp -linestop -all -inline {(.*)=\?([\w\-]+)\?(.)\?(.*?)\?\=(.*)} $header]
 	if { $tokens == {} } {
 		return $header
@@ -176,10 +157,13 @@ proc maildir::convert_header { header } {
 }
 
 # Popup after button event on mail icon
-proc maildir::newmail { account } {
-	variable theme
-	variable mailboxes
+proc mail::new { index } {
 	variable activepopup
+	variable mail
+	variable mailboxes
+	variable statusbar
+	variable separator
+	variable theme
 
 	if {$activepopup} {
 		destroy .mailpopup
@@ -187,22 +171,22 @@ proc maildir::newmail { account } {
 		set activepopup 1
 	}
 
-	toplevel .mailpopup -background $theme(background) -class Newmail
+	toplevel .mailpopup -background $statusbar($theme) -class Newmail
 	wm attributes .mailpopup -type dialog
 	wm overrideredirect .mailpopup 1
 	wm geometry .mailpopup -10+27
 
-	pack [frame .mailpopup.$account -background $theme(background)] \
+	array set mailbox $mailboxes($index)
+	pack [frame .mailpopup.$index -background $statusbar($theme)] \
 		-expand 1 -fill x -side top
-	pack [label .mailpopup.$account.label -font bold -bg $theme(background) \
-		-fg $theme($account) -text "-- $account --"] \
+	pack [label .mailpopup.$index.label -font bold -bg $statusbar($theme) \
+		-fg $mail($theme) -text "-- $mailbox(name) --"] \
 		-expand 1 -side left
-	pack [frame .mailpopup.sep$account -background $theme(mailsep) \
+	pack [frame .mailpopup.sep$index -background $separator($theme) \
 		-height 1] -fill x -side top
 
 	set count 0
-	array set mailbox $mailboxes($account)
-	foreach file [glob -nocomplain -dir "$mailbox(path)" *] {
+	foreach file [glob -nocomplain -dir "$mailbox(path)/new" *] {
 		set mesg [utils::read_file $file]
 		if {[string length $mesg] < 2} {
 			continue
@@ -212,26 +196,28 @@ proc maildir::newmail { account } {
 		set from [convert_header [lindex [mime::getheader $tokens From] 0]]
 		set subject [convert_header [lindex [mime::getheader $tokens Subject] 0]]
 
-		pack [frame .mailpopup.date$count -background $theme(background)] \
+		pack [frame .mailpopup.date$count -background $statusbar($theme)]\
 			-expand 1 -fill x
-		pack [label .mailpopup.date$count.label -text $date \
-			-font normal -bg $theme(background) -fg $theme(mailinfo)] \
-			-side left -padx 5
-		pack [frame .mailpopup.from$count -background $theme(background)] \
+		pack [label .mailpopup.date$count.label -text $date\
+			-font $mail(font) -bg $statusbar($theme)\
+			-fg $mail($theme)] -side left -padx 5
+		pack [frame .mailpopup.from$count -background $statusbar($theme)]\
 			-expand 1 -fill x
-		pack [label .mailpopup.from$count.label -text $from \
-			-font normal -bg $theme(background) -fg $theme(mailinfo)] \
-			-side left -padx 5
-		pack [frame .mailpopup.subject$count -background $theme(background)] \
+		pack [label .mailpopup.from$count.label -text $from\
+			-font $mail(font) -bg $statusbar($theme)\
+			-fg $mail($theme)] -side left -padx 5
+		pack [frame .mailpopup.subject$count -background $statusbar($theme)]\
 			-expand 1 -fill x
 
 		set width [string length $subject]
 		set height [tcl::mathfunc::ceil [expr $width / 72.0]]
 		set width [tcl::mathfunc::min $width 72]
 
-		set tsubject [text .mailpopup.subject$count.text -font normal -wrap word \
-				-borderwidth 0 -highlightthickness 0 -height $height -width $width \
-				-bg $theme(background) -fg $theme(mailinfo)]
+		set tsubject [text .mailpopup.subject$count.text -font $mail(font)\
+			-wrap word  -borderwidth 0 -highlightthickness 0\
+			-height $height -width $width -fg $mail($theme)\
+			-bg $statusbar($theme)]
+
 		pack $tsubject -side left -padx 5
 		$tsubject tag configure emoji -font emoji
 		$tsubject insert 1.0 $subject
@@ -239,9 +225,9 @@ proc maildir::newmail { account } {
 			$tsubject tag add emoji $i
 		}
 
-		pack [frame .mailpopup.sep$count -background $theme(mailsep) \
+		pack [frame .mailpopup.sep$count -background $separator($theme) \
 			-height 1] -side top -fill x
 		incr count
 	}
 }
-package provide maildir @PACKAGE_VERSION@
+package provide mail @PACKAGE_VERSION@

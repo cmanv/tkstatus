@@ -3,7 +3,7 @@ package require cmdline
 package require unix_sockets
 package require utils
 package require devices
-package require maildir
+package require mail
 package require metar
 package require musicpd
 package require SysInfo
@@ -355,8 +355,8 @@ if [info exists config(theme)] {
 } elseif [info exists params(theme)] {
 	set theme $params(theme)
 }
-if {$theme != "day" && $theme != "dark"} {
-	set theme day
+if {$theme != "light" && $theme != "dark"} {
+	set theme light
 }
 
 # Setup tk app
