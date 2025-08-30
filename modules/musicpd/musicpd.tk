@@ -4,7 +4,6 @@ package require MPD
 namespace eval musicpd {
 	variable musicpd_active 0
 	variable activepopup 0
-
 	array set icons { 0 \ueb92 1 \ueb78 2 \uef32 3 \uef82 }
 
 	namespace export setup update set_theme

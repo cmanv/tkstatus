@@ -13,14 +13,8 @@ namespace eval zstatus {
 	variable currenttheme	none
 
 	# Unicode codes from remixicon
-	array set icons [ list	down	\uea4a \
-				up	\uea74 \
-				mixer	\uf229 ]
-
-	array set modes [ list  Monocle	M \
-				VTiled	V \
-				HTiled	H \
-				Stacked	S ]
+	array set icons { down \uea4a up \uea74 mixer \uf229 }
+	array set modes { Monocle M VTiled V HTiled H Stacked S }
 
 	# Array of messages that can be accepted
 	array set messagearray [ list \

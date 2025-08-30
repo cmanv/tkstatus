@@ -4,23 +4,23 @@ package require fileutil
 package require metar::decode
 
 proc ::metar::dark {} {
-	set theme [ list {background} {#3b4252} \
+	set theme { 	{background} {#3b4252} \
 			{foreground} {#d8dee9} \
 			{label1} {#8fbcbb} \
 			{text1} {#a3be9c} \
 			{text2} {#eccb8b} \
 			{icon} {#e0d080} \
-			{separator} {#5e81ac} ]
+			{separator} {#5e81ac} }
 }
 
 proc ::metar::light {} {
-	set theme [ list {background} {#e0e0e0} \
+	set theme {	{background} {#e0e0e0} \
 			{foreground} {black} \
 			{label1} {black} \
 			{text1} {#000080} \
 			{text2} {#008000} \
 			{icon} {#c0a060} \
-			{separator} {black} ]
+			{separator} {black} }
 }
 
 proc ::metar::set_header_theme { header } {
