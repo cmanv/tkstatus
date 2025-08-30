@@ -56,7 +56,7 @@ proc mail::update {} {
 			set mailboxes($index) [array get mailbox]
 		} else {
 			if {!$newmail && $mailbox(visible)} {
-				pack forget $mailframe.$account
+				pack forget $mailframe.$index
 				if {![string length [pack slaves $mailframe]]} {
 					pack forget $mailframe $mailsep
 				}
