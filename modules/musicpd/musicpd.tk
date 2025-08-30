@@ -5,40 +5,24 @@ namespace eval musicpd {
 	variable musicpd_active 0
 	variable activepopup 0
 
+	array set icons { 0 \ueb92 1 \ueb78 2 \uef32 3 \uef82 }
+
 	namespace export setup update set_theme
-
-	array set icons [ list \
-		0	\ueb92 \
-		1	\ueb78 \
-		2	\uef32 \
-		3	\uef82 ]
-}
-
-proc musicpd::dark {} {
-	set theme [ list \
-		background	{#3b4252} \
-		musicpd		CadetBlue3 \
-		title	 	LightGray \
-		separator	OliveDrab ]
-}
-
-proc musicpd::day {} {
-	set theme [ list \
-		background	gray90 \
-		musicpd		DarkBlue \
-		title	 	black \
-		separator	black ]
 }
 
 # Set the theme for the devices
-proc musicpd::set_theme { currenttheme } {
+proc musicpd::set_theme { newtheme } {
 	variable musicframe
 	variable musicsep
+	variable musicpd
+	variable statusbar
+	variable separator
 	variable theme
 
-	array set theme [$currenttheme]
-	$musicframe configure -bg $theme(background) -fg $theme(musicpd)
-	$musicsep configure -background $theme(separator)
+	set theme $newtheme
+
+	$musicframe configure -bg $statusbar($theme) -fg $musicpd($theme)
+	$musicsep configure -background $separator($theme)
 }
 
 # Show what is currently playing on MPD
@@ -78,13 +62,20 @@ proc musicpd::setup { widget position side } {
 	variable musicsep
 	variable musicpos
 	variable musicside
+	variable musicpd
+	variable statusbar
+	variable separator
+
+	array set musicpd $::widgetarray(musicpd)
+	array set statusbar $::widgetarray(statusbar)
+	array set separator $::widgetarray(separator)
 
 	set musicframe $widget.musicpd
 	set musicsep $widget.musicsep
 	set musicpos $widget.$position
 	set musicside $side
 
-	label $musicframe -font normal
+	label $musicframe -font $musicpd(font)
 	frame $musicsep -width 1
 
 	bind $musicframe <Enter> {
@@ -115,19 +106,21 @@ proc musicpd::setup { widget position side } {
 
 # Show info on current track
 proc musicpd::show_info { } {
-	variable theme
 	variable activepopup
 	variable musictext
+	variable musicpd
+	variable statusbar
+	variable theme
 
 	set activepopup 1
-	toplevel .musicpopup -background $theme(background) -class NowPlaying
+	toplevel .musicpopup -background $statusbar($theme) -class NowPlaying
 	wm title .musicpopup "Now Playing"
 	wm attributes .musicpopup -type dialog
 	wm overrideredirect .musicpopup 1
 	set xpos [tcl::mathfunc::max [expr [winfo pointerx .] - 120] 1]
 	wm geometry .musicpopup +$xpos+27
 
-	set musictext [text .musicpopup.text -font normal -height 2 \
+	set musictext [text .musicpopup.text -font $musicpd(font) -height 2 \
 			-borderwidth 1 -highlightthickness 0 ]
 	pack $musictext -side left -padx 5 -pady 3
 	update_info
@@ -135,8 +128,11 @@ proc musicpd::show_info { } {
 
 # Update info on current track
 proc musicpd::update_info { } {
-	variable theme
 	variable musictext
+	variable musicpd
+	variable statusbar
+	variable theme
+
 	set mpdtitle [join [mpd::currenttitle]]
 
 	set width 0
@@ -145,7 +141,7 @@ proc musicpd::update_info { } {
 	}
 	$musictext delete 1.0 end
 	$musictext insert 1.0 $mpdtitle
-	$musictext configure -width $width -bg $theme(background) -fg $theme(title)
+	$musictext configure -width $width -fg $musicpd($theme) -bg $statusbar($theme)
 }
 
-package provide musicpd 0.4
+package provide musicpd @PACKAGE_VERSION@

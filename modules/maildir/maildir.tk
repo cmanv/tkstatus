@@ -8,7 +8,6 @@ namespace eval maildir {
 	variable mailicon \ueec0
 	variable activepopup 0
 	variable timezone America/Montreal
-	variable lang "$::env(LANG)"
 	namespace export setup update set_theme
 }
 
@@ -135,7 +134,7 @@ proc maildir::convert_date { rfc822 } {
 
 	set ctime [clock scan $rfc822]
 	set date [clock format $ctime -format {%a %d %b %Y %T %Z} \
-			-timezone $timezone -locale $lang]
+			-timezone $timezone -locale $::config(lang)]
 	return $date
 }
 
