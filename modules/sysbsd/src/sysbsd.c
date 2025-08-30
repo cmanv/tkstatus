@@ -1,6 +1,18 @@
-#include "sysinfo.h"
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/soundcard.h>
+#include <sys/sysctl.h>
+#include <vm/vm_param.h>
+#include <unistd.h>
+#include <net/if.h>
+#include <ifaddrs.h>
+#include "config.h"
+#include "sysbsd.h"
 
-int SysInfo_GetLoadAvgObjCmd( ClientData clientData, Tcl_Interp *interp,
+int SysBSD_GetLoadAvgObjCmd( ClientData clientData, Tcl_Interp *interp,
 				int objc, Tcl_Obj *const objv[])
 {
 	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
@@ -18,7 +30,7 @@ int SysInfo_GetLoadAvgObjCmd( ClientData clientData, Tcl_Interp *interp,
 	return TCL_OK;
 }
 
-int SysInfo_GetMemStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
+int SysBSD_GetMemStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 				int objc, Tcl_Obj *const objv[])
 {
 	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
@@ -44,8 +56,8 @@ int SysInfo_GetMemStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 	double memused = (double)((active + wired)>>8);
 
 	char mem_unit[3];
-	strcpy(mem_unit, "Mo");
-	if (memused>=1024) { memused /= 1024; strcpy(mem_unit, "Go"); }
+	strcpy(mem_unit, "Mi");
+	if (memused>=1024) { memused /= 1024; strcpy(mem_unit, "Gi"); }
 
 	char mem_fmt[8];
 	strcpy(mem_fmt, "%.0f %s");
@@ -77,8 +89,8 @@ int SysInfo_GetMemStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 	}
 
 	char swap_unit[3];
-	strcpy(swap_unit, "Mo");
-	if (swapused>=1024) { swapused /= 1024; strcpy(swap_unit, "Go"); }
+	strcpy(swap_unit, "Mi");
+	if (swapused>=1024) { swapused /= 1024; strcpy(swap_unit, "Gi"); }
 
 	char swap_fmt[8];
 	strcpy(swap_fmt, "%.0f %s");
@@ -97,7 +109,7 @@ int SysInfo_GetMemStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 	return TCL_OK;
 }
 
-int SysInfo_GetArcStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
+int SysBSD_GetArcStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 				int objc, Tcl_Obj *const objv[])
 {
 	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
@@ -144,8 +156,8 @@ int SysInfo_GetArcStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 	double mrusize = (double)(mru>>20);
 
 	char arc_unit[3];
-	strcpy(arc_unit, "Mo");
-	if (arcsize>=1024) { arcsize /= 1024; strcpy(arc_unit, "Go"); }
+	strcpy(arc_unit, "Mi");
+	if (arcsize>=1024) { arcsize /= 1024; strcpy(arc_unit, "Gi"); }
 
 	char arc_fmt[8];
 	strcpy(arc_fmt, "%.0f %s");
@@ -161,8 +173,8 @@ int SysInfo_GetArcStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 	}
 
 	char mfu_unit[3];
-	strcpy(mfu_unit, "Mo");
-	if (mfusize>=1024) { mfusize /= 1024; strcpy(mfu_unit, "Go"); }
+	strcpy(mfu_unit, "Mi");
+	if (mfusize>=1024) { mfusize /= 1024; strcpy(mfu_unit, "Gi"); }
 
 	char mfu_fmt[8];
 	strcpy(mfu_fmt, "%.0f %s");
@@ -178,8 +190,8 @@ int SysInfo_GetArcStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 	}
 
 	char mru_unit[3];
-	strcpy(mru_unit, "Mo");
-	if (mrusize>=1024) { mrusize /= 1024; strcpy(mru_unit, "Go"); }
+	strcpy(mru_unit, "Mi");
+	if (mrusize>=1024) { mrusize /= 1024; strcpy(mru_unit, "Gi"); }
 
 	char mru_fmt[8];
 	strcpy(mru_fmt, "%.0f %s");
@@ -197,7 +209,7 @@ int SysInfo_GetArcStatsObjCmd( ClientData clientData, Tcl_Interp *interp,
 	return TCL_OK;
 }
 
-int SysInfo_GetAcpiTempObjCmd( ClientData clientData, Tcl_Interp *interp,
+int SysBSD_GetAcpiTempObjCmd( ClientData clientData, Tcl_Interp *interp,
 				int objc, Tcl_Obj *const objv[])
 {
 	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
@@ -218,7 +230,7 @@ int SysInfo_GetAcpiTempObjCmd( ClientData clientData, Tcl_Interp *interp,
 	return TCL_OK;
 }
 
-int SysInfo_GetCpuTempObjCmd( ClientData clientData, Tcl_Interp *interp,
+int SysBSD_GetCpuTempObjCmd( ClientData clientData, Tcl_Interp *interp,
 				int objc, Tcl_Obj *const objv[])
 {
 	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
@@ -239,7 +251,7 @@ int SysInfo_GetCpuTempObjCmd( ClientData clientData, Tcl_Interp *interp,
 	return TCL_OK;
 }
 
-int SysInfo_GetCpuFreqObjCmd( ClientData clientData, Tcl_Interp *interp,
+int SysBSD_GetCpuFreqObjCmd( ClientData clientData, Tcl_Interp *interp,
 				int objc, Tcl_Obj *const objv[])
 {
 	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
@@ -260,7 +272,7 @@ int SysInfo_GetCpuFreqObjCmd( ClientData clientData, Tcl_Interp *interp,
 	return TCL_OK;
 }
 
-int SysInfo_GetNetOutObjCmd( ClientData clientData, Tcl_Interp *interp,
+int SysBSD_GetNetOutObjCmd( ClientData clientData, Tcl_Interp *interp,
 				int objc, Tcl_Obj *const objv[])
 {
 	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
@@ -269,7 +281,7 @@ int SysInfo_GetNetOutObjCmd( ClientData clientData, Tcl_Interp *interp,
 	struct if_data *ifd;
 
 	if (objc < 2) {
-		Tcl_SetStringObj(resultObj, "getnetstats: Interface manquante.", -1);
+		Tcl_SetStringObj(resultObj, "getnetout: missing interface", -1);
 		return TCL_ERROR;
 	}
 
@@ -290,9 +302,9 @@ int SysInfo_GetNetOutObjCmd( ClientData clientData, Tcl_Interp *interp,
 	freeifaddrs(ifap);
 
 	char ounit[3];
-	strcpy(ounit, "Ko");
-	if (outbound>=1024) { outbound /= 1024; strcpy(ounit, "Mo"); }
-	if (outbound>=1024) { outbound /= 1024; strcpy(ounit, "Go"); }
+	strcpy(ounit, "Ki");
+	if (outbound>=1024) { outbound /= 1024; strcpy(ounit, "Mi"); }
+	if (outbound>=1024) { outbound /= 1024; strcpy(ounit, "Gi"); }
 
 	char ofmt[8];
 	strcpy(ofmt, "%.0f %s");
@@ -305,7 +317,7 @@ int SysInfo_GetNetOutObjCmd( ClientData clientData, Tcl_Interp *interp,
 	return TCL_OK;
 }
 
-int SysInfo_GetNetInObjCmd( ClientData clientData, Tcl_Interp *interp,
+int SysBSD_GetNetInObjCmd( ClientData clientData, Tcl_Interp *interp,
 				int objc, Tcl_Obj *const objv[])
 {
 	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
@@ -314,7 +326,7 @@ int SysInfo_GetNetInObjCmd( ClientData clientData, Tcl_Interp *interp,
 	struct if_data *ifd;
 
 	if (objc < 2) {
-		Tcl_SetStringObj(resultObj, "getnetstats: Interface manquante.", -1);
+		Tcl_SetStringObj(resultObj, "getnetin: missing interface", -1);
 		return TCL_ERROR;
 	}
 
@@ -335,9 +347,9 @@ int SysInfo_GetNetInObjCmd( ClientData clientData, Tcl_Interp *interp,
 	freeifaddrs(ifap);
 
 	char iunit[3];
-	strcpy(iunit, "Ko");
-	if (inbound>=1024) { inbound /= 1024; strcpy(iunit, "Mo"); }
-	if (inbound>=1024) { inbound /= 1024; strcpy(iunit, "Go"); }
+	strcpy(iunit, "Ki");
+	if (inbound>=1024) { inbound /= 1024; strcpy(iunit, "Mi"); }
+	if (inbound>=1024) { inbound /= 1024; strcpy(iunit, "Gi"); }
 
 	char ifmt[8];
 	strcpy(ifmt, "%.0f %s");
@@ -350,7 +362,7 @@ int SysInfo_GetNetInObjCmd( ClientData clientData, Tcl_Interp *interp,
 	return TCL_OK;
 }
 
-int SysInfo_GetMixerVolObjCmd( ClientData clientData, Tcl_Interp *interp,
+int SysBSD_GetMixerVolObjCmd( ClientData clientData, Tcl_Interp *interp,
 				int objc, Tcl_Obj *const objv[])
 {
 	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);

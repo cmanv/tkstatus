@@ -1,12 +1,12 @@
 #!/usr/bin/env wish9.0
 package require cmdline
 package require unix_sockets
-package require utils
 package require devices
 package require mail
 package require metar
 package require musicpd
-package require SysInfo
+package require sysbsd
+package require utils
 package require zconfig
 
 namespace eval zstatus {
@@ -116,12 +116,12 @@ proc zstatus::set_deskname {value} {
 
 proc zstatus::set_loadavg {} {
 	variable loadavg
-	set loadavg "C: [sysinfo::getloadavg] "
+	set loadavg "C: [sysbsd::getloadavg] "
 }
 
 proc zstatus::set_memused {} {
 	variable memused
-	set memstats [sysinfo::getmemstats]
+	set memstats [sysbsd::getmemstats]
 	set memused "M: [join [lindex $memstats 0]] "
 	set swap [join [lindex $memstats 1]]
 	if {[string length $swap]} {
@@ -131,13 +131,13 @@ proc zstatus::set_memused {} {
 
 proc zstatus::set_arcsize {} {
 	variable arcsize
-	set arcstats [sysinfo::getarcstats]
+	set arcstats [sysbsd::getarcstats]
 	set arcsize "ARC: [join [lindex $arcstats 0]] "
 }
 
 proc zstatus::set_netin {} {
 	array set widget $::widgetarray(netin)
-	set inval [sysinfo::getnetin $widget(interface)]
+	set inval [sysbsd::getnetin $widget(interface)]
 	variable netin
 	variable icons
 	set netin "$icons(down)[join [lindex $inval 0]] "
@@ -145,7 +145,7 @@ proc zstatus::set_netin {} {
 
 proc zstatus::set_netout {} {
 	array set widget $::widgetarray(netout)
-	set outval [sysinfo::getnetout $widget(interface)]
+	set outval [sysbsd::getnetout $widget(interface)]
 	variable netout
 	variable icons
 	set netout "$icons(up)[join [lindex $outval 0]] "
@@ -161,7 +161,7 @@ proc zstatus::set_datetime {} {
 proc zstatus::set_mixer {} {
 	variable mixer
 	variable icons
-	set mixer "$icons(mixer) [sysinfo::getmixervol]"
+	set mixer "$icons(mixer) [sysbsd::getmixervol]"
 }
 
 # Send a message to the window manager

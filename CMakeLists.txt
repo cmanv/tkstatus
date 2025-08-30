@@ -15,7 +15,7 @@ add_subdirectory(modules/devices)
 add_subdirectory(modules/mail)
 add_subdirectory(modules/metar)
 add_subdirectory(modules/musicpd)
-add_subdirectory(modules/sysinfo)
+add_subdirectory(modules/sysbsd)
 add_subdirectory(modules/utils)
 add_subdirectory(modules/zconfig)
 

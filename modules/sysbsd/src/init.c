@@ -1,7 +1,8 @@
-#include "sysinfo.h"
+#include "config.h"
+#include "sysbsd.h"
 
 EXTERN int
-Sysinfo_Init(Tcl_Interp *interp)
+Sysbsd_Init(Tcl_Interp *interp)
 {
 	Tcl_Namespace *namespace;
 
@@ -17,60 +18,60 @@ Sysinfo_Init(Tcl_Interp *interp)
 		return TCL_ERROR;
 	}
 
-	namespace = Tcl_CreateNamespace(interp, "sysinfo", (ClientData)NULL,
+	namespace = Tcl_CreateNamespace(interp, "sysbsd", (ClientData)NULL,
 					(Tcl_NamespaceDeleteProc *)NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"sysinfo::getloadavg",
-				SysInfo_GetLoadAvgObjCmd,
+				"sysbsd::getloadavg",
+				SysBSD_GetLoadAvgObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"sysinfo::getmemstats",
-				SysInfo_GetMemStatsObjCmd,
+				"sysbsd::getmemstats",
+				SysBSD_GetMemStatsObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"sysinfo::getarcstats",
-				SysInfo_GetArcStatsObjCmd,
+				"sysbsd::getarcstats",
+				SysBSD_GetArcStatsObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"sysinfo::getacpitemp",
-				SysInfo_GetAcpiTempObjCmd,
+				"sysbsd::getacpitemp",
+				SysBSD_GetAcpiTempObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"sysinfo::getcputemp",
-				SysInfo_GetCpuTempObjCmd,
+				"sysbsd::getcputemp",
+				SysBSD_GetCpuTempObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"sysinfo::getcpufreq",
-				SysInfo_GetCpuFreqObjCmd,
+				"sysbsd::getcpufreq",
+				SysBSD_GetCpuFreqObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"sysinfo::getnetin",
-				SysInfo_GetNetInObjCmd,
+				"sysbsd::getnetin",
+				SysBSD_GetNetInObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"sysinfo::getnetout",
-				SysInfo_GetNetOutObjCmd,
+				"sysbsd::getnetout",
+				SysBSD_GetNetOutObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"sysinfo::getmixervol",
-				SysInfo_GetMixerVolObjCmd,
+				"sysbsd::getmixervol",
+				SysBSD_GetMixerVolObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);
 
