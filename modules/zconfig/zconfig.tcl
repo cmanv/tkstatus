@@ -37,6 +37,7 @@ namespace eval zconfig {
 	    memused { type var source zstatus::memused periodic set_memused\
 			font normal light black dark LightGray }\
 	    metar { type var source metar::report(statusbar) periodic nop\
+			delay 600000 geometry {-1+26}\
 			font normal light black dark LightGray }\
 	    mixer { type var source zstatus::mixer periodic set_mixer\
 			font normal light black dark LightGray }\

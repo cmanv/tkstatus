@@ -3,210 +3,122 @@ package require utils
 package require fileutil
 package require metar::decode
 
-proc ::metar::dark {} {
-	set theme { 	{background} {#3b4252} \
-			{foreground} {#d8dee9} \
-			{label1} {#8fbcbb} \
-			{text1} {#a3be9c} \
-			{text2} {#eccb8b} \
-			{icon} {#e0d080} \
-			{separator} {#5e81ac} }
+namespace eval metar {
+	font create m_italic -family Sans -size 12 -slant italic
+	font create m_normal -family Sans -size 12
+	font create m_large -family Sans -size 13
+	font create m_icon -family Remix -size 15
+
+	array set header1 { font m_large light black dark gray80 }
+	array set header2 { font m_italic light black dark gray80 }
+	array set value1 { font m_normal light DarkBlue dark CadetBlue3 }
+	array set value2 { font m_normal light DarkGreen dark PaleGreen3 }
+	array set icons { font m_icons light orange dark Gold }
+
+	namespace export setup update set_theme
 }
 
-proc ::metar::light {} {
-	set theme {	{background} {#e0e0e0} \
-			{foreground} {black} \
-			{label1} {black} \
-			{text1} {#000080} \
-			{text2} {#008000} \
-			{icon} {#c0a060} \
-			{separator} {black} }
+proc ::metar::toggle_window {} {
+	variable state_visible
+
+	if {$state_visible} {
+		wm state .metar withdrawn
+		set state_visible 0
+	} else {
+		wm state .metar normal
+		raise .metar
+		set state_visible 1
+	}
 }
 
-proc ::metar::set_header_theme { header } {
+proc ::metar::set_theme_header { header } {
+	variable statusbar
+	variable header2
+	variable value1
 	variable theme
-	$header configure -background $theme(background)
-	$header.keys configure -background $theme(background)
-	$header.keys.station configure -background $theme(background)
-	$header.keys.station.text configure -bg $theme(background) -fg $theme(label1)
-	$header.keys.date configure -background $theme(background)
-	$header.keys.date.text configure -bg $theme(background) -fg $theme(label1)
-	$header.keys.status configure -background $theme(background)
-	$header.keys.status.text configure -bg $theme(background) -fg $theme(label1)
-	$header.values configure -background $theme(background)
-	$header.values.station configure -background $theme(background)
-	$header.values.station.text configure -bg $theme(background) -fg $theme(text1)
-	$header.values.date configure -background $theme(background)
-	$header.values.date.text configure -bg $theme(background) -fg $theme(text1)
-	$header.values.status configure -background $theme(background)
-	$header.values.status.text configure -bg $theme(background) -fg $theme(text1)
+
+	$header configure -background $statusbar($theme)
+	$header.keys configure -background $statusbar($theme)
+	$header.keys.station configure -background $statusbar($theme)
+	$header.keys.station.text configure -bg $statusbar($theme) -fg $header2($theme)
+	$header.keys.date configure -background $statusbar($theme)
+	$header.keys.date.text configure -bg $statusbar($theme) -fg $header2($theme)
+	$header.keys.status configure -background $statusbar($theme)
+	$header.keys.status.text configure -bg $statusbar($theme) -fg $header2($theme)
+	$header.values configure -background $statusbar($theme)
+	$header.values.station configure -background $statusbar($theme)
+	$header.values.station.text configure -bg $statusbar($theme) -fg $value1($theme)
+	$header.values.date configure -background $statusbar($theme)
+	$header.values.date.text configure -bg $statusbar($theme) -fg $value1($theme)
+	$header.values.status configure -background $statusbar($theme)
+	$header.values.status.text configure -bg $statusbar($theme) -fg $value1($theme)
 }
 
-proc ::metar::set_summary_theme { summary } {
+proc ::metar::set_theme_summary { summary } {
+	variable statusbar
+	variable separator
+	variable header2
+	variable value1
+	variable value2
+	variable icons
 	variable theme
-	$summary configure -background $theme(background)
-	$summary.temp configure -background $theme(background)
-	$summary.temp.status configure -background $theme(background)
-	$summary.temp.status.icon configure -bg $theme(background) -fg $theme(text2)
-	$summary.temp.status.text configure -bg $theme(background) -fg $theme(text2)
-	$summary.temp.remark configure -background $theme(background)
-	$summary.temp.remark.key configure -bg $theme(background) -fg $theme(label1)
-	$summary.temp.remark.value configure -bg $theme(background) -fg $theme(text2)
-	$summary.separator configure -background $theme(separator)
-	$summary.icon1 configure -background $theme(background)
-	$summary.icon1.sunrise configure -bg $theme(background) -fg $theme(icon)
-	$summary.icon1.sunset configure -bg $theme(background) -fg $theme(icon)
-	$summary.icon2 configure -background $theme(background)
-	$summary.icon2.up configure -bg $theme(background) -fg $theme(text1)
-	$summary.icon2.down configure -bg $theme(background) -fg $theme(text1)
-	$summary.hours configure -background $theme(background)
-	$summary.hours.sunrise configure -bg $theme(background) -fg $theme(text1)
-	$summary.hours.sunset configure -bg $theme(background) -fg $theme(text1)
+
+	$summary configure -background $statusbar($theme)
+	$summary.temp configure -background $statusbar($theme)
+	$summary.temp.status configure -background $statusbar($theme)
+	$summary.temp.status.icon configure -bg $statusbar($theme) -fg $value2($theme)
+	$summary.temp.status.text configure -bg $statusbar($theme) -fg $value2($theme)
+	$summary.temp.remark configure -background $statusbar($theme)
+	$summary.temp.remark.key configure -bg $statusbar($theme) -fg $header2($theme)
+	$summary.temp.remark.value configure -bg $statusbar($theme) -fg $value2($theme)
+	$summary.separator configure -background $separator($theme)
+	$summary.icon1 configure -background $statusbar($theme)
+	$summary.icon1.sunrise configure -bg $statusbar($theme) -fg $icons($theme)
+	$summary.icon1.sunset configure -bg $statusbar($theme) -fg $icons($theme)
+	$summary.icon2 configure -background $statusbar($theme)
+	$summary.icon2.up configure -bg $statusbar($theme) -fg $value1($theme)
+	$summary.icon2.down configure -bg $statusbar($theme) -fg $value1($theme)
+	$summary.hours configure -background $statusbar($theme)
+	$summary.hours.sunrise configure -bg $statusbar($theme) -fg $value1($theme)
+	$summary.hours.sunset configure -bg $statusbar($theme) -fg $value1($theme)
 }
 
-proc ::metar::set_grid_theme { grid } {
+proc ::metar::set_theme_grid { grid } {
+	variable statusbar
+	variable header2
+	variable value2
 	variable theme
-	$grid configure -background $theme(background)
-	$grid.wind configure -bg $theme(background) -fg $theme(label1)
-	$grid.wind_val configure -bg $theme(background) -fg $theme(text2)
-	$grid.gust configure -bg $theme(background) -fg $theme(label1)
-	$grid.gust_val configure -bg $theme(background) -fg $theme(text2)
-	$grid.dew configure -bg $theme(background) -fg $theme(label1)
-	$grid.dew_val configure -bg $theme(background) -fg $theme(text2)
-	$grid.rhumidity configure -bg $theme(background) -fg $theme(label1)
-	$grid.rhumidity_val configure -bg $theme(background) -fg $theme(text2)
-	$grid.pressure configure -bg $theme(background) -fg $theme(label1)
-	$grid.pressure_val configure -bg $theme(background) -fg $theme(text2)
-	$grid.visibility configure -bg $theme(background) -fg $theme(label1)
-	$grid.visibility_val configure -bg $theme(background) -fg $theme(text2)
-	$grid.clouds configure -bg $theme(background) -fg $theme(label1)
-	$grid.clouds_val configure -bg $theme(background) -fg $theme(text2)
-	$grid.precips configure -bg $theme(background) -fg $theme(label1)
-	$grid.precips_val configure -bg $theme(background) -fg $theme(text2)
+
+	$grid configure -background $statusbar($theme)
+	$grid.wind configure -bg $statusbar($theme) -fg $header2($theme)
+	$grid.wind_val configure -bg $statusbar($theme) -fg $value2($theme)
+	$grid.gust configure -bg $statusbar($theme) -fg $header2($theme)
+	$grid.gust_val configure -bg $statusbar($theme) -fg $value2($theme)
+	$grid.dew configure -bg $statusbar($theme) -fg $header2($theme)
+	$grid.dew_val configure -bg $statusbar($theme) -fg $value2($theme)
+	$grid.rhumidity configure -bg $statusbar($theme) -fg $header2($theme)
+	$grid.rhumidity_val configure -bg $statusbar($theme) -fg $value2($theme)
+	$grid.pressure configure -bg $statusbar($theme) -fg $header2($theme)
+	$grid.pressure_val configure -bg $statusbar($theme) -fg $value2($theme)
+	$grid.visibility configure -bg $statusbar($theme) -fg $header2($theme)
+	$grid.visibility_val configure -bg $statusbar($theme) -fg $value2($theme)
+	$grid.clouds configure -bg $statusbar($theme) -fg $header2($theme)
+	$grid.clouds_val configure -bg $statusbar($theme) -fg $value2($theme)
+	$grid.precips configure -bg $statusbar($theme) -fg $header2($theme)
+	$grid.precips_val configure -bg $statusbar($theme) -fg $value2($theme)
 }
 
 proc ::metar::set_theme {newtheme} {
+	variable statusbar
+	variable header1
 	variable theme
-	array set theme [$newtheme]
-	.metar.window configure -background $theme(background)
-	set_header_theme .metar.window.header
-	set_summary_theme .metar.window.summary
-	.metar.window.title2 configure -bg $theme(background) -fg $theme(label1)
-	set_grid_theme .metar.window.grid
-}
 
-proc ::metar::create_header { header } {
-	variable theme
-	variable report
-
-	pack [frame $header] -anchor w -padx 15 -pady 5 -side top
-	pack [frame $header.keys] -side left
-	pack [frame $header.keys.station] -side top -anchor w
-	pack [label $header.keys.station.text -font fitalic -text "Station :" ]
-	pack [frame $header.keys.date]  -side top -anchor w
-	pack [label $header.keys.date.text -font fitalic -text "Émis le :"]
-	pack [frame $header.keys.status] -side top -anchor w
-	pack [label $header.keys.status.text -font fitalic -text "Statut :"]
-
-	pack [frame $header.values] -padx 10 -side left -fill x
-	pack [frame $header.values.station] -side top -anchor w
-	pack [label $header.values.station.text -font fnormal\
-		-textvar metar::station(name)]
-	pack [frame $header.values.date] -side top -anchor w
-	pack [label $header.values.date.text -font fnormal\
-		-textvar metar::report(date)]
-	pack [frame $header.values.status] -side top -anchor w
-	pack [label $header.values.status.text -font fnormal\
-		-textvar metar::report(request_message)]
-}
-
-proc ::metar::create_summary { summary } {
-	variable theme
-	variable report
-	variable station
-
-	pack [frame $summary] -anchor w -padx 15 -pady 5 -side top
-	pack [frame $summary.temp] -side left
-	pack [frame $summary.temp.status] -side top -anchor w
-	pack [label $summary.temp.status.icon -font ficon\
-		-textvar metar::report(weather_icon) ] -side left
-	pack [label $summary.temp.status.text -font flarge \
-		-textvar metar::report(summary) ] -side left -padx 10
-	pack [frame $summary.temp.remark] -side top -anchor w
-	pack [label $summary.temp.remark.key -font fitalic\
-		-textvar metar::report(note) ] -side left
-	pack [label $summary.temp.remark.value -font fnormal\
-		-textvar metar::report(note_val) ] -side left -padx 5
-	pack [frame $summary.separator -width 1] -padx 10 -fill y -side left
-	pack [frame $summary.icon1] -fill y -side left
-	pack [label $summary.icon1.sunrise -font ficon -text "\uedd0"]
-	pack [label $summary.icon1.sunset -font ficon -text "\uedd1"]
-	pack [frame $summary.icon2] -fill y -side left
-	pack [label $summary.icon2.up -font ficon -text "\uea75"]
-	pack [label $summary.icon2.down -font ficon -text "\uea4b"]
-	pack [frame $summary.hours] -fill y -side left
-	pack [label $summary.hours.sunrise -font fnormal\
-		 -textvar metar::station(sunrise) ] -anchor w -pady 2
-	pack [label $summary.hours.sunset -font fnormal\
-		 -textvar metar::station(sunset) ] -anchor w -pady 2
-}
-
-proc ::metar::create_info_grid { grid } {
-	variable theme
-	variable report
-
-	pack [frame $grid] -anchor w -padx 15 -side top
-	grid columnconfigure $grid 1 -weight 1
-
-	label $grid.wind -font fitalic -text "Vent :"
-	label $grid.wind_val -font fnormal -textvar metar::report(wind)
-	set row 0
-	grid configure $grid.wind -row $row -column 0 -sticky w
-	grid configure $grid.wind_val -row $row -column 1 -sticky w
-
-	label $grid.gust -font fitalic -text "Rafale :"
-	label $grid.gust_val -font fnormal -textvar metar::report(gust)
-	incr row
-	grid configure $grid.gust -row $row -column 0 -sticky w
-	grid configure $grid.gust_val -row $row -column 1 -sticky w
-
-	label $grid.dew -font fitalic -text "Point de rosée :"
-	label $grid.dew_val -font fnormal -textvar metar::report(dew)
-	incr row
-	grid configure $grid.dew -row $row -column 0 -sticky w
-	grid configure $grid.dew_val -row $row -column 1 -sticky w
-
-	label $grid.rhumidity -font fitalic -text "Humidité relative :"
-	label $grid.rhumidity_val -font fnormal -textvar metar::report(rel_humidity)
-	incr row
-	grid configure $grid.rhumidity -row $row -column 0 -sticky w
-	grid configure $grid.rhumidity_val -row $row -column 1 -sticky w
-
-	label $grid.pressure -font fitalic -text "Pression :"
-	label $grid.pressure_val -font fnormal -textvar metar::report(pressure)
-	incr row
-	grid configure $grid.pressure -row $row -column 0 -sticky w
-	grid configure $grid.pressure_val -row $row -column 1 -sticky w
-
-	label $grid.visibility -font fitalic -text "Visibilité :"
-	label $grid.visibility_val -font fnormal -textvar metar::report(visibility)
-	incr row
-	grid configure $grid.visibility -row $row -column 0 -sticky w
-	grid configure $grid.visibility_val -row $row -column 1 -sticky w
-
-	label $grid.clouds -font fitalic -text "Nuages :"
-	text $grid.clouds_val -font fnormal -borderwidth 0 -highlightthickness 0\
-			 -wrap none
-	incr row
-	grid configure $grid.clouds -row $row -column 0 -sticky nw
-	grid configure $grid.clouds_val -row $row -column 1 -sticky w
-
-	label $grid.precips -font fitalic -text "Précipitations :"
-	text $grid.precips_val -font fnormal -borderwidth 0 -highlightthickness 0\
-			 -wrap none
-	incr row
-	grid configure $grid.precips -row $row -column 0 -sticky nw
-	grid configure $grid.precips_val -row $row -column 1 -sticky w
+	set theme $newtheme
+	.metar.window configure -background $statusbar($theme)
+	set_theme_header .metar.window.header
+	set_theme_summary .metar.window.summary
+	.metar.window.title2 configure -bg $statusbar($theme) -fg $header1($theme)
+	set_theme_grid .metar.window.grid
 }
 
 proc ::metar::update_grid { grid } {
@@ -273,33 +185,6 @@ proc ::metar::update_grid { grid } {
 	}
 }
 
-proc ::metar::create_window {} {
-	variable state_visible
-	variable theme
-
-	set state_visible 0
-	pack [frame .metar.window -bd 1 ] -fill both -ipady 5
-	create_header .metar.window.header
-	create_summary .metar.window.summary
-	pack [label .metar.window.title2 -font flarge \
-		-text "Conditions météorologiques :" ] \
-		-side top -anchor w -pady 5 -padx 15
-	create_info_grid .metar.window.grid
-}
-
-proc ::metar::toggle_window {} {
-	variable state_visible
-
-	if {$state_visible} {
-		wm state .metar withdrawn
-		set state_visible 0
-	} else {
-		wm state .metar normal
-		raise .metar
-		set state_visible 1
-	}
-}
-
 proc ::metar::update {} {
 	variable report
 	variable station
@@ -310,12 +195,150 @@ proc ::metar::update {} {
 	update_grid .metar.window.grid
 }
 
+proc ::metar::setup_header { header } {
+	variable theme
+	variable header2
+	variable value1
+	variable report
+
+	pack [frame $header] -anchor w -padx 15 -pady 5 -side top
+	pack [frame $header.keys] -side left
+	pack [frame $header.keys.station] -side top -anchor w
+	pack [label $header.keys.station.text -font $header2(font) -text "Station :" ]
+	pack [frame $header.keys.date]  -side top -anchor w
+	pack [label $header.keys.date.text -font $header2(font) -text "Émis le :"]
+	pack [frame $header.keys.status] -side top -anchor w
+	pack [label $header.keys.status.text -font $header2(font) -text "Statut :"]
+
+	pack [frame $header.values] -padx 10 -side left -fill x
+	pack [frame $header.values.station] -side top -anchor w
+	pack [label $header.values.station.text -font $value1(font)\
+		-textvar metar::station(name)]
+	pack [frame $header.values.date] -side top -anchor w
+	pack [label $header.values.date.text -font $value1(font)\
+		-textvar metar::report(date)]
+	pack [frame $header.values.status] -side top -anchor w
+	pack [label $header.values.status.text -font $value1(font)\
+		-textvar metar::report(request_message)]
+}
+
+proc ::metar::setup_summary { summary } {
+	variable theme
+	variable header1
+	variable header2
+	variable value1
+	variable value2
+	variable icons
+	variable report
+	variable station
+
+	pack [frame $summary] -anchor w -padx 15 -pady 5 -side top
+	pack [frame $summary.temp] -side left
+	pack [frame $summary.temp.status] -side top -anchor w
+	pack [label $summary.temp.status.icon -font $icons(font)\
+		-textvar metar::report(weather_icon) ] -side left
+	pack [label $summary.temp.status.text -font $header1(font)\
+		-textvar metar::report(summary) ] -side left -padx 10
+	pack [frame $summary.temp.remark] -side top -anchor w
+	pack [label $summary.temp.remark.key -font $header2(font)\
+		-textvar metar::report(note) ] -side left
+	pack [label $summary.temp.remark.value -font $value2(font)\
+		-textvar metar::report(note_val) ] -side left -padx 5
+	pack [frame $summary.separator -width 1] -padx 10 -fill y -side left
+	pack [frame $summary.icon1] -fill y -side left
+	pack [label $summary.icon1.sunrise -font $icons(font) -text "\uedd0"]
+	pack [label $summary.icon1.sunset -font $icons(font) -text "\uedd1"]
+	pack [frame $summary.icon2] -fill y -side left
+	pack [label $summary.icon2.up -font $icons(font) -text "\uea75"]
+	pack [label $summary.icon2.down -font $icons(font) -text "\uea4b"]
+	pack [frame $summary.hours] -fill y -side left
+	pack [label $summary.hours.sunrise -font $value1(font)\
+		 -textvar metar::station(sunrise) ] -anchor w -pady 2
+	pack [label $summary.hours.sunset -font $value1(font)\
+		 -textvar metar::station(sunset) ] -anchor w -pady 2
+}
+
+proc ::metar::setup_info_grid { grid } {
+	variable theme
+	variable header2
+	variable value2
+	variable report
+
+	pack [frame $grid] -anchor w -padx 15 -side top
+	grid columnconfigure $grid 1 -weight 1
+
+	label $grid.wind -font $header2(font) -text "Vent :"
+	label $grid.wind_val -font $value2(font) -textvar metar::report(wind)
+	set row 0
+	grid configure $grid.wind -row $row -column 0 -sticky w
+	grid configure $grid.wind_val -row $row -column 1 -sticky w
+
+	label $grid.gust -font $header2(font) -text "Rafale :"
+	label $grid.gust_val -font $value2(font) -textvar metar::report(gust)
+	incr row
+	grid configure $grid.gust -row $row -column 0 -sticky w
+	grid configure $grid.gust_val -row $row -column 1 -sticky w
+
+	label $grid.dew -font $header2(font) -text "Point de rosée :"
+	label $grid.dew_val -font $value2(font) -textvar metar::report(dew)
+	incr row
+	grid configure $grid.dew -row $row -column 0 -sticky w
+	grid configure $grid.dew_val -row $row -column 1 -sticky w
+
+	label $grid.rhumidity -font $header2(font) -text "Humidité relative :"
+	label $grid.rhumidity_val -font $value2(font) -textvar metar::report(rel_humidity)
+	incr row
+	grid configure $grid.rhumidity -row $row -column 0 -sticky w
+	grid configure $grid.rhumidity_val -row $row -column 1 -sticky w
+
+	label $grid.pressure -font $header2(font) -text "Pression :"
+	label $grid.pressure_val -font $value2(font) -textvar metar::report(pressure)
+	incr row
+	grid configure $grid.pressure -row $row -column 0 -sticky w
+	grid configure $grid.pressure_val -row $row -column 1 -sticky w
+
+	label $grid.visibility -font $header2(font) -text "Visibilité :"
+	label $grid.visibility_val -font $value2(font) -textvar metar::report(visibility)
+	incr row
+	grid configure $grid.visibility -row $row -column 0 -sticky w
+	grid configure $grid.visibility_val -row $row -column 1 -sticky w
+
+	label $grid.clouds -font $header2(font) -text "Nuages :"
+	text $grid.clouds_val -font $value2(font) -borderwidth 0 -highlightthickness 0\
+			 -wrap none
+	incr row
+	grid configure $grid.clouds -row $row -column 0 -sticky nw
+	grid configure $grid.clouds_val -row $row -column 1 -sticky w
+
+	label $grid.precips -font $header2(font) -text "Précipitations :"
+	text $grid.precips_val -font $value2(font) -borderwidth 0 -highlightthickness 0\
+			 -wrap none
+	incr row
+	grid configure $grid.precips -row $row -column 0 -sticky nw
+	grid configure $grid.precips_val -row $row -column 1 -sticky w
+}
+
+proc ::metar::setup_window {} {
+	variable state_visible
+	variable header1
+	variable theme
+
+	set state_visible 0
+	pack [frame .metar.window -bd 1 ] -fill both -ipady 5
+	setup_header .metar.window.header
+	setup_summary .metar.window.summary
+	pack [label .metar.window.title2 -font $header1(font) \
+		-text "Conditions météorologiques :" ] \
+		-side top -anchor w -pady 5 -padx 15
+	setup_info_grid .metar.window.grid
+}
+
 proc ::metar::setup {} {
-	font create fitalic -family Sans -size 12 -slant italic
-	font create fnormal -family Sans -size 12
-	font create fbold -family Sans -size 12 -weight bold
-	font create flarge -family Sans -size 13
-	font create ficon -family Remix -size 15
+	variable statusbar
+	variable separator
+	array set metar $::widgetarray(metar)
+	array set statusbar $::widgetarray(statusbar)
+	array set separator $::widgetarray(separator)
 
 	toplevel .metar -class Metar
 	bind .metar <3> { metar::toggle_window }
@@ -323,12 +346,10 @@ proc ::metar::setup {} {
 	wm overrideredirect .metar 1
 	wm resizable .metar 0 0
 	wm title .metar {metar}
-	wm geometry .metar "-1+26"
+	wm geometry .metar $metar(geometry)
 	wm state .metar withdrawn
 
-	create_window
-
-	utils::every 600000 ::metar::update
+	setup_window
+	utils::every $metar(delay) ::metar::update
 }
-
 package provide metar @PACKAGE_VERSION@
