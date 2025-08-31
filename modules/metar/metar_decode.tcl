@@ -6,112 +6,112 @@ namespace eval ::metar::decode {
 	set report(prev_pressure)	""
 
 	# default value
-	array set station  [ list \
-		code		CYUL \
-		name		Montréal/Dorval \
-		timezone	America/Montreal \
-		longitude	-73.59 \
-		latitude	45.525 ]
+	array set station {\
+		code		CYUL\
+		name		Montréal/Dorval\
+		timezone	America/Montreal\
+		longitude	-73.59\
+		latitude	45.525}
 
-	array set const [ list \
-		pi			3.14159265358979 \
-		obliquity 		23.4363 \
-		julian1970 		2440587.5 \
-		julian2000		2451545 \
-		km_mile			1.609344 \
-		km_nautical_mile	1.852 \
-		cm_inch			2.54 \
-		cm_feet			30.48 \
-		kp_mmhg			0.133322 ]
+	array set const {\
+		pi			3.14159265358979\
+		obliquity 		23.4363\
+		julian1970 		2440587.5\
+		julian2000		2451545\
+		km_mile			1.609344\
+		km_nautical_mile	1.852\
+		cm_inch			2.54\
+		cm_feet			30.48\
+		kp_mmhg			0.133322}
 
-	array set remixicons [ list \
-		inconnu		\ueba2 \
-		nuage0-jour	\uf155 \
-		nuage0-nuit	\uef1f \
-		nuage1-jour	\uf154 \
-		nuage1-nuit	\uef24 \
-		nuage2-jour	\uf151 \
-		nuage2-nuit	\uef21 \
-		couvert		\ueb9d \
-		brume		\ued29 \
-		pluie		\uec4a \
-		averse		\uede0 \
-		neige		\uf0f8 \
-		grêle		\uedc0 \
-		orage		\uf196 ]
+	array set remixicons {\
+		inconnu		\ueba2\
+		nuage0-jour	\uf155\
+		nuage0-nuit	\uef1f\
+		nuage1-jour	\uf154\
+		nuage1-nuit	\uef24\
+		nuage2-jour	\uf151\
+		nuage2-nuit	\uef21\
+		couvert		\ueb9d\
+		brume		\ued29\
+		pluie		\uec4a\
+		averse		\uede0\
+		neige		\uf0f8\
+		grêle		\uedc0\
+		orage		\uf196}
 
-	array set intensities [ list \
-		{-} 	[list type pre m {faible_ } f {faible_ }] \
-		{+} 	[list type pre m {fort_ } f {forte_ }] \
-		{VC} 	[list type post m { au voisinage} f { au voisinage}] ]
+	array set intensities {\
+		{-} 	{type pre m {faible_} f {faible_}}\
+		{+} 	{type pre m {fort_} f {forte_}}\
+		{VC} 	{type post m {au voisinage} f {au voisinage}}}
 
-	array set qualifiers [ list \
-		MI	[list type pre m {mince_ } f {mince_ }] \
-		BC	[list type pre m {bancs de } genre m nombre p] \
-		PR	[list type post m { dispersé_} f { dispersée_} ] \
-		DR	[list type pre f {chasse basse de } genre f nombre s] \
-		BL	[list type pre f {chasse haute de } genre f nombre s] \
-		SH	[list type pre f {averses de } genre f nombre p] \
-		TS	[list type pre m {orages de } genre m nombre p] \
-		FZ	[list type post m { verglaçant_} f { verglaçante_}] ]
+	array set qualifiers {\
+		MI	{type pre m {mince_} f {mince_}}\
+		BC	{type pre m {bancs de} genre m nombre p}\
+		PR	{type post m {dispersé} f { dispersée_} }\
+		DR	{type pre f {chasse basse de} genre f nombre s}\
+		BL	{type pre f {chasse haute de} genre f nombre s}\
+		SH	{type pre f {averses de} genre f nombre p}\
+		TS	{type pre m {orages de} genre m nombre p}\
+		FZ	{type post m {verglaçant_} f {verglaçante_}}}
 
-	array set precip_codes [ list \
-		DZ	[list descr {bruine} genre f nombre s ] \
-		RA	[list descr {pluie} genre f nombre s] \
-		SN	[list descr {neige} genre f nombre s] \
-		SG	[list descr {neige en grain} genre f nombre s] \
-		IC	[list descr {cristaux de glace} genre m nombre p] \
-		PL	[list descr {granules de neige} genre m nombre p] \
-		GR	[list descr {grêle} genre f nombre s] \
-		GS	[list descr {neige roulée} genre f nombre s] \
-		UP	[list descr {inconnue} genre f nombre s] \
-		BR	[list descr {brume} genre f nombre s] \
-		FG	[list descr {brouillard} genre m nombre s] \
-		FU	[list descr {fumée} genre f nombre s] \
-		VA	[list descr {cendre volcanique} genre f nombre s] \
-		DU	[list descr {poussière} genre f nombre s] \
-		SA	[list descr {sable} genre m nombre s] \
-		HZ	[list descr {brume sèche} genre f nombre s] \
-		PO	[list descr {tourbillons de poussière} genre m nombre p] \
-		SQ	[list descr {grains} genre m nombre p] \
-		{+FC}	[list descr {tornades} genre f nombre p] \
-		FC	[list descr {entonnoirs} genre m nombre p] \
-		SS	[list descr {tempête de sable} genre f nombre s] \
-		DS	[list descr {tempête de poussière} genre f nombre s] ]
+	array set precip_codes {\
+		DZ	{descr {bruine} genre f nombre s}\
+		RA	{descr {pluie} genre f nombre s}\
+		SN	{descr {neige} genre f nombre s}\
+		SG	{descr {neige en grain} genre f nombre s}\
+		IC	{descr {cristaux de glace} genre m nombre p}\
+		PL	{descr {granules de neige} genre m nombre p}\
+		GR	{descr {grêle} genre f nombre s}\
+		GS	{descr {neige roulée} genre f nombre s}\
+		UP	{descr {inconnue} genre f nombre s}\
+		BR	{descr {brume} genre f nombre s}\
+		FG	{descr {brouillard} genre m nombre s}\
+		FU	{descr {fumée} genre f nombre s}\
+		VA	{descr {cendre volcanique} genre f nombre s}\
+		DU	{descr {poussière} genre f nombre s}\
+		SA	{descr {sable} genre m nombre s}\
+		HZ	{descr {brume sèche} genre f nombre s}\
+		PO	{descr {tourbillons de poussière} genre m nombre p}\
+		SQ	{descr {grains} genre m nombre p}\
+		{+FC}	{descr {tornades} genre f nombre p}\
+		FC	{descr {entonnoirs} genre m nombre p}\
+		SS	{descr {tempête de sable} genre f nombre s}\
+		DS	{descr {tempête de poussière} genre f nombre s}}
 
-	array set cloud_codes [ list \
-		SKC	{Ciel dégagé} \
-		FEW	{Quelques nuages} \
-		SCT	{Nuages dispersés} \
-		BKN	{Éclaircies} \
-		OVC	{Couvert} \
-		CLR	{Aucun nuage bas} \
-		VV	{Ciel obscurci} ]
+	array set cloud_codes {\
+		SKC	{Ciel dégagé}\
+		FEW	{Quelques nuages}\
+		SCT	{Nuages dispersés}\
+		BKN	{Éclaircies}\
+		OVC	{Couvert}\
+		CLR	{Aucun nuage bas}\
+		VV	{Ciel obscurci}}
 
-	array set cloud_types [ list \
-		CB	{Cumulonimbus} \
-		TCU	{Cumulus bourgeonnant} ]
+	array set cloud_types {\
+		CB	{Cumulonimbus}\
+		TCU	{Cumulus bourgeonnant}}
 
-	array set direction [ list \
-		{000}	N  	{010}	N \
-		{020}	NNE  	{030}	NNE \
-		{040}	NE 	{050}	NE \
-		{060}	ENE 	{070}	ENE \
-		{080}	E	{090}	E \
-		{100}	E	{110}	ESE \
-		{120}	ESE	{130}	SE \
-		{140}	SE	{150}	SSE \
-		{160}	SSE	{170}	S \
-		{180}	S	{190}	S \
-		{200}	SSO	{210}	SSO \
-		{220}	SO	{230}	SO \
-		{240}	OSO	{250}	OSO \
-		{260}	O	{270}	O \
-		{280}	O	{290}	ONO \
-		{300}	ONO	{310}	NO \
-		{320}	NO	{330}	NNO \
-		{340}	NNO	{350}	N \
-		{360}	N ]
+	array set direction {\
+		{000}	N  	{010}	N\
+		{020}	NNE  	{030}	NNE\
+		{040}	NE 	{050}	NE\
+		{060}	ENE 	{070}	ENE\
+		{080}	E	{090}	E\
+		{100}	E	{110}	ESE\
+		{120}	ESE	{130}	SE\
+		{140}	SE	{150}	SSE\
+		{160}	SSE	{170}	S\
+		{180}	S	{190}	S\
+		{200}	SSO	{210}	SSO\
+		{220}	SO	{230}	SO\
+		{240}	OSO	{250}	OSO\
+		{260}	O	{270}	O\
+		{280}	O	{290}	ONO\
+		{300}	ONO	{310}	NO\
+		{320}	NO	{330}	NNO\
+		{340}	NNO	{350}	N\
+		{360}	N}
 
 	namespace export get_station get_report
 }
