@@ -48,7 +48,7 @@ namespace eval zconfig {
 	    netout { type var source zstatus::netout periodic set_netout\
 			interface em0 font normal light black dark LightGray }\
 	    separator { type separator periodic nop light black dark gray }\
-	    statusbar { type bar periodic nop light gray90 dark gray10 }\
+	    statusbar { type bar periodic nop light gray90 dark gray20 }\
 	    wintitle { type text ref wintitle font normal periodic nop\
 			maxlength 110 font normal light black dark LightGray }}
 
@@ -99,7 +99,7 @@ proc zconfig::read {configfile} {
 	set contexts { main widgets_left widgets_right\
 		arcsize datetime desklist deskmode deskname devices\
 		loadavg mail maildir memused metar mixer musicpd\
-		netin netout separator wintitle}
+		netin netout separator statusbar wintitle}
 
 	# Cant change these from config file
 	set immutables {type source ref periodic}

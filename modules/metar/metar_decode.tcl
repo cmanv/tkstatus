@@ -1,7 +1,8 @@
 package require Tcl 9.0
 
 namespace eval ::metar::decode {
-	set metar_address 		"https://aviationweather.gov/cgi-bin/data/metar.php"
+	set metar_api 			https://aviationweather.gov/api/data/metar
+	set station_api 		https://aviationweather.gov/api/data/stationinfo
 	set report(prev_date)		""
 	set report(prev_pressure)	""
 
@@ -436,11 +437,11 @@ proc ::metar::decode::decode_precips { icode qcode pcodes } {
 proc ::metar::decode::fetch_metar_report {} {
 	variable station
 	variable request_status
-	variable metar_address
+	variable metar_api
 
 	set request_status {OK}
 	if {[catch {set message [exec -ignorestderr -- curl -s \
-			$metar_address?ids=$station(code)]}]} {
+			$metar_api?ids=$station(code)]}]} {
 		set request_status {KO}
 		return
 	}
