@@ -1,18 +1,11 @@
 package require Tcl 9.0
 
 namespace eval ::metar::decode {
-	set metar_api 			https://aviationweather.gov/api/data/metar
-	set station_api 		https://aviationweather.gov/api/data/stationinfo
+	variable  metar_api 		https://aviationweather.gov/api/data/metar
+	variable  station_api 		https://aviationweather.gov/api/data/stationinfo
 	set report(prev_date)		""
 	set report(prev_pressure)	""
-
-	# default value
-	array set station {\
-		code		CYUL\
-		name		Montréal/Dorval\
-		timezone	America/Montreal\
-		longitude	-73.59\
-		latitude	45.525}
+	array set station {}
 
 	array set const {\
 		pi			3.14159265358979\
@@ -114,39 +107,31 @@ namespace eval ::metar::decode {
 		{340}	NNO	{350}	N\
 		{360}	N}
 
-	namespace export get_station get_report
+	namespace export fetch_station_info update_station get_report
 }
 
 proc ::metar::decode::current_day {} {
-	variable station
-
 	set currenttime [clock seconds]
 	set fixedtime [clock format $currenttime -format {%Y-%m-%d 12:00:00}\
-			-timezone $station(timezone)]
+			-timezone $::config(timezone)]
 	set currentday [expr round([clock scan $fixedtime -format {%Y-%m-%d %H:%M:%S}\
-			-timezone $station(timezone)]/86400.0)]
+			-timezone $::config(timezone)]/86400.0)]
 }
 
 proc ::metar::decode::current_date {} {
-	variable station
-
 	set currenttime [clock seconds]
 	set datetime [clock format $currenttime -format {%Y-%m-%d}\
-			-timezone $station(timezone)]
+			-timezone $::config(timezone)]
 }
 
-proc ::metar::decode::calc_seconds { datetime } {
-	variable station
-
+proc ::metar::decode::calc_seconds {datetime} {
 	set currenttime [clock scan $datetime -format {%Y-%m-%d %H:%M:%S}\
-			-timezone $station(timezone)]
+			-timezone $::config(timezone)]
 }
 
 proc ::metar::decode::calc_timezone_offset {} {
-	variable station
-
 	set currenttime [clock seconds]
-	set tzoffset [clock format $currenttime -format {%z} -timezone $station(timezone)]
+	set tzoffset [clock format $currenttime -format {%z} -timezone $::config(timezone)]
 	set len [string length $tzoffset]
 	set moffset [expr [scan [string range $tzoffset $len-2 $len-1] %f]/60]
 	set hoffset [expr [scan [string range $tzoffset 0 $len-3] %f]]
@@ -158,7 +143,38 @@ proc ::metar::decode::calc_timezone_offset {} {
 	return $tzoffset
 }
 
-proc ::metar::decode::get_station { } {
+proc ::metar::decode::fetch_station_info {code} {
+	variable station_api
+	variable station
+
+	if [catch {set message [exec -ignorestderr -- curl -s \
+		$station_api?ids=$code]}] {
+		return {KO}
+	}
+	if ![string length $message] {
+		return {KO}
+	}
+
+	set lines [split $message "\n"]
+	foreach line $lines {
+		if [regexp -nocase {([A-Z][a-z ]+): (.+)} $line -> key value] {
+			set station($key) $value
+		}
+	}
+	if ![info exists station(Latitude)] {
+		puts "$cide: missing Latitude"
+		return {KO}
+	}
+	if ![info exists station(Longitude)] {
+		puts "$code: msssing Longitude"
+		return {KO}
+	}
+	set station(code) $code
+
+	return {OK}
+}
+
+proc ::metar::decode::update_station {} {
 	variable station
 	variable const
 
@@ -185,15 +201,15 @@ proc ::metar::decode::get_station { } {
 
 	set sun_dec [expr asin(sin($const(obliquity)*$const(pi)/180.0)\
 			 *sin($LE*$const(pi)/180.0))]
-	set station_lat [expr $station(latitude)*$const(pi)/180.0]
+	set station_lat [expr $station(Latitude)*$const(pi)/180.0]
 	set refract [expr -sin(0.6*$const(pi)/180.0)]
 
 	# H0 est l'angle entre le méridien et les points de lever/coucher du soleil
 	set H0 [expr acos($refract - tan($sun_dec)*tan($station_lat)) * 180.0/$const(pi)]
 
 	set tzoffset [calc_timezone_offset]
-	set sunrise [expr (180.0 - $H0 + $EQT - $station(longitude))/15.0 + $tzoffset]
-	set sunset [expr (180.0 + $H0 + $EQT - $station(longitude))/15.0 + $tzoffset]
+	set sunrise [expr (180.0 - $H0 + $EQT - $station(Longitude))/15.0 + $tzoffset]
+	set sunset [expr (180.0 + $H0 + $EQT - $station(Longitude))/15.0 + $tzoffset]
 
 	set hour1 [expr int(floor($sunrise))]
 	set min1 [format {%02d} [expr round(fmod($sunrise,1.0) * 60)]]
@@ -275,7 +291,7 @@ proc ::metar::decode::decode_datetime { datetime } {
 	set date "$date-$day $hour:$minute:00"
 	set rtime [clock scan $date -format {%Y-%m-%d %H:%M:%S} -timezone :UTC]
 	set date [clock format $rtime -format {%d %B %H:%M %Z} -locale fr \
-			-timezone $station(timezone)]
+			-timezone $::config(timezone)]
 	set current(date) $date
 }
 
@@ -440,8 +456,8 @@ proc ::metar::decode::fetch_metar_report {} {
 	variable metar_api
 
 	set request_status {OK}
-	if {[catch {set message [exec -ignorestderr -- curl -s \
-			$metar_api?ids=$station(code)]}]} {
+	if [catch {set message [exec -ignorestderr -- curl -s \
+			$metar_api?ids=$station(code)]}] {
 		set request_status {KO}
 		return
 	}
@@ -452,7 +468,7 @@ proc ::metar::decode::fetch_metar_report {} {
 	return $message
 }
 
-proc ::metar::decode::decode_metar_report { message } {
+proc ::metar::decode::decode_metar_report {message} {
 	variable request_status
 	variable current
 	variable station
@@ -565,7 +581,7 @@ proc ::metar::decode::get_report {} {
 	decode_metar_report [fetch_metar_report]
 
 	set now [clock seconds]
-	set currenttime [clock format $now -format {%H:%M} -timezone $station(timezone)]
+	set currenttime [clock format $now -format {%H:%M} -timezone $::config(timezone)]
 	if {$request_status == {OK}} {
 		set report(date) $current(date)
 		set report(temperature) "$current(temp)°C"
@@ -656,4 +672,4 @@ proc ::metar::decode::get_report {} {
 	return [array get report]
 }
 
-package provide metar::decode @PACKAGE_VERSION@ 
+package provide metar::decode @PACKAGE_VERSION@

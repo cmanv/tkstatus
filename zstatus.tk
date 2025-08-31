@@ -318,8 +318,11 @@ proc zstatus::setup {} {
 	}
 	if [winfo exists $bar.metar] {
 		metar::setup
-		bind $bar.metar <1> { metar::toggle_window }
-		bind $bar.metar <2> { metar::update }
+		array set metar $::widgetarray(metar)
+		if [info exists metar(station)] {
+			bind $bar.metar <1> { metar::toggle_window }
+			bind $bar.metar <2> { metar::update }
+		}
 	}
 
 	utils::every $::config(delay) zstatus::update

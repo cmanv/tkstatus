@@ -15,12 +15,15 @@ namespace eval metar {
 	array set value2 { font m_normal light DarkGreen dark PaleGreen3 }
 	array set icons { font m_icons light orange dark Gold }
 
+	array set station {}
 	namespace export setup update set_theme
 }
 
 proc ::metar::toggle_window {} {
-	variable state_visible
+	variable station
+	if ![info exists station(code)] { return }
 
+	variable state_visible
 	if {$state_visible} {
 		wm state .metar withdrawn
 		set state_visible 0
@@ -109,6 +112,9 @@ proc ::metar::set_theme_grid { grid } {
 }
 
 proc ::metar::set_theme {newtheme} {
+	variable station
+	if ![info exists station(code)] { return }
+
 	variable statusbar
 	variable header1
 	variable theme
@@ -186,10 +192,19 @@ proc ::metar::update_grid { grid } {
 }
 
 proc ::metar::update {} {
-	variable report
+	variable metar
 	variable station
+	variable report
 
-	array set station [metar::decode::get_station]
+	if ![info exists station(code)] {
+		set status [metar::decode::fetch_station_info $metar(station)]
+		if {$status == {KO}} {
+			set report(statusbar) "<?>"
+			return
+		}
+	}
+
+	array set station [metar::decode::update_station]
 	array set report [metar::decode::get_report]
 
 	update_grid .metar.window.grid
@@ -213,7 +228,7 @@ proc ::metar::setup_header { header } {
 	pack [frame $header.values] -padx 10 -side left -fill x
 	pack [frame $header.values.station] -side top -anchor w
 	pack [label $header.values.station.text -font $value1(font)\
-		-textvar metar::station(name)]
+		-textvar metar::station(Site)]
 	pack [frame $header.values.date] -side top -anchor w
 	pack [label $header.values.date.text -font $value1(font)\
 		-textvar metar::report(date)]
@@ -334,14 +349,21 @@ proc ::metar::setup_window {} {
 }
 
 proc ::metar::setup {} {
+	variable metar
+	array set metar $::widgetarray(metar)
+
+	if ![info exists metar(station)] {
+		variable report
+		set report(statusbar) "-"
+		return
+	}
+
 	variable statusbar
 	variable separator
-	array set metar $::widgetarray(metar)
 	array set statusbar $::widgetarray(statusbar)
 	array set separator $::widgetarray(separator)
 
 	toplevel .metar -class Metar
-	bind .metar <3> { metar::toggle_window }
 	wm attributes .metar -type dialog
 	wm overrideredirect .metar 1
 	wm resizable .metar 0 0
@@ -350,6 +372,8 @@ proc ::metar::setup {} {
 	wm state .metar withdrawn
 
 	setup_window
+	bind .metar <3> { metar::toggle_window }
+
 	utils::every $metar(delay) ::metar::update
 }
 package provide metar @PACKAGE_VERSION@
