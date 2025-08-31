@@ -5,7 +5,7 @@ namespace eval zconfig {
 
 	array set config [ list \
 		lang		$::env(LANG)\
-		timezone	America/Montreal\
+		timezone	UTC\
 		delay		2000\
 		fontname	NotoSans\
 		fontsize	11\
