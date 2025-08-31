@@ -5,7 +5,6 @@ namespace eval ::metar::decode {
 	variable  station_api 		https://aviationweather.gov/api/data/stationinfo
 	set report(prev_date)		""
 	set report(prev_pressure)	""
-	array set station {}
 
 	array set const {\
 		pi			3.14159265358979\
@@ -155,6 +154,7 @@ proc ::metar::decode::fetch_station_info {code} {
 		return {KO}
 	}
 
+	array set station {}
 	set lines [split $message "\n"]
 	foreach line $lines {
 		if [regexp -nocase {([A-Z][a-z ]+): (.+)} $line -> key value] {
@@ -162,11 +162,9 @@ proc ::metar::decode::fetch_station_info {code} {
 		}
 	}
 	if ![info exists station(Latitude)] {
-		puts "$cide: missing Latitude"
 		return {KO}
 	}
 	if ![info exists station(Longitude)] {
-		puts "$code: msssing Longitude"
 		return {KO}
 	}
 	set station(code) $code
@@ -179,6 +177,7 @@ proc ::metar::decode::update_station {} {
 	variable const
 
 	set julian_day [expr [current_day] + $const(julian1970) - $const(julian2000)]
+	set station(julian) $julian_day
 
 	# Anomalie moyenne de la terre
 	set AM [expr fmod(357.5291 + 0.98560028*$julian_day, 360.0)]
@@ -202,43 +201,66 @@ proc ::metar::decode::update_station {} {
 	set sun_dec [expr asin(sin($const(obliquity)*$const(pi)/180.0)\
 			 *sin($LE*$const(pi)/180.0))]
 	set station_lat [expr $station(Latitude)*$const(pi)/180.0]
-	set refract [expr -sin(0.6*$const(pi)/180.0)]
 
-	# H0 est l'angle entre le méridien et les points de lever/coucher du soleil
-	set H0 [expr acos($refract - tan($sun_dec)*tan($station_lat)) * 180.0/$const(pi)]
-
-	set tzoffset [calc_timezone_offset]
-	set sunrise [expr (180.0 - $H0 + $EQT - $station(Longitude))/15.0 + $tzoffset]
-	set sunset [expr (180.0 + $H0 + $EQT - $station(Longitude))/15.0 + $tzoffset]
-
-	set hour1 [expr int(floor($sunrise))]
-	set min1 [format {%02d} [expr round(fmod($sunrise,1.0) * 60)]]
-	set hour2 [expr int(floor($sunset))]
-	set min2 [format {%02d} [expr round(fmod($sunset,1.0) * 60)]]
-
-	if {$min1 == 60} {
-		set hour1 [expr $hour1 + 1]
-		set min1 "00"
-	}
-	if {$min2 == 60} {
-		set hour2 [expr $hour2 + 1]
-		set min2 "00"
-	}
-
-	set station(sunrise) "$hour1:$min1"
-	set station(sunset) "$hour2:$min2"
-	set station(julian) $julian_day
-
-	set currenttime [clock seconds]
-	set currentdate [current_date]
-	set sunrisetime [calc_seconds "$currentdate $station(sunrise):00"]
-	set sunsettime [calc_seconds "$currentdate $station(sunset):00"]
-	if {$currenttime < $sunsettime && $currenttime > $sunrisetime} {
-		set station(daylight) 1
+	set cos_station_lat [expr cos($station_lat)]
+	if {$cos_station_lat == 0} {
+		# Cas spécial pour les pôles
+		set cos_station_lat 0.0001
+		set tan_station_lat 10000.0
 	} else {
-		set station(daylight) 0
+		set tan_station_lat [expr tan($station_lat)]
 	}
 
+	# Estimation de 29 minutes d'arc de réfraction à l'horizon
+	# Plus le demi-diamètre apparent du soleil environ 16 minutes d'arc
+	# Soit une correction de 45 minutes d'arc ou 0.75 degrés
+	set refract [expr sin(0.75*$const(pi)/180.0)/$cos_station_lat]
+
+	set cos_H0 [expr -tan($sun_dec) * $tan_station_lat - $refract]
+	if {$cos_H0 >= 1} {
+		# Nuit polaire
+		set station(daylight) 0
+		set station(sunrise) "N/A"
+		set station(sunset) "N/A"
+	} elseif {$cos_H0 <= -1} {
+		# Jour polaire
+		set station(daylight) 1
+		set station(sunrise) "N/A"
+		set station(sunset) "N/A"
+	} else {
+		set H0 [expr acos($cos_H0) *180.0/$const(pi)]
+		set tzoffset [calc_timezone_offset]
+		set sunrise [expr (180.0 - $H0 + $EQT - $station(Longitude))/15.0\
+				+ $tzoffset]
+		set sunset [expr (180.0 + $H0 + $EQT - $station(Longitude))/15.0\
+				 + $tzoffset]
+
+		set hour1 [expr int(floor($sunrise))]
+		set min1 [format {%02d} [expr round(fmod($sunrise,1.0) * 60)]]
+		set hour2 [expr int(floor($sunset))]
+		set min2 [format {%02d} [expr round(fmod($sunset,1.0) * 60)]]
+
+		if {$min1 == 60} {
+			set hour1 [expr $hour1 + 1]
+			set min1 "00"
+		}
+		if {$min2 == 60} {
+			set hour2 [expr $hour2 + 1]
+			set min2 "00"
+		}
+
+		set station(sunrise) "$hour1:$min1"
+		set station(sunset) "$hour2:$min2"
+		set currenttime [clock seconds]
+		set currentdate [current_date]
+		set sunrisetime [calc_seconds "$currentdate $station(sunrise):00"]
+		set sunsettime [calc_seconds "$currentdate $station(sunset):00"]
+		if {$currenttime > $sunrisetime && $currenttime < $sunsettime} {
+			set station(daylight) 1
+		} else {
+			set station(daylight) 0
+		}
+	}
 	return [array get station]
 }
 
