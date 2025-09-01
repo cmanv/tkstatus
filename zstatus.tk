@@ -11,6 +11,7 @@ package require zconfig
 
 namespace eval zstatus {
 	variable currenttheme	none
+	variable proclist	{}
 
 	# Unicode codes from remixicon
 	array set icons {down \uea4a up \uea74 mixer \uf229}
@@ -103,11 +104,6 @@ proc zstatus::set_deskname {value} {
 	set deskname $value
 }
 
-proc zstatus::set_deskname {value} {
-	variable deskname
-	set deskname $value
-}
-
 proc zstatus::set_loadavg {} {
 	variable loadavg
 	set loadavg "C: [sysbsd::getloadavg] "
@@ -158,8 +154,7 @@ proc zstatus::set_mixer {} {
 	set mixer "$icons(mixer) [sysbsd::getmixervol]"
 }
 
-# Send a message to the window manager
-proc zstatus::wm_message {msg} {
+proc zstatus::send_message {msg} {
 	set xscreen $::config(xscreen)
 	set wmsocket $::config(zwmsocket)
 
@@ -208,21 +203,16 @@ proc zstatus::read_message {channel} {
 	}
 }
 
-# No-op proc
-proc zstatus::nop {} {}
-
 # Periodic update
 proc zstatus::update {} {
-	variable widgetlist
-	foreach item $widgetlist {
-		array set widget $::widgetarray($item)
-		$widget(periodic)
-	}
+	variable proclist
+	foreach p $proclist { $p }
 }
 
 proc zstatus::add_widgets {side} {
 	variable bar
 	variable widgetlist
+	variable proclist
 	variable sepcount
 
 	if {$side == "left"} {
@@ -266,6 +256,9 @@ proc zstatus::add_widgets {side} {
 				${item}::setup $bar $last $side
 			}
 		}
+		if [info exists widget(proc)] {
+			lappend proclist $widget(proc)
+		}
 		lappend widgetlist $item
 	}
 }
@@ -304,18 +297,18 @@ proc zstatus::setup {} {
 	if [winfo exists $bar.deskmode] {
 		bind $bar.deskmode <MouseWheel> {
 			if {%D < 0} {
-				zstatus::wm_message "desktop-mode-next"
+				zstatus::send_message "desktop-mode-next"
 			} else {
-				zstatus::wm_message "desktop-mode-prev"
+				zstatus::send_message "desktop-mode-prev"
 			}
 		}
 	}
 	if [winfo exists $bar.desklist] {
 		bind $bar.desklist <MouseWheel> {
 			if {%D < 0} {
-				zstatus::wm_message "desktop-switch-next"
+				zstatus::send_message "desktop-switch-next"
 			} else {
-				zstatus::wm_message "desktop-switch-prev"
+				zstatus::send_message "desktop-switch-prev"
 			}
 		}
 	}
