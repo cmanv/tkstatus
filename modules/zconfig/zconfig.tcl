@@ -21,7 +21,7 @@ namespace eval zconfig {
 	    arcsize { type var source zstatus::arcsize periodic set_arcsize\
 			font normal light black dark LightGray }\
 	    datetime { type var source zstatus::datetime periodic set_datetime\
-			format {%d %b %H:%M } font normal light black dark LightGray}\
+			format {%d %b %H:%M} font normal light black dark LightGray}\
 	    desklist { type var source zstatus::desklist periodic nop\
 			font normal light black dark LightGray }\
 	    deskmode { type var source zstatus::deskmode periodic nop\
@@ -116,7 +116,7 @@ proc zconfig::read {configfile} {
 	if [file exists $configfile] {
 		set index 0
 		set context ""
-		set lines [utils::read_file $configfile]
+		set lines [split [utils::read_file $configfile] "\n"]
 		foreach line $lines {
 			if ![string length $line] { continue }
 			if [regexp {^#} $line] { continue }
