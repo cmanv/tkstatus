@@ -359,6 +359,10 @@ if {$theme != "light" && $theme != "dark"} {
 # Setup tk app
 tk appname "@PACKAGE_NAME@"
 wm title . "@PACKAGE_NAME@ @PACKAGE_VERSION@"
+if ![info exists config(geometry)] {
+	set config(geometry) "[winfo vrootwidth .]x26+0+0"
+}
+set config(xscreen) [lindex [split [winfo screen .] "."] 1]
 wm geometry . $config(geometry)
 wm attributes . -topmost 1 -type dock
 
@@ -372,5 +376,5 @@ font create emoji -family $config(emojifontname)\
 		 -size $config(emojifontsize)
 zstatus::setup
 zstatus::set_theme $theme
-set listen [unix_sockets::listen $config(socket) zstatus::server_accept]
+set listen [unix_sockets::listen $config(barsocket) zstatus::server_accept]
 vwait forever

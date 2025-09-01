@@ -1,20 +1,34 @@
 #!/usr/bin/env tclsh9.0
 package require utils
 namespace eval zconfig {
-	variable defaultfile "$::env(XDG_CONFIG_HOME)/zstatus/config"
+	if [info exists ::env(XDG_CONFIG_HOME)] {
+		set config_prefix $::env(XDG_CONFIG_HOME)
+	} else {
+		set config_prefix $::env(HOME)/.config
+	}
+
+	if [info exists ::env(XDG_CACHE_HOME)] {
+		set cache_prefix $::env(XDG_CACHE_HOME)
+	} else {
+		set cache_prefix $::env(HOME)/.cache
+	}
+	if [info exists ::env(LANG)] {
+		set config(lang) $::env(LANG)
+	} else {
+		set config(lang) C
+	}
+
+	variable defaultfile "$config_prefix/zstatus/config"
 
 	array set config [ list \
-		lang		$::env(LANG)\
 		timezone	UTC\
 		delay		2000\
 		fontname	NotoSans\
 		fontsize	11\
 		emojifontname	NotoSansEmoji\
 		emojifontsize	11\
-		geometry	"1600x26+0+0"\
-		xscreen		0\
-		socket		"$::env(XDG_CACHE_HOME)/zstatus/socket"\
-		wmsocket 	"$::env(XDG_CACHE_HOME)/zwm/socket"]
+		barsocket	"$cache_prefix/zstatus/socket"\
+		zwmsocket 	"$cache_prefix/zwm/socket"]
 
 	# Array of available widgets
 	array set widgets {\
