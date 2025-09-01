@@ -130,26 +130,26 @@ proc zstatus::set_arcsize {} {
 }
 
 proc zstatus::set_netin {} {
-	array set widget $::widgetarray(netin)
-	set inval [sysbsd::getnetin $widget(interface)]
+	variable netin_interface
+	set inval [sysbsd::getnetin $netin_interface]
 	variable netin
 	variable icons
 	set netin "$icons(down)[join [lindex $inval 0]] "
 }
 
 proc zstatus::set_netout {} {
-	array set widget $::widgetarray(netout)
-	set outval [sysbsd::getnetout $widget(interface)]
+	variable netout_interface
+	set outval [sysbsd::getnetout $netout_interface]
 	variable netout
 	variable icons
 	set netout "$icons(up)[join [lindex $outval 0]] "
 }
 
 proc zstatus::set_datetime {} {
-	array set widget $::widgetarray(datetime)
 	variable datetime
+	variable datetime_format
 	set datetime [clock format [clock seconds] \
-		-locale $::config(lang) -format $widget(format)]
+		-locale $::config(lang) -format $datetime_format]
 }
 
 proc zstatus::set_mixer {} {
@@ -284,6 +284,22 @@ proc zstatus::setup {} {
 	set widgetlist {}
 	add_widgets left
 	add_widgets right
+
+	if [info exists ::widgetarray(netin)] {
+		variable netin_interface
+		array set widget $::widgetarray(netin)
+		set netin_interface $widget(interface)
+	}
+	if [info exists ::widgetarray(netout)] {
+		variable netout_interface
+		array set widget $::widgetarray(netout)
+		set netout_interface $widget(interface)
+	}
+	if [info exists ::widgetarray(datetime)] {
+		variable datetime_format
+		array set widget $::widgetarray(datetime)
+		set datetime_format $widget(format)
+	}
 
 	if [winfo exists $bar.deskmode] {
 		bind $bar.deskmode <MouseWheel> {
