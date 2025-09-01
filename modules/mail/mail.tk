@@ -41,8 +41,8 @@ proc mail::update {} {
 		array set mailbox $mailboxes($index)
 		set newmail [llength [glob -nocomplain -dir "$mailbox(path)/new" *]]
 		if {$newmail && $newmail != $mailbox(newmail)} {
+			set mailbox(newmail) $newmail
 			$mailframe.$index configure -text "$mailicon ($newmail)"
-			set account(newmail) $newmail
 			if {!$mailbox(visible)} {
 				if {![string length [pack slaves $mailframe]]} {
 					pack $mailframe -after $mailpos \
