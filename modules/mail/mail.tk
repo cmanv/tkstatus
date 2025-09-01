@@ -182,11 +182,11 @@ proc mail::new { index } {
 	pack [label .mailpopup.$index.label -font bold -bg $statusbar($theme) \
 		-fg $mail($theme) -text "-- $mailbox(name) --"] \
 		-expand 1 -side left
-	pack [frame .mailpopup.sep$index -background $separator($theme) \
+	pack [frame .mailpopup.headersep -background $separator($theme) \
 		-height 1] -fill x -side top
 
 	set count 0
-	foreach file [glob -nocomplain -dir "$mailbox(path)/new" *] {
+	foreach file [lsort -decreasing [glob -nocomplain -dir "$mailbox(path)/new" *]] {
 		set mesg [utils::read_file $file]
 		if {[string length $mesg] < 2} {
 			continue
@@ -209,9 +209,9 @@ proc mail::new { index } {
 		pack [frame .mailpopup.subject$count -background $statusbar($theme)]\
 			-expand 1 -fill x
 
-		set width [string length $subject]
-		set height [tcl::mathfunc::ceil [expr $width / 72.0]]
-		set width [tcl::mathfunc::min $width 72]
+		set textlen [string length $subject]
+		set width [string length [lindex [split $subject "\n"] 0]]
+		set height [tcl::mathfunc::ceil [expr ($textlen / ($width + 0.0))]]
 
 		set tsubject [text .mailpopup.subject$count.text -font $mail(font)\
 			-wrap word  -borderwidth 0 -highlightthickness 0\
@@ -225,7 +225,7 @@ proc mail::new { index } {
 			$tsubject tag add emoji $i
 		}
 
-		pack [frame .mailpopup.sep$count -background $separator($theme) \
+		pack [frame .mailpopup.msgsep$count -background $separator($theme) \
 			-height 1] -side top -fill x
 		incr count
 	}
