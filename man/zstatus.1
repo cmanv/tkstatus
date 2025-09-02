@@ -103,6 +103,20 @@ Font size for the statusbar.
 (Default: \f[I]11\f[R])
 .RE
 .IP \(bu 2
+\f[B]emojifontname\f[R]
+.RS
+.PP
+Font family used for emojis in the statusbar.
+(Default: \f[I]NotoSansEmoji\f[R])
+.RE
+.IP \(bu 2
+\f[B]emojifontsize\f[R]
+.RS
+.PP
+Font size for the emojis.
+(Default: \f[I]11\f[R])
+.RE
+.IP \(bu 2
 \f[B]geometry\f[R]
 .RS
 .PP
@@ -110,11 +124,11 @@ Geometry of the status bar in the format
 \f[I]width\f[R]x\f[I]height\f[R]+\f[I]xpos\f[R]+\f[I]ypos\f[R].
 .RE
 .IP \(bu 2
-\f[B]emojifontsize\f[R]
+\f[B]theme\f[R]
 .RS
 .PP
-Font family used for emojis in the statusbar.
-(Default: \f[I]NotoSansEmoji\f[R])
+Default theme of the statusbar.
+(\(aqdark\(aq or \(aqlight\(aq)
 .RE
 .IP \(bu 2
 \f[B]barsocket\f[R]
@@ -135,12 +149,15 @@ Unix socket of the window manager.
 .RS
 .PP
 List of widgets in the statusbar starting from the left.
+(Default: deskmode separator desklist separator deskname separator
+wintitle)
 .RE
 .IP \(bu 2
 \f[B]rightside\f[R]
 .RS
 .PP
 List of widgets in the statusbar starting from the right.
+(Default: datetime)
 .RE
 .SS WIDGETS SECTIONS
 The list of valid widgets are:

@@ -78,13 +78,21 @@ These are the options can be specified in the __[main]__ section.
 
 > Font size for the statusbar. (Default: _11_)
 
+* __emojifontname__
+
+> Font family used for emojis in the statusbar. (Default: _NotoSansEmoji_)
+
+* __emojifontsize__
+
+> Font size for the emojis. (Default: _11_)
+
 * __geometry__
 
 > Geometry of the status bar in the format _width_x_height_+_xpos_+_ypos_.
 
-* __emojifontsize__
+* __theme__
 
-> Font family used for emojis in the statusbar. (Default: _NotoSansEmoji_)
+> Default theme of the statusbar. ('dark' or 'light')
 
 * __barsocket__
 
@@ -96,11 +104,11 @@ These are the options can be specified in the __[main]__ section.
 
 * __leftside__ 
 
-> List of widgets in the statusbar starting from the left.
+> List of widgets in the statusbar starting from the left. (Default: _deskmode separator desklist separator deskname separator wintitle_)
 
 * __rightside__ 
 
-> List of widgets in the statusbar starting from the right. 
+> List of widgets in the statusbar starting from the right. (Default: _datetime_)
 
 ## WIDGETS SECTIONS
 
