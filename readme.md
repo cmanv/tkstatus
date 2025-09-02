@@ -58,48 +58,51 @@ has the general format:
 
 These are the options can be specified in the __[main]__ section.
 
-- __lang__
+* __lang__
 
 > Locale of the application. (Default: _env(LANG)_)
 
-- __timezone__
+* __timezone__
 
 > This should be set to the user's timezone. (Default _UTC_)
 
-- __delay__
+* __delay__
 
-> Refresh frequency of the statusbar. (Default _2000_ milliseconds)a
+> Refresh frequency of the statusbar. (Default _2000_ milliseconds)
 
-- __fontname__
+* __fontname__
 
 > Font family used for text in the statusbar. (Default: _NotoSans_)
 
-- __fontsize__
+* __fontsize__ 
 
-> Font size for the statusbae. (Default: _11_)
+> Font size for the statusbar. (Default: _11_)
 
-- __geometry__
+* __geometry__
 
-> Geometry of the status bar in the format _widthXheight+xpos+ypos_.
+> Geometry of the status bar in the format _width_x_height_+_xpos_+_ypos_.
 
-- __emojifontsize__
+* __emojifontsize__
 
 > Font family used for emojis in the statusbar. (Default: _NotoSansEmoji_)
 
-- __barsocket__
+* __barsocket__
 
 > Unix socket of the statusbar. (Default: _$HOME/.cache/zstatus/socket_)
 
-- __zwnsocket__
+* __zwnsocket__
 
 > Unix socket of the window manager. (Default: _$HOME/.cache/zwm/socket_)
 
+* __widgets_left__ 
 
-## WIDGETS\_LEFT AND WIDGETS\_RIGHT SECTIONS
+> Ordered list of widgets starting from the left hand side of the screen.
 
-These sections contain an ordered list of widgets to appear in the statusbar.
-- __widgets_left__ lists the widgets starting from the left hand side of the screen.
-- __widgets_right__ lists the wigets starting from the right hand side of the screen.
+* __widgets_right__ 
+
+> Ordered list of wigets starting from the right hand side of the screen.
+
+## WIDGETS SECTIONS
 
 The list of valid widgets are:
 
@@ -107,9 +110,7 @@ The list of valid widgets are:
 > __loadavg__, __mail__, __memused__, __metar__, __mixer__, __musicpd__, __netin__,
 > __netout__, __separator__, __wintitle__
 
-## WIDGETS SECTIONS
-
-Sections for specific widgets
+Each of these widgets can be customized in its own section:
 
 - __arcsize__: Shows current usage of the ZFS ARC.
 

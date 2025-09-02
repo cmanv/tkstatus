@@ -86,7 +86,7 @@ This should be set to the user\(aqs timezone.
 .RS
 .PP
 Refresh frequency of the statusbar.
-(Default \f[I]2000\f[R] milliseconds)a
+(Default \f[I]2000\f[R] milliseconds)
 .RE
 .IP \(bu 2
 \f[B]fontname\f[R]
@@ -99,15 +99,15 @@ Font family used for text in the statusbar.
 \f[B]fontsize\f[R]
 .RS
 .PP
-Font size for the statusbae.
+Font size for the statusbar.
 (Default: \f[I]11\f[R])
 .RE
-.PP
-\-\ \f[B]geometry\f[R]
+.IP \(bu 2
+\f[B]geometry\f[R]
 .RS
 .PP
 Geometry of the status bar in the format
-\f[I]widthXheight+xpos+ypos\f[R].
+\f[I]width\f[R]x\f[I]height\f[R]+\f[I]xpos\f[R]+\f[I]ypos\f[R].
 .RE
 .IP \(bu 2
 \f[B]emojifontsize\f[R]
@@ -130,14 +130,19 @@ Unix socket of the statusbar.
 Unix socket of the window manager.
 (Default: \f[I]$HOME/.cache/zwm/socket\f[R])
 .RE
-.SS WIDGETS_LEFT AND WIDGETS_RIGHT SECTIONS
-These sections contain an ordered list of widgets to appear in the
-statusbar.
-\- \f[B]widgets\f[BI]left\f[I] lists the widgets starting from the left
-hand side of the screen.
-\- \f[BI]widgets\f[B]right\f[R] lists the wigets starting from the right
-hand side of the screen.
+.IP \(bu 2
+__widgets_left__
+.RS
 .PP
+Ordered list of widgets starting from the left hand side of the screen.
+.RE
+.IP \(bu 2
+__widgets_right__
+.RS
+.PP
+Ordered list of wigets starting from the right hand side of the screen.
+.RE
+.SS WIDGETS SECTIONS
 The list of valid widgets are:
 .RS
 .PP
@@ -147,8 +152,8 @@ The list of valid widgets are:
 \f[B]mixer\f[R], \f[B]musicpd\f[R], \f[B]netin\f[R], \f[B]netout\f[R],
 \f[B]separator\f[R], \f[B]wintitle\f[R]
 .RE
-.SS WIDGETS SECTIONS
-Sections for specific widgets
+.PP
+Each of these widgets can be customized in its own section:
 .IP \(bu 2
 \f[B]arcsize\f[R]: Shows current usage of the ZFS ARC.
 .RS
