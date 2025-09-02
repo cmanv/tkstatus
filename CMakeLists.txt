@@ -21,10 +21,12 @@ add_subdirectory(modules/utils)
 add_subdirectory(modules/zconfig)
 
 # Substitute some variable names
+set(LIBEXECDIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBEXECDIR})
 configure_file(${zstatus_SOURCE_DIR}/zstatus.tk ${zstatus_BINARY_DIR}/zstatus.tk @ONLY)
+configure_file(${zstatus_SOURCE_DIR}/zstatus ${zstatus_BINARY_DIR}/zstatus @ONLY)
 
 # Install files
-install(PROGRAMS ${zstatus_BINARY_DIR}/zstatus.tk DESTINATION bin)
-install(PROGRAMS ${zstatus_SOURCE_DIR}/zstatus-send DESTINATION bin)
-install(PROGRAMS ${zstatus_SOURCE_DIR}/zstatus DESTINATION bin)
+install(PROGRAMS ${zstatus_BINARY_DIR}/zstatus.tk DESTINATION ${CMAKE_INSTALL_LIBEXECDIR})
+install(PROGRAMS ${zstatus_SOURCE_DIR}/zstatus-send DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(PROGRAMS ${zstatus_BINARY_DIR}/zstatus DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES man/zstatus.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)

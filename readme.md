@@ -8,7 +8,7 @@ zstatus — a status bar for the zwm window manager
 
 # SYNOPSIS
 
-**zstatus** \[-c <configfile>\] \[-t <defaulttheme>\] \[-h\]
+**zstatus** \[-c configfile\] \[-t theme\] \[-h\]
 
 # DESCRIPTION
 
@@ -226,8 +226,8 @@ The mailbox __must__ be in the _maildir_ format. Multiple _maildir_ sections
 are allowed for multiple mailboxes.
 
 > Options:
-> - _name_: Name of the maildir (mandatory)
-> - _path_: Path of the maildir (mandatory)
+> - _name_: Name of the maildir (required)
+> - _path_: Path of the maildir (required)
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 

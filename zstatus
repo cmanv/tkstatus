@@ -24,4 +24,4 @@ if [ -n "$1" ]; then
 fi
 
 export LD_PRELOAD=/usr/local/lib/libmpdclient.so
-exec zstatus.tk $configfile $theme
+exec @LIBEXECDIR@/zstatus.tk $configfile $theme
