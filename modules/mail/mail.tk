@@ -25,6 +25,7 @@ proc mail::set_theme { newtheme } {
 		array set mailbox $mailboxes($index)
 		$mailframe.$index configure -fg $mailbox($theme)\
 			 -bg $statusbar($theme)
+		array unset mailbox
 	}
 }
 
@@ -65,6 +66,7 @@ proc mail::update {} {
 				set mailboxes($index) [array get mailbox]
 			}
 		}
+		array unset mailbox
 	}
 }
 
@@ -109,6 +111,7 @@ proc mail::setup { base position side } {
 			exec emacsclient -c -e -F "((width . 120) (height . 30))" \
 				"(mu4e)" > /dev/null 2>@1 &
 		}
+		array unset mailbox
 	}
 }
 

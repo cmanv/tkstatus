@@ -164,10 +164,12 @@ proc zconfig::read {configfile} {
 					}
 					set mailbox($key) $value
 					set mailboxes($index) [array get mailbox]
+					array unset mailbox
 				} else {
 					array set widget $widgets($context)
 					set widget($key) $value
 					set widgets($context) [array get widget]
+					array unset widget
 				}
 			}
 		}
@@ -187,6 +189,7 @@ proc zconfig::read {configfile} {
 		} else {
 			set mailboxes($index) [array get mailbox]
 		}
+		array unset mailbox
 	}
 	set config(mailboxes) [array get mailboxes]
 	set config(widgets) [array get widgets]

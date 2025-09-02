@@ -55,6 +55,7 @@ proc zstatus::set_theme {theme} {
 			$bar.$item configure -bg $statusbar($currenttheme)\
 					-fg $widget($currenttheme)
 		}
+		array unset widget
 	}
 
 	if [winfo exists $bar.metar] {
@@ -260,6 +261,7 @@ proc zstatus::add_widgets {side} {
 			lappend proclist $widget(proc)
 		}
 		lappend widgetlist $item
+		array unset widget
 	}
 }
 

@@ -51,6 +51,7 @@ proc devices::update {} {
 			set device(visible) 0
 			set devicearray($devid) [array get device]
 		}
+		array unset device
 	}
 }
 
