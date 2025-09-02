@@ -110,9 +110,8 @@ proc zconfig::read {configfile} {
 	variable config
 
 	# List of valid contexts in config file
-	set contexts { main widgets_left widgets_right\
-		arcsize datetime desklist deskmode deskname devices\
-		loadavg mail maildir memused metar mixer musicpd\
+	set contexts { main arcsize datetime desklist deskmode deskname\
+		devices loadavg mail maildir memused metar mixer musicpd\
 		netin netout separator statusbar wintitle}
 
 	# Cant change these from config file
@@ -122,9 +121,9 @@ proc zconfig::read {configfile} {
 		set configfile $defaultfile
 	}
 
-	set config(widgets_left) {deskmode separator desklist separator\
-			deskname separator wintitle}
-	set config(widgets_right) {datetime}
+	set config(leftside) {deskmode separator desklist separator\
+					deskname separator wintitle}
+	set config(rightside) {datetime}
 	array set mailboxes {}
 
 	if [file exists $configfile] {
@@ -138,21 +137,13 @@ proc zconfig::read {configfile} {
 				if {[lsearch $contexts $context] < 0} {
 					set context ""
 				}
-				if {$context == "widgets_left"} {
-					set config(widgets_left) {}
-				}
-				if {$context == "widgets_right"} {
-					set config(widgets_right) {}
-				}
 				if {$context == "maildir"} {
 					incr index
 				}
 				continue
 			}
 			if ![string length $context] { continue }
-			if {$context == "widgets_left" || $context == "widgets_right"} {
-				lappend config($context) $line
-			} elseif [regexp {^([a-z_]+)=(.+)} $line -> key value] {
+			if [regexp {^([a-z_]+)=(.+)} $line -> key value] {
 				if {[lsearch $immutables $key] >= 0} {
 					continue
 				}

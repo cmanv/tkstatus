@@ -131,16 +131,16 @@ Unix socket of the window manager.
 (Default: \f[I]$HOME/.cache/zwm/socket\f[R])
 .RE
 .IP \(bu 2
-__widgets_left__
+\f[B]leftside\f[R]
 .RS
 .PP
-Ordered list of widgets starting from the left hand side of the screen.
+List of widgets in the statusbar starting from the left.
 .RE
 .IP \(bu 2
-__widgets_right__
+\f[B]rightside\f[R]
 .RS
 .PP
-Ordered list of wigets starting from the right hand side of the screen.
+List of widgets in the statusbar starting from the right.
 .RE
 .SS WIDGETS SECTIONS
 The list of valid widgets are:
@@ -155,14 +155,14 @@ The list of valid widgets are:
 .PP
 Each of these widgets can be customized in its own section:
 .IP \(bu 2
-\f[B]arcsize\f[R]: Shows current usage of the ZFS ARC.
+\f[B][arcsize]\f[R]: Shows current usage of the ZFS ARC.
 .RS
 .PP
 Options: \- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]datetime\f[R]: Shows current date and time in the defined
+\f[B][datetime]\f[R]: Shows current date and time in the defined
 \f[I]timezone\f[R]
 .RS
 .PP
@@ -171,42 +171,42 @@ strftime(3)) \- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]desklist\f[R]: List of desktops currently in use.
+\f[B][desklist]\f[R]: List of desktops currently in use.
 .RS
 .PP
 Options: \- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]deskmode\f[R]: Mode of the active desktop.
+\f[B][deskmode]\f[R]: Mode of the active desktop.
 .RS
 .PP
 Options: \- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]deskname\f[R]: Name of the active desktop.
+\f[B][deskname]\f[R]: Name of the active desktop.
 .RS
 .PP
 Options: \- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]devices\f[R]: Show transient devices connected to the machine.
+\f[B][devices]\f[R]: Show transient devices connected to the machine.
 .RS
 .PP
 Options: \- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]loadavg\f[R]: Shows current CPU load average.
+\f[B][loadavg]\f[R]: Shows current CPU load average.
 .RS
 .PP
 Options: \- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]mail\f[R]: Shows icons of new mail.
+\f[B][mail]\f[R]: Shows icons of new mail.
 There must be at least one maildir section defined.
 .RS
 .PP
@@ -214,7 +214,7 @@ Options: \- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]memused\f[R]: Shows current used memory and swap usage if
+\f[B][memused]\f[R]: Shows current used memory and swap usage if
 applicable.
 .RS
 .PP
@@ -222,7 +222,7 @@ Options: \- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]metar\f[R]: Shows an icon and current temperature from a METAR
+\f[B][metar]\f[R]: Shows an icon and current temperature from a METAR
 station.
 Clicking on it opens a window showing current weather conditions.
 .RS
@@ -232,7 +232,7 @@ Options: \- \f[I]code\f[R]: 4 characters code of the METAR station.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]mixer\f[R]: Shows an icon and the volume level of
+\f[B][mixer]\f[R]: Shows an icon and the volume level of
 \f[I]/dev/mixer\f[R].
 .RS
 .PP
@@ -240,7 +240,8 @@ Options: \- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]musicpd\f[R]: Shows an icon when the music player daemon is in use.
+\f[B][musicpd]\f[R]: Shows an icon when the music player daemon is in
+use.
 Hovering on it shows the currently playing track.
 .RS
 .PP
@@ -248,16 +249,7 @@ Options: \- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]netin\f[R]: Shows the amount of inbound traffic on a given network
-interface.
-.RS
-.PP
-Options: \- \f[I]interface\f[R]: Network interface to monitor \-
-\f[I]light\f[R]: color in light mode.
-\- \f[I]dark\f[R]: color in dark mode.
-.RE
-.IP \(bu 2
-\f[B]netout\f[R]: Shows the amount of outbound traffic on a given
+\f[B][netin]\f[R]: Shows the amount of inbound traffic on a given
 network interface.
 .RS
 .PP
@@ -266,7 +258,16 @@ Options: \- \f[I]interface\f[R]: Network interface to monitor \-
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]separator\f[R]: Widget acting as vertical separators between two
+\f[B][netout]\f[R]: Shows the amount of outbound traffic on a given
+network interface.
+.RS
+.PP
+Options: \- \f[I]interface\f[R]: Network interface to monitor \-
+\f[I]light\f[R]: color in light mode.
+\- \f[I]dark\f[R]: color in dark mode.
+.RE
+.IP \(bu 2
+\f[B][separator]\f[R]: Widget acting as vertical separators between two
 widgets.
 .RS
 .PP
@@ -274,7 +275,7 @@ Options: \- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]wintitle\f[R]: Displays the title of the currently active window.
+\f[B][wintitle]\f[R]: Displays the title of the currently active window.
 .RS
 .PP
 Options: \- \f[I]maxlength\f[R]: Maximum length of text to display.
@@ -283,9 +284,9 @@ Options: \- \f[I]maxlength\f[R]: Maximum length of text to display.
 .RE
 .SS OTHER SECTIONS
 .IP \(bu 2
-\f[B]maildir\f[R]: Defines a mailbox to watch in the \f[B]mail\f[R]
-widget.
+\f[B][maildir]\f[R]: Defines a mailbox for the \f[B]mail\f[R] widget.
 The mailbox \f[B]must\f[R] be in the \f[I]maildir\f[R] format.
+Multiple \f[I]maildir\f[R] sections are allowed for multiple mailboxes.
 .RS
 .PP
 Options: \- \f[I]name\f[R]: Name of the maildir (mandatory) \-
@@ -294,7 +295,7 @@ color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B]statusbar\f[R]: Used to define the background color of the
+\f[B][statusbar]\f[R]: Used to define the background color of the
 statusbar.
 .RS
 .PP

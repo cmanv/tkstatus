@@ -217,12 +217,16 @@ proc zstatus::add_widgets {side} {
 	variable sepcount
 
 	if {$side == "left"} {
-		set widgets $::config(widgets_left)
+		set widgets $::config(leftside)
 	} else {
-		set widgets $::config(widgets_right)
+		set widgets $::config(rightside)
 	}
+	# Sanitize the provided list
+	regsub -all {\"} $widgets {} widgets 
+	regsub -all {,} $widgets { } widgets 
+	regsub -all {[ ]+} $widgets { } widgets
 
-	foreach item $widgets {
+	foreach item [split $widgets] {
 		if ![info exists ::widgetarray($item)] { continue }
 		array set widget $::widgetarray($item)
 		switch $widget(type) {

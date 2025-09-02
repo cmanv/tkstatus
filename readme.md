@@ -94,13 +94,13 @@ These are the options can be specified in the __[main]__ section.
 
 > Unix socket of the window manager. (Default: _$HOME/.cache/zwm/socket_)
 
-* __widgets_left__ 
+* __leftside__ 
 
-> Ordered list of widgets starting from the left hand side of the screen.
+> List of widgets in the statusbar starting from the left.
 
-* __widgets_right__ 
+* __rightside__ 
 
-> Ordered list of wigets starting from the right hand side of the screen.
+> List of widgets in the statusbar starting from the right. 
 
 ## WIDGETS SECTIONS
 
@@ -112,62 +112,62 @@ The list of valid widgets are:
 
 Each of these widgets can be customized in its own section:
 
-- __arcsize__: Shows current usage of the ZFS ARC.
+- __[arcsize]__: Shows current usage of the ZFS ARC.
 
 > Options:
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __datetime__: Shows current date and time in the defined _timezone_
+- __[datetime]__: Shows current date and time in the defined _timezone_
 
 > Options:
 > - _format_: Format of the date and time (as defined in strftime(3))
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __desklist__: List of desktops currently in use.
+- __[desklist]__: List of desktops currently in use.
 
 > Options:
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __deskmode__: Mode of the active desktop.
+- __[deskmode]__: Mode of the active desktop.
 
 > Options:
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __deskname__: Name of the active desktop.
+- __[deskname]__: Name of the active desktop.
 
 > Options:
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __devices__: Show transient devices connected to the machine.
+- __[devices]__: Show transient devices connected to the machine.
 
 > Options:
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __loadavg__: Shows current CPU load average.
+- __[loadavg]__: Shows current CPU load average.
 
 > Options:
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __mail__: Shows icons of new mail. There must be at least one maildir section defined.
+- __[mail]__: Shows icons of new mail. There must be at least one maildir section defined.
 
 > Options:
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __memused__: Shows current used memory and swap usage if applicable.
+- __[memused]__: Shows current used memory and swap usage if applicable.
 
 > Options:
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __metar__: Shows an icon and current temperature from a METAR station.
+- __[metar]__: Shows an icon and current temperature from a METAR station.
 Clicking on it opens a window showing current weather conditions.
 
 > Options:
@@ -175,40 +175,40 @@ Clicking on it opens a window showing current weather conditions.
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __mixer__: Shows an icon and the volume level of _/dev/mixer_.
+- __[mixer]__: Shows an icon and the volume level of _/dev/mixer_.
 
 > Options:
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __musicpd__: Shows an icon when the music player daemon is in use. Hovering on
+- __[musicpd]__: Shows an icon when the music player daemon is in use. Hovering on
 it shows the currently playing track.
 
 > Options:
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __netin__: Shows the amount of inbound traffic on a given network interface.
+- __[netin]__: Shows the amount of inbound traffic on a given network interface.
 
 > Options:
 > - _interface_: Network interface to monitor
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __netout__: Shows the amount of outbound traffic on a given network interface.
+- __[netout]__: Shows the amount of outbound traffic on a given network interface.
 
 > Options:
 > - _interface_: Network interface to monitor
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __separator__: Widget acting as vertical separators between two widgets.
+- __[separator]__: Widget acting as vertical separators between two widgets.
 
 > Options:
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __wintitle__: Displays the title of the currently active window.
+- __[wintitle]__: Displays the title of the currently active window.
 
 > Options:
 >-  _maxlength_: Maximum length of text to display. (Default 110 characters)
@@ -217,8 +217,9 @@ it shows the currently playing track.
 
 ## OTHER SECTIONS
 
-- __maildir__: Defines a mailbox to watch in the __mail__ widget.
-The mailbox __must__ be in the _maildir_ format.
+- __[maildir]__: Defines a mailbox for the __mail__ widget.
+The mailbox __must__ be in the _maildir_ format. Multiple _maildir_ sections
+are allowed for multiple mailboxes.
 
 > Options:
 > - _name_: Name of the maildir (mandatory)
@@ -226,7 +227,7 @@ The mailbox __must__ be in the _maildir_ format.
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __statusbar__: Used to define the background color of the statusbar.
+- __[statusbar]__: Used to define the background color of the statusbar.
 
 > Options:
 > - _light_: color in light mode.

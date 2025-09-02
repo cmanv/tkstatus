@@ -9,6 +9,7 @@ message (STATUS "*** Building ${PACKAGE_NAME} ${PACKAGE_VERSION} ***")
 # Tcl version
 set(TCL_LIBRARY_VERSION "9.0")
 set(TCL_INCLUDE_PATH "/usr/local/include/tcl9.0")
+include(GNUInstallDirs)
 
 # Add modules
 add_subdirectory(modules/devices)
