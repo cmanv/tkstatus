@@ -26,3 +26,4 @@ configure_file(${zstatus_SOURCE_DIR}/zstatus.tk ${zstatus_BINARY_DIR}/zstatus.tk
 install(PROGRAMS ${zstatus_BINARY_DIR}/zstatus.tk DESTINATION bin)
 install(PROGRAMS ${zstatus_SOURCE_DIR}/zstatus-send DESTINATION bin)
 install(PROGRAMS ${zstatus_SOURCE_DIR}/zstatus.sh DESTINATION bin)
+install(FILES man/zstatus.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
