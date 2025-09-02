@@ -98,7 +98,7 @@ These are the options can be specified in the __[main]__ section.
 
 > Unix socket of the statusbar. (Default: _$HOME/.cache/zstatus/socket_)
 
-* __zwnsocket__
+* __zwmsocket__
 
 > Unix socket of the window manager. (Default: _$HOME/.cache/zwm/socket_)
 
