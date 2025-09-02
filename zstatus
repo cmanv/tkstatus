@@ -1,22 +1,27 @@
-#!/bin/sha
+#!/bin/sh
 usage() {
-	local msg=$1
 	echo "Usage: $0  [-c configfile -t [dark|light] -h]"
 	echo " -h		: show this message"
 	echo " -c configfile	: use this alternate config file"
 	echo " -t dark/light 	: use this theme"
+	exit 0
 }
 
 configfile=
 theme=
-while getopts hc:t: p
+while getopts hc:t: param
 do 
-	case $p in
+	case $param in
 	c)	configfile="-config=$OPTARG";;
-	t)	theme"-theme=$OPTARG";;
+	t)	theme="-theme=$OPTARG";;
 	*)	usage;;
 	esac
 done			
+shift $((OPTIND-1))
+
+if [ -n "$1" ]; then
+	usage
+fi
 
 export LD_PRELOAD=/usr/local/lib/libmpdclient.so
 exec zstatus.tk $configfile $theme

@@ -8,28 +8,24 @@ zstatus — a status bar for the zwm window manager
 
 # SYNOPSIS
 
-**status.tk** \[-display <display>\] \[-config <configfile>\] \[-theme <defaulttheme>t\] \[-help\]
+**zstatus** \[-c <configfile>\] \[-t <defaulttheme>\] \[-h\]
 
 # DESCRIPTION
 
-**zstatus.tk** is a statusbar for ZWM written in Tcl/Tk and C.
+**zstatus** is a statusbar for ZWM written in Tcl/Tk and C.
 
 # COMMAND LINE OPTIONS
 
-**-display** _display_
-
-> Use _display_ as the default X display.
-
-**-config** _configfile_
+**-c _configfile_**
 
 > Use _configfile_ as the configuration file.
 
-**-theme** _theme_
+**-t _theme_**
 
 > Specify the startup theme as either "dark" or "light". This can also be specified
 trough the configuration file.
 
-**-help**
+**-h**
 
 > Print brief usage information.
 
