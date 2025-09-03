@@ -5,7 +5,6 @@
 #include <queue.h>
 #include <status.h>
 #include "mpd.h"
-
 static const int titlelength = 256;
 static char host[65] = "";
 static int port = 0;
@@ -17,7 +16,7 @@ int MPD_ConnectObjCmd( ClientData clientData, Tcl_Interp *interp,
 {
 	Tcl_Obj	*resultObj = Tcl_GetObjResult(interp);
 	if (objc == 1) {
-		Tcl_SetStringObj(resultObj, "** Erreur: host ou socket manquant **", -1);
+		Tcl_SetStringObj(resultObj, "[mpd::connect: missing host or socket]", -1);
 		return TCL_ERROR;
 	}
 
@@ -25,20 +24,26 @@ int MPD_ConnectObjCmd( ClientData clientData, Tcl_Interp *interp,
 
 	if (objc > 2) {
 		if (Tcl_GetIntFromObj(interp, objv[2], &port) != TCL_OK) {
-			Tcl_SetStringObj(resultObj, "** Erreur: port non valide  **", -1);
+			Tcl_SetStringObj(resultObj, "[mpd::connect: invalid port]", -1);
 			return TCL_ERROR;
 		}
 	}
 
 	if (objc > 3) {
 		if (Tcl_GetIntFromObj(interp, objv[3], &timeout) != TCL_OK) {
-			Tcl_SetStringObj(resultObj, "** Erreur: timeout non valide  **", -1);
+			Tcl_SetStringObj(resultObj, "[mpd::connect: invalid timeout]", -1);
 			return TCL_ERROR;
 		}
 	}
 
 	if (conn) mpd_connection_free(conn);
 	conn = mpd_connection_new(host, port, timeout);
+	if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
+		Tcl_SetStringObj(resultObj, "[mpd::connect: failed to connect]", -1);
+		mpd_connection_free(conn);
+		conn = NULL;
+		return TCL_ERROR;
+	}
 
 	return TCL_OK;
 }
