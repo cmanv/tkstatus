@@ -23,5 +23,6 @@ if [ -n "$1" ]; then
 	usage
 fi
 
+export TCLLIBPATH=@LIBDIR@/zstatus
 export LD_PRELOAD=/usr/local/lib/libmpdclient.so
 exec @LIBEXECDIR@/zstatus.tk $configfile $theme

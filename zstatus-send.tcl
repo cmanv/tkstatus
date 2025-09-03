@@ -1,0 +1,12 @@
+#!/usr/bin/env tclsh9.0
+package require unix_sockets
+package require zconfig
+
+set socket [zconfig::get barsocket default]
+set action [lindex $::argv 0]
+if {[catch {set channel [unix_sockets::connect $socket]}]} {
+	puts stderr "Could not connect to socket $socket!\n"
+	exit 1
+}
+puts $channel $action 
+close $channel
