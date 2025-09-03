@@ -4,9 +4,9 @@
 .SH NAME
 zstatus \(em a status bar for the zwm window manager
 .SH SYNOPSIS
-\f[B]zstatus\f[R] [\-c ] [\-t ] [\-h]
+\f[B]zstatus\f[R] [\-c configfile] [\-t theme] [\-h]
 .SH DESCRIPTION
-\f[B]zstatus.tk\f[R] is a statusbar for ZWM written in Tcl/Tk and C.
+\f[B]zstatus\f[R] is a statusbar for ZWM written in Tcl/Tk and C.
 .SH COMMAND LINE OPTIONS
 \f[B]\-c \f[BI]configfile\f[B]\f[R]
 .RS
@@ -300,9 +300,9 @@ The mailbox \f[B]must\f[R] be in the \f[I]maildir\f[R] format.
 Multiple \f[I]maildir\f[R] sections are allowed for multiple mailboxes.
 .RS
 .PP
-Options: \- \f[I]name\f[R]: Name of the maildir (mandatory) \-
-\f[I]path\f[R]: Path of the maildir (mandatory) \- \f[I]light\f[R]:
-color in light mode.
+Options: \- \f[I]name\f[R]: Name of the maildir (required) \-
+\f[I]path\f[R]: Path of the maildir (required) \- \f[I]light\f[R]: color
+in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2

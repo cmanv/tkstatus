@@ -5,4 +5,4 @@ if [ -z "$1" ]; then
 fi
 
 export TCLLIBPATH=@LIBDIR@/zstatus
-exec @LIBEXECDIR@/zstatus.tk $1
+exec @LIBEXECDIR@/zstatus-send.tcl $1
