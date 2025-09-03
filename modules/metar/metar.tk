@@ -1,9 +1,9 @@
 package require Tk 9.0
-package require utils
 package require fileutil
-package require metar::decode
+package require zstatus::utils
+package require zstatus::metar::decode
 
-namespace eval metar {
+namespace eval zstatus::metar {
 	font create m_italic -family Sans -size 12 -slant italic
 	font create m_normal -family Sans -size 12
 	font create m_large -family Sans -size 13
@@ -19,7 +19,7 @@ namespace eval metar {
 	namespace export setup update set_theme
 }
 
-proc ::metar::toggle_window {} {
+proc zstatus::metar::toggle_window {} {
 	variable station
 	if ![info exists station(code)] { return }
 
@@ -34,7 +34,7 @@ proc ::metar::toggle_window {} {
 	}
 }
 
-proc ::metar::set_theme_header { header } {
+proc zstatus::metar::set_theme_header { header } {
 	variable statusbar
 	variable header2
 	variable value1
@@ -57,7 +57,7 @@ proc ::metar::set_theme_header { header } {
 	$header.values.status.text configure -bg $statusbar($theme) -fg $value1($theme)
 }
 
-proc ::metar::set_theme_summary { summary } {
+proc zstatus::metar::set_theme_summary { summary } {
 	variable statusbar
 	variable separator
 	variable header2
@@ -86,7 +86,7 @@ proc ::metar::set_theme_summary { summary } {
 	$summary.hours.sunset configure -bg $statusbar($theme) -fg $value1($theme)
 }
 
-proc ::metar::set_theme_grid { grid } {
+proc zstatus::metar::set_theme_grid { grid } {
 	variable statusbar
 	variable header2
 	variable value2
@@ -111,7 +111,7 @@ proc ::metar::set_theme_grid { grid } {
 	$grid.precips_val configure -bg $statusbar($theme) -fg $value2($theme)
 }
 
-proc ::metar::set_theme {newtheme} {
+proc zstatus::metar::set_theme {newtheme} {
 	variable station
 	if ![info exists station(code)] { return }
 
@@ -127,7 +127,7 @@ proc ::metar::set_theme {newtheme} {
 	set_theme_grid .metar.window.grid
 }
 
-proc ::metar::update_grid { grid } {
+proc zstatus::metar::update_grid { grid } {
 	variable report
 
 	if {![string length $report(wind)]} {
@@ -191,26 +191,26 @@ proc ::metar::update_grid { grid } {
 	}
 }
 
-proc ::metar::update {} {
+proc zstatus::metar::update {} {
 	variable metar
 	variable station
 	variable report
 
 	if ![info exists station(code)] {
-		set status [metar::decode::fetch_station_info $metar(station)]
+		set status [decode::fetch_station_info $metar(station)]
 		if {$status == {KO}} {
 			set report(statusbar) "<?>"
 			return
 		}
 	}
 
-	array set station [metar::decode::update_station]
-	array set report [metar::decode::get_report]
+	array set station [decode::update_station]
+	array set report [decode::get_report]
 
 	update_grid .metar.window.grid
 }
 
-proc ::metar::setup_header { header } {
+proc zstatus::metar::setup_header { header } {
 	variable theme
 	variable header2
 	variable value1
@@ -228,16 +228,16 @@ proc ::metar::setup_header { header } {
 	pack [frame $header.values] -padx 10 -side left -fill x
 	pack [frame $header.values.station] -side top -anchor w
 	pack [label $header.values.station.text -font $value1(font)\
-		-textvar metar::station(Site)]
+		-textvar zstatus::metar::station(Site)]
 	pack [frame $header.values.date] -side top -anchor w
 	pack [label $header.values.date.text -font $value1(font)\
-		-textvar metar::report(date)]
+		-textvar zstatus::metar::report(date)]
 	pack [frame $header.values.status] -side top -anchor w
 	pack [label $header.values.status.text -font $value1(font)\
-		-textvar metar::report(request_message)]
+		-textvar zstatus::metar::report(request_message)]
 }
 
-proc ::metar::setup_summary { summary } {
+proc zstatus::metar::setup_summary { summary } {
 	variable theme
 	variable header1
 	variable header2
@@ -251,14 +251,14 @@ proc ::metar::setup_summary { summary } {
 	pack [frame $summary.temp] -side left
 	pack [frame $summary.temp.status] -side top -anchor w
 	pack [label $summary.temp.status.icon -font $icons(font)\
-		-textvar metar::report(weather_icon) ] -side left
+		-textvar zstatus::metar::report(weather_icon) ] -side left
 	pack [label $summary.temp.status.text -font $header1(font)\
-		-textvar metar::report(summary) ] -side left -padx 10
+		-textvar zstatus::metar::report(summary) ] -side left -padx 10
 	pack [frame $summary.temp.remark] -side top -anchor w
 	pack [label $summary.temp.remark.key -font $header2(font)\
-		-textvar metar::report(note) ] -side left
+		-textvar zstatus::metar::report(note) ] -side left
 	pack [label $summary.temp.remark.value -font $value2(font)\
-		-textvar metar::report(note_val) ] -side left -padx 5
+		-textvar zstatus::metar::report(note_val) ] -side left -padx 5
 	pack [frame $summary.separator -width 1] -padx 10 -fill y -side left
 	pack [frame $summary.icon1] -fill y -side left
 	pack [label $summary.icon1.sunrise -font $icons(font) -text "\uedd0"]
@@ -268,12 +268,12 @@ proc ::metar::setup_summary { summary } {
 	pack [label $summary.icon2.down -font $icons(font) -text "\uea4b"]
 	pack [frame $summary.hours] -fill y -side left
 	pack [label $summary.hours.sunrise -font $value1(font)\
-		 -textvar metar::station(sunrise) ] -anchor w -pady 2
+		 -textvar zstatus::metar::station(sunrise) ] -anchor w -pady 2
 	pack [label $summary.hours.sunset -font $value1(font)\
-		 -textvar metar::station(sunset) ] -anchor w -pady 2
+		 -textvar zstatus::metar::station(sunset) ] -anchor w -pady 2
 }
 
-proc ::metar::setup_info_grid { grid } {
+proc zstatus::metar::setup_info_grid { grid } {
 	variable theme
 	variable header2
 	variable value2
@@ -283,37 +283,40 @@ proc ::metar::setup_info_grid { grid } {
 	grid columnconfigure $grid 1 -weight 1
 
 	label $grid.wind -font $header2(font) -text "Vent :"
-	label $grid.wind_val -font $value2(font) -textvar metar::report(wind)
+	label $grid.wind_val -font $value2(font) -textvar zstatus::metar::report(wind)
 	set row 0
 	grid configure $grid.wind -row $row -column 0 -sticky w
 	grid configure $grid.wind_val -row $row -column 1 -sticky w
 
 	label $grid.gust -font $header2(font) -text "Rafale :"
-	label $grid.gust_val -font $value2(font) -textvar metar::report(gust)
+	label $grid.gust_val -font $value2(font) -textvar zstatus::metar::report(gust)
 	incr row
 	grid configure $grid.gust -row $row -column 0 -sticky w
 	grid configure $grid.gust_val -row $row -column 1 -sticky w
 
 	label $grid.dew -font $header2(font) -text "Point de rosée :"
-	label $grid.dew_val -font $value2(font) -textvar metar::report(dew)
+	label $grid.dew_val -font $value2(font) -textvar zstatus::metar::report(dew)
 	incr row
 	grid configure $grid.dew -row $row -column 0 -sticky w
 	grid configure $grid.dew_val -row $row -column 1 -sticky w
 
 	label $grid.rhumidity -font $header2(font) -text "Humidité relative :"
-	label $grid.rhumidity_val -font $value2(font) -textvar metar::report(rel_humidity)
+	label $grid.rhumidity_val -font $value2(font) \
+		-textvar zstatus::metar::report(rel_humidity)
 	incr row
 	grid configure $grid.rhumidity -row $row -column 0 -sticky w
 	grid configure $grid.rhumidity_val -row $row -column 1 -sticky w
 
 	label $grid.pressure -font $header2(font) -text "Pression :"
-	label $grid.pressure_val -font $value2(font) -textvar metar::report(pressure)
+	label $grid.pressure_val -font $value2(font) \
+		-textvar zstatus::metar::report(pressure)
 	incr row
 	grid configure $grid.pressure -row $row -column 0 -sticky w
 	grid configure $grid.pressure_val -row $row -column 1 -sticky w
 
 	label $grid.visibility -font $header2(font) -text "Visibilité :"
-	label $grid.visibility_val -font $value2(font) -textvar metar::report(visibility)
+	label $grid.visibility_val -font $value2(font) \
+		-textvar zstatus::metar::report(visibility)
 	incr row
 	grid configure $grid.visibility -row $row -column 0 -sticky w
 	grid configure $grid.visibility_val -row $row -column 1 -sticky w
@@ -333,7 +336,7 @@ proc ::metar::setup_info_grid { grid } {
 	grid configure $grid.precips_val -row $row -column 1 -sticky w
 }
 
-proc ::metar::setup_window {} {
+proc zstatus::metar::setup_window {} {
 	variable state_visible
 	variable header1
 	variable theme
@@ -348,7 +351,7 @@ proc ::metar::setup_window {} {
 	setup_info_grid .metar.window.grid
 }
 
-proc ::metar::setup {} {
+proc zstatus::metar::setup {} {
 	variable metar
 	array set metar $::widgetarray(metar)
 
@@ -374,6 +377,6 @@ proc ::metar::setup {} {
 	setup_window
 	bind .metar <3> { metar::toggle_window }
 
-	utils::every $metar(delay) ::metar::update
+	zstatus::utils::every $metar(delay) zstatus::metar::update
 }
-package provide metar @PACKAGE_VERSION@
+package provide @PACKAGE_NAME@ @PACKAGE_VERSION@

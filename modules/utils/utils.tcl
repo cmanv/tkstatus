@@ -1,6 +1,6 @@
 package require Tcl 9.0
 
-namespace eval utils {
+namespace eval @PACKAGE_NAME@ {
 	proc every {ms cmd} {
 		after $ms [namespace code [info level 0]]
 		eval $cmd
@@ -17,4 +17,4 @@ namespace eval utils {
 	namespace export every read_file
 }
 
-package provide utils @PACKAGE_VERSION@
+package provide @PACKAGE_NAME@ @PACKAGE_VERSION@

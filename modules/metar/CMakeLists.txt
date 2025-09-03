@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.20)
 
 # Project identification
 project ("metar")
-set(PACKAGE_NAME "metar")
+set(PACKAGE_NAME "zstatus::metar")
 set(PACKAGE_VERSION "1.0")
 message (STATUS "*** Building ${PACKAGE_NAME} ${PACKAGE_VERSION} ***")
 
@@ -17,7 +17,7 @@ configure_file(${metar_SOURCE_DIR}/metar.tk ${metar_BINARY_DIR}/metar.tk @ONLY)
 configure_file(${metar_SOURCE_DIR}/metar_decode.tcl ${metar_BINARY_DIR}/metar_decode.tcl @ONLY)
 
 # Install files
-set(PACKAGE_LIB ${CMAKE_INSTALL_LIBDIR}/zstatus/${PACKAGE_NAME})
+set(PACKAGE_LIB ${CMAKE_INSTALL_LIBDIR}/zstatus/metar)
 install(FILES ${metar_BINARY_DIR}/${PKG_INDEX} DESTINATION ${PACKAGE_LIB})
 install(FILES ${metar_BINARY_DIR}/metar.tk DESTINATION ${PACKAGE_LIB})
 install(FILES ${metar_BINARY_DIR}/metar_decode.tcl DESTINATION ${PACKAGE_LIB})

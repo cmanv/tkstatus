@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.20)
 
 # Project identification
 project ("mail")
-set(PACKAGE_NAME "mail")
+set(PACKAGE_NAME "zstatus::mail")
 set(PACKAGE_VERSION "0.2")
 
 # Tcl version
@@ -15,6 +15,6 @@ configure_file(${mail_SOURCE_DIR}/${PKG_INDEX} ${mail_BINARY_DIR}/${PKG_INDEX} @
 configure_file(${mail_SOURCE_DIR}/mail.tk ${mail_BINARY_DIR}/mail.tk @ONLY)
 
 # Install files
-set(PACKAGE_LIB ${CMAKE_INSTALL_LIBDIR}/zstatus/${PACKAGE_NAME})
+set(PACKAGE_LIB ${CMAKE_INSTALL_LIBDIR}/zstatus/mail)
 install(FILES ${mail_BINARY_DIR}/${PKG_INDEX} DESTINATION ${PACKAGE_LIB})
 install(FILES ${mail_BINARY_DIR}/mail.tk DESTINATION ${PACKAGE_LIB})

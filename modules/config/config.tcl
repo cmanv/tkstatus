@@ -1,6 +1,6 @@
 #!/usr/bin/env tclsh9.0
-package require utils
-namespace eval zconfig {
+package require zstatus::utils
+namespace eval zstatus::config {
 	if [info exists ::env(XDG_CONFIG_HOME)] {
 		set config_prefix $::env(XDG_CONFIG_HOME)
 	} else {
@@ -46,16 +46,16 @@ namespace eval zconfig {
 			font normal light black dark LightGray }\
 	    loadavg { type var source zstatus::loadavg proc set_loadavg\
 			font normal light black dark LightGray }\
-	    mail { type transient proc mail::update\
+	    mail { type transient proc zstatus::mail::update\
 			font normal light black dark LightGray }\
 	    memused { type var source zstatus::memused proc set_memused\
 			font normal light black dark LightGray }\
-	    metar { type var source metar::report(statusbar)\
+	    metar { type var source zstatus::metar::report(statusbar)\
 			delay 600000 geometry {-1+26}\
 			font normal light black dark LightGray }\
 	    mixer { type var source zstatus::mixer proc set_mixer\
 			font normal light black dark LightGray }\
-	    musicpd { type transient proc musicpd::update\
+	    music { type transient proc music::update\
 			font normal light black dark LightGray }\
 	    netin { type var source zstatus::netin proc set_netin\
 			interface em0 font normal light black dark LightGray }\
@@ -69,7 +69,7 @@ namespace eval zconfig {
 	namespace export read get
 }
 
-proc zconfig::get {key configfile} {
+proc zstatus::config::get {key configfile} {
 	variable defaultfile
 	variable config
 
@@ -84,7 +84,7 @@ proc zconfig::get {key configfile} {
 
 	if [file exists $configfile] {
 		set context ""
-		set lines [utils::read_file $configfile]
+		set lines [zstatus::utils::read_file $configfile]
 		foreach line $lines {
 			if ![string length $line] { continue }
 			if [regexp {^#} $line] { continue }
@@ -104,14 +104,14 @@ proc zconfig::get {key configfile} {
 	return $value
 }
 
-proc zconfig::read {configfile} {
+proc zstatus::config::read {configfile} {
 	variable defaultfile
 	variable widgets
 	variable config
 
 	# List of valid contexts in config file
 	set contexts { main arcsize datetime desklist deskmode deskname\
-		devices loadavg mail maildir memused metar mixer musicpd\
+		devices loadavg mail maildir memused metar mixer music\
 		netin netout separator statusbar wintitle}
 
 	# Cant change these from config file
@@ -129,7 +129,7 @@ proc zconfig::read {configfile} {
 	if [file exists $configfile] {
 		set index 0
 		set context ""
-		set lines [split [utils::read_file $configfile] "\n"]
+		set lines [split [zstatus::utils::read_file $configfile] "\n"]
 		foreach line $lines {
 			if ![string length $line] { continue }
 			if [regexp {^#} $line] { continue }
@@ -188,4 +188,4 @@ proc zconfig::read {configfile} {
 	return [array get config]
 }
 
-package provide zconfig @PACKAGE_VERSION@
+package provide @PACKAGE_NAME@ @PACKAGE_VERSION@

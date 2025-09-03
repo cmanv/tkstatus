@@ -1,13 +1,13 @@
 #!/usr/bin/env wish9.0
 package require cmdline
 package require unix_sockets
-package require devices
-package require mail
-package require metar
-package require musicpd
-package require sysbsd
-package require utils
-package require zconfig
+package require zstatus::utils
+package require zstatus::config
+package require zstatus::devices
+package require zstatus::mail
+package require zstatus::metar
+package require zstatus::music
+package require zstatus::sysbsd
 
 namespace eval zstatus {
 	variable currenttheme	none
@@ -27,7 +27,7 @@ namespace eval zstatus {
 	    mixer_volume {widget mixer action set_mixer arg 0}\
 	    metar_window {widget metar action metar::toggle_window arg 0}\
 	    metar_update {widget metar action metar::update arg 0}\
-	    musicpd_update {widget musicpd action musicpd::update arg 0}\
+	    music_update {widget music action music::update arg 0}\
 	    set_theme {widget none action set_theme arg 1}}
 }
 
@@ -335,12 +335,12 @@ proc zstatus::setup {} {
 		metar::setup
 		array set metar $::widgetarray(metar)
 		if [info exists metar(station)] {
-			bind $bar.metar <1> { metar::toggle_window }
-			bind $bar.metar <2> { metar::update }
+			bind $bar.metar <1> { zstatus::metar::toggle_window }
+			bind $bar.metar <2> { zstatus::metar::update }
 		}
 	}
 
-	utils::every $::config(delay) zstatus::update
+	zstatus::utils::every $::config(delay) zstatus::update
 }
 
 # Treat command line options
@@ -358,7 +358,7 @@ try {
 }
 
 # Read configuration
-array set config [zconfig::read $params(config)]
+array set config [zstatus::config::read $params(config)]
 array set widgetarray $::config(widgets)
 
 set theme ""

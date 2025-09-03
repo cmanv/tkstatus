@@ -1,11 +1,11 @@
 #!/usr/bin/env wish9.0
-namespace eval devices {
+namespace eval zstatus::devices {
 	array set icons { printer \uefd2 sdcard \uf066 udisk \uf1cc }
 	namespace export setup update set_theme
 }
 
 # Set the theme for musicpd
-proc devices::set_theme {theme} {
+proc zstatus::devices::set_theme {theme} {
 	variable devicelist
 	variable devframe
 	variable devsep
@@ -22,7 +22,7 @@ proc devices::set_theme {theme} {
 }
 
 # Check the presence of removable devices.
-proc devices::update {} {
+proc zstatus::devices::update {} {
 	variable devicelist
 	variable devicearray
 	variable devframe
@@ -56,7 +56,7 @@ proc devices::update {} {
 }
 
 # Setup the removable devices
-proc devices::setup { base position side } {
+proc zstatus::devices::setup { base position side } {
 	variable devicelist
 	variable devicearray
 	variable icons
@@ -90,4 +90,4 @@ proc devices::setup { base position side } {
 	}
 }
 
-package provide devices @PACKAGE_VERSION@
+package provide @PACKAGE_NAME@ @PACKAGE_VERSION@

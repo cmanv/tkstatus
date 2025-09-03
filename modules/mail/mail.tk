@@ -1,14 +1,14 @@
 #!/usr/bin/env wish9.0
 package require mime
-package require utils
+package require zstatus::utils
 
-namespace eval mail {
+namespace eval zstatus::mail {
 	variable mailicon \ueec0
 	variable activepopup 0
 	namespace export setup update set_theme
 }
 
-proc mail::set_theme { newtheme } {
+proc zstatus::mail::set_theme { newtheme } {
 	variable mailframe
 	variable mailsep
 
@@ -30,7 +30,7 @@ proc mail::set_theme { newtheme } {
 }
 
 # Look for new messages in the mailboxes
-proc mail::update {} {
+proc zstatus::mail::update {} {
 	variable mailframe
 	variable mailsep
 	variable mailpos
@@ -71,7 +71,7 @@ proc mail::update {} {
 }
 
 # Setup the mailboxes
-proc mail::setup { base position side } {
+proc zstatus::mail::setup { base position side } {
 	variable mail
 	variable mailboxes
 	variable statusbar
@@ -102,10 +102,10 @@ proc mail::setup { base position side } {
 		set mailboxes($index) [array get mailbox]
 
 		label $mailframe.$index -font normal -text ""
-		bind $mailframe.$index <Enter> "mail::new $index"
+		bind $mailframe.$index <Enter> "zstatus::mail::new $index"
 		bind $mailframe.$index <Leave> {
 			destroy .mailpopup
-			set mail::activepopup 0
+			set zstatus::mail::activepopup 0
 		}
 		bind $mailframe.$index <1> {
 			exec emacsclient -c -e -F "((width . 120) (height . 30))" \
@@ -115,14 +115,14 @@ proc mail::setup { base position side } {
 	}
 }
 
-proc mail::convert_date { rfc822 } {
+proc zstatus::mail::convert_date { rfc822 } {
 	set ctime [clock scan $rfc822]
 	set date [clock format $ctime -format {%a %d %b %Y %T %Z} \
 			-timezone $::config(timezone) -locale $::config(lang)]
 	return $date
 }
 
-proc mail::convert_header { header } {
+proc zstatus::mail::convert_header { header } {
 	set tokens [regexp -linestop -all -inline {(.*)=\?([\w\-]+)\?(.)\?(.*?)\?\=(.*)} $header]
 	if { $tokens == {} } {
 		return $header
@@ -160,7 +160,7 @@ proc mail::convert_header { header } {
 }
 
 # Popup after button event on mail icon
-proc mail::new { index } {
+proc zstatus::mail::new { index } {
 	variable activepopup
 	variable mail
 	variable mailboxes
@@ -190,7 +190,7 @@ proc mail::new { index } {
 
 	set count 0
 	foreach file [lsort -decreasing [glob -nocomplain -dir "$mailbox(path)/new" *]] {
-		set mesg [utils::read_file $file]
+		set mesg [zstatus::utils::read_file $file]
 		if {[string length $mesg] < 2} {
 			continue
 		}
@@ -233,4 +233,4 @@ proc mail::new { index } {
 		incr count
 	}
 }
-package provide mail @PACKAGE_VERSION@
+package provide @PACKAGE_NAME@ @PACKAGE_VERSION@

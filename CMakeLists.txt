@@ -15,10 +15,10 @@ include(GNUInstallDirs)
 add_subdirectory(modules/devices)
 add_subdirectory(modules/mail)
 add_subdirectory(modules/metar)
-add_subdirectory(modules/musicpd)
+add_subdirectory(modules/music)
 add_subdirectory(modules/sysbsd)
 add_subdirectory(modules/utils)
-add_subdirectory(modules/zconfig)
+add_subdirectory(modules/config)
 
 # Substitute some variable names
 set(LIBDIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})

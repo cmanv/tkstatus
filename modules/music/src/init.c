@@ -1,3 +1,4 @@
+#include "config.h"
 #include "mpd.h"
 
 EXTERN int
@@ -13,27 +14,27 @@ Mpd_Init(Tcl_Interp *interp)
 		return TCL_ERROR;
 	}
 
-	if (Tcl_PkgProvide(interp, PACKAGE_PROVIDE, PACKAGE_VERSION) != TCL_OK) {
+	if (Tcl_PkgProvide(interp, LIBRARY_PROVIDE, PACKAGE_VERSION) != TCL_OK) {
 		return TCL_ERROR;
 	}
 
-	namespace = Tcl_CreateNamespace(interp, "mpd", (ClientData)NULL,
+	namespace = Tcl_CreateNamespace(interp, LIBRARY_PROVIDE, (ClientData)NULL,
 					(Tcl_NamespaceDeleteProc *)NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"mpd::connect",
+				"zstatus::music::mpd::connect",
 				MPD_ConnectObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"mpd::state",
+				"zstatus::music::mpd::state",
 				MPD_StateObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);
 
 	Tcl_CreateObjCommand(	interp,
-				"mpd::currenttitle",
+				"zstatus::music::mpd::currenttitle",
 				MPD_CurrentTitleObjCmd,
 				(ClientData) NULL,
 				(Tcl_CmdDeleteProc*) NULL);

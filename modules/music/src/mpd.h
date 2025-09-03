@@ -1,12 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <connection.h>
-#include <song.h>
-#include <queue.h>
-#include <status.h>
 #include <tcl.h>
-#include "config.h"
 
 int mpd_get_state();
 int mpd_current_title(char *, int);

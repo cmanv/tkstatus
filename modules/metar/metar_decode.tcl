@@ -1,6 +1,6 @@
 package require Tcl 9.0
 
-namespace eval ::metar::decode {
+namespace eval zstatus::metar::decode {
 	variable  metar_api 		https://aviationweather.gov/api/data/metar
 	variable  station_api 		https://aviationweather.gov/api/data/stationinfo
 	set report(prev_date)		""
@@ -109,7 +109,7 @@ namespace eval ::metar::decode {
 	namespace export fetch_station_info update_station get_report
 }
 
-proc ::metar::decode::current_day {} {
+proc zstatus::metar::decode::current_day {} {
 	set currenttime [clock seconds]
 	set fixedtime [clock format $currenttime -format {%Y-%m-%d 12:00:00}\
 			-timezone $::config(timezone)]
@@ -117,18 +117,18 @@ proc ::metar::decode::current_day {} {
 			-timezone $::config(timezone)]/86400.0)]
 }
 
-proc ::metar::decode::current_date {} {
+proc zstatus::metar::decode::current_date {} {
 	set currenttime [clock seconds]
 	set datetime [clock format $currenttime -format {%Y-%m-%d}\
 			-timezone $::config(timezone)]
 }
 
-proc ::metar::decode::calc_seconds {datetime} {
+proc zstatus::metar::decode::calc_seconds {datetime} {
 	set currenttime [clock scan $datetime -format {%Y-%m-%d %H:%M:%S}\
 			-timezone $::config(timezone)]
 }
 
-proc ::metar::decode::calc_timezone_offset {} {
+proc zstatus::metar::decode::calc_timezone_offset {} {
 	set currenttime [clock seconds]
 	set tzoffset [clock format $currenttime -format {%z} -timezone $::config(timezone)]
 	set len [string length $tzoffset]
@@ -142,7 +142,7 @@ proc ::metar::decode::calc_timezone_offset {} {
 	return $tzoffset
 }
 
-proc ::metar::decode::fetch_station_info {code} {
+proc zstatus::metar::decode::fetch_station_info {code} {
 	variable station_api
 	variable station
 
@@ -172,7 +172,7 @@ proc ::metar::decode::fetch_station_info {code} {
 	return {OK}
 }
 
-proc ::metar::decode::update_station {} {
+proc zstatus::metar::decode::update_station {} {
 	variable station
 	variable const
 
@@ -264,7 +264,7 @@ proc ::metar::decode::update_station {} {
 	return [array get station]
 }
 
-proc ::metar::decode::calc_windchill { temperature windspeed } {
+proc zstatus::metar::decode::calc_windchill { temperature windspeed } {
 	if {$windspeed < 4.0} {
 		set windchill [expr $temperature + 0.2 * (0.1345 * $temperature -1.59)\
 				* $windspeed]
@@ -281,7 +281,7 @@ proc ::metar::decode::calc_windchill { temperature windspeed } {
 	return $windchill
 }
 
-proc ::metar::decode::calc_rel_humidity { temperature dew } {
+proc zstatus::metar::decode::calc_rel_humidity { temperature dew } {
 	# Utilise l'équation de Buck pour calculer les pressions saturantes de vapeur d'eau
 	set p1 [expr 0.01121 * exp((18.678 - $temperature/234.5) \
 		* ($temperature/(257.14 + $temperature)))]
@@ -289,7 +289,7 @@ proc ::metar::decode::calc_rel_humidity { temperature dew } {
 	set rel_humidity [expr round(100 * $p2/$p1)]
 }
 
-proc ::metar::decode::calc_humidex { temperature dew } {
+proc zstatus::metar::decode::calc_humidex { temperature dew } {
 	set humidex [expr $temperature + 0.5555 * (6.11 * exp( 5417.753 * \
 		(1/273.16 - 1/($dew + 273.16))) - 10.0)]
 	if {$humidex > 24} {
@@ -300,7 +300,7 @@ proc ::metar::decode::calc_humidex { temperature dew } {
 	return $humidex
 }
 
-proc ::metar::decode::decode_datetime { datetime } {
+proc zstatus::metar::decode::decode_datetime { datetime } {
 	variable station
 	variable current
 
@@ -317,7 +317,7 @@ proc ::metar::decode::decode_datetime { datetime } {
 	set current(date) $date
 }
 
-proc ::metar::decode::decode_wind { wdir wspeed wgust } {
+proc zstatus::metar::decode::decode_wind { wdir wspeed wgust } {
 	variable const
 	variable current
 	variable direction
@@ -329,12 +329,12 @@ proc ::metar::decode::decode_wind { wdir wspeed wgust } {
 	set current(direction) $direction($wdir)
 }
 
-proc ::metar::decode::decode_lightwind { wspeed } {
+proc zstatus::metar::decode::decode_lightwind { wspeed } {
 	variable current
 	set current(speed) [expr round($wspeed * 1.852)]
 }
 
-proc ::metar::decode::decode_temp { m1 tcode m2 dcode } {
+proc zstatus::metar::decode::decode_temp { m1 tcode m2 dcode } {
 	variable current
 	if {[string length $m1]} {
 		set current(temp) [expr round(-[scan $tcode %d])]
@@ -348,7 +348,7 @@ proc ::metar::decode::decode_temp { m1 tcode m2 dcode } {
 	}
 }
 
-proc ::metar::decode::decode_visibility { vcode } {
+proc zstatus::metar::decode::decode_visibility { vcode } {
 	variable const
 	variable current
 	set divider [expr [string first "/" $vcode]]
@@ -366,14 +366,14 @@ proc ::metar::decode::decode_visibility { vcode } {
 	}
 }
 
-proc ::metar::decode::decode_pressure { pcode } {
+proc zstatus::metar::decode::decode_pressure { pcode } {
 	variable const
 	variable current
 	set current(pressure) [format {%0.1f} [expr round([scan $pcode %d] \
 				* $const(cm_inch) * $const(kp_mmhg))/10.0]]
 }
 
-proc ::metar::decode::decode_clouds { code alt type } {
+proc zstatus::metar::decode::decode_clouds { code alt type } {
 	variable cloud_codes
 	variable cloud_types
 	variable const
@@ -401,7 +401,7 @@ proc ::metar::decode::decode_clouds { code alt type } {
 	}
 }
 
-proc ::metar::decode::decode_precips { icode qcode pcodes } {
+proc zstatus::metar::decode::decode_precips { icode qcode pcodes } {
 	variable intensities
 	variable qualifiers
 	variable precip_codes
@@ -472,7 +472,7 @@ proc ::metar::decode::decode_precips { icode qcode pcodes } {
 	}
 }
 
-proc ::metar::decode::fetch_metar_report {} {
+proc zstatus::metar::decode::fetch_metar_report {} {
 	variable station
 	variable request_status
 	variable metar_api
@@ -490,7 +490,7 @@ proc ::metar::decode::fetch_metar_report {} {
 	return $message
 }
 
-proc ::metar::decode::decode_metar_report {message} {
+proc zstatus::metar::decode::decode_metar_report {message} {
 	variable request_status
 	variable current
 	variable station
@@ -537,7 +537,7 @@ proc ::metar::decode::decode_metar_report {message} {
 	}
 }
 
-proc ::metar::decode::get_weather_icon {} {
+proc zstatus::metar::decode::get_weather_icon {} {
 	variable station
 	variable current
 	variable remixicons
@@ -594,7 +594,7 @@ proc ::metar::decode::get_weather_icon {} {
 	return $icon
 }
 
-proc ::metar::decode::get_report {} {
+proc zstatus::metar::decode::get_report {} {
 	variable request_status
 	variable current
 	variable report
@@ -694,4 +694,4 @@ proc ::metar::decode::get_report {} {
 	return [array get report]
 }
 
-package provide metar::decode @PACKAGE_VERSION@
+package provide @PACKAGE_NAME@::decode @PACKAGE_VERSION@

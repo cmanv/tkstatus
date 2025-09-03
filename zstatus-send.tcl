@@ -1,8 +1,8 @@
 #!/usr/bin/env tclsh9.0
 package require unix_sockets
-package require zconfig
+package require zstatus::config
 
-set socket [zconfig::get barsocket default]
+set socket [zstatus::config::get barsocket default]
 set action [lindex $::argv 0]
 if {[catch {set channel [unix_sockets::connect $socket]}]} {
 	puts stderr "Could not connect to socket $socket!\n"

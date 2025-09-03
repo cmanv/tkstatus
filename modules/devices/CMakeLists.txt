@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.20)
 
 # Project identification
 project ("devices")
-set(PACKAGE_NAME "devices")
+set(PACKAGE_NAME "zstatus::devices")
 set(PACKAGE_VERSION "0.2")
 
 # Tcl version
@@ -15,6 +15,6 @@ configure_file(${devices_SOURCE_DIR}/${PKG_INDEX} ${devices_BINARY_DIR}/${PKG_IN
 configure_file(${devices_SOURCE_DIR}/devices.tk ${devices_BINARY_DIR}/devices.tk @ONLY)
 
 # Install files
-set(PACKAGE_LIB ${CMAKE_INSTALL_LIBDIR}/zstatus/${PACKAGE_NAME})
+set(PACKAGE_LIB ${CMAKE_INSTALL_LIBDIR}/zstatus/devices)
 install(FILES ${devices_BINARY_DIR}/${PKG_INDEX} DESTINATION ${PACKAGE_LIB})
 install(FILES ${devices_BINARY_DIR}/devices.tk DESTINATION ${PACKAGE_LIB})
