@@ -154,6 +154,8 @@ Each of these widgets can be customized in its own section:
 - __[devices]__: Show transient devices connected to the machine.
 
 > Options:
+> - _watchlist_: List of removable devices to watch. (Default: _da0 da1 mmcsd0 ulpt0_)
+> - _iconlist_: List of unicode icons associated with the devices. (Default: _\uf1cc \uf1cc \uf066 \uefd2_)
 > - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.

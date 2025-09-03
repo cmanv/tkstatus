@@ -1,36 +1,36 @@
 #!/usr/bin/env wish9.0
 namespace eval zstatus::devices {
-	array set icons { printer \uefd2 sdcard \uf066 udisk \uf1cc }
+	variable devicelist { da0 da1 mmcsd0 ulpt0 }
+	variable deviceicons { \uf1cc \uf1cc \uf066 \uefd2 }
 	namespace export setup update set_theme
 }
 
 # Set the theme for musicpd
 proc zstatus::devices::set_theme {theme} {
-	variable devicelist
+	variable devices
+	variable devicearray
+	variable statusbar
+	variable separator
 	variable devframe
 	variable devsep
 
-	array set devices $::widgetarray(devices)
-	array set statusbar $::widgetarray(statusbar)
-	array set separator $::widgetarray(separator)
 
 	$devframe configure -background $statusbar($theme)
 	$devsep configure -background $separator($theme)
-	foreach device $devicelist {
+	foreach device [array names devicearray] {
 		$devframe.$device configure -fg $devices($theme) -bg $statusbar($theme)
 	}
 }
 
 # Check the presence of removable devices.
 proc zstatus::devices::update {} {
-	variable devicelist
 	variable devicearray
 	variable devframe
 	variable devsep
 	variable devpos
 	variable devside
 
-	foreach devid $devicelist {
+	foreach devid [array names devicearray] {
 		array set device $devicearray($devid)
 		if [file exists $device(path)] {
 			if {!$device(visible)} {
@@ -57,14 +57,15 @@ proc zstatus::devices::update {} {
 
 # Setup the removable devices
 proc zstatus::devices::setup { base position side } {
-	variable devicelist
-	variable devicearray
-	variable icons
+	variable statusbar
+	variable separator
 	variable devframe
 	variable devsep
 	variable devpos
 	variable devside
 
+	array set statusbar $::widgetarray(statusbar)
+	array set separator $::widgetarray(separator)
 	set devframe $base.devices
 	set devsep $base.devivessep
 	set devpos $base.$position
@@ -73,15 +74,32 @@ proc zstatus::devices::setup { base position side } {
 	frame $devframe
 	frame $devsep -width 1
 
-	set devicelist [ list da0 da1 mmcsd0 ulpt0 ]
-	set deviceicons [ list $icons(udisk) $icons(udisk) \
-			$icons(sdcard) $icons(printer) ]
-
+	variable devices
+	variable devicelist
+	variable deviceicons
 	array set devices $::widgetarray(devices)
+	if [info exists device(watchlist)] {
+		set value $devices(watchlist)
+		regsub -all {\"} $value {} value
+		regsub -all {,} $value { } value
+		regsub -all {[ ]+} $value { } value
+		set devicelist [ split $value ]
+		set deviceicons {}
+	}
+	if [info exists device(iconlist)] {
+		set value $devices(iconlist)
+		regsub -all {\"} $value {} value
+		regsub -all {,} $value { } value
+		regsub -all {[ ]+} $value { } value
+		set deviceicons [ split $value ]
+	}
+
+	variable devicearray
 	array set devicearray {}
 	foreach devid $devicelist icon $deviceicons {
 		array set device {}
 		set device(path) "/dev/$devid"
+		set device(icons) $icon
 		set device(visible) 0
 		set devicearray($devid) [array get device]
 
