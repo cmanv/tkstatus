@@ -199,6 +199,8 @@ Clicking on it opens a window showing current weather conditions.
 it shows the currently playing track.
 
 > Options:
+> - _socket_: Unix or tcp socket for connecting to mpd. If not defined, the value
+> of _MPD\_HOST_ is used instead.
 > - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
