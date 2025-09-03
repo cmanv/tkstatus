@@ -111,7 +111,7 @@ These are the options can be specified in the __[main]__ section.
 The list of valid widgets are:
 
 > __arcsize__, __datetime__, __desklist__, __deskmode__, __deskname__, __devices__,
-> __loadavg__, __mail__, __memused__, __metar__, __mixer__, __musicpd__, __netin__,
+> __loadavg__, __mail__, __memused__, __metar__, __mixer__, __music__, __netin__,
 > __netout__, __separator__, __wintitle__
 
 Each of these widgets can be customized in its own section:
@@ -126,48 +126,56 @@ Each of these widgets can be customized in its own section:
 
 > Options:
 > - _format_: Format of the date and time (as defined in strftime(3))
+> - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
 - __[desklist]__: List of desktops currently in use.
 
 > Options:
+> - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
 - __[deskmode]__: Mode of the active desktop.
 
 > Options:
+> - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
 - __[deskname]__: Name of the active desktop.
 
 > Options:
+> - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
 - __[devices]__: Show transient devices connected to the machine.
 
 > Options:
+> - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
 - __[loadavg]__: Shows current CPU load average.
 
 > Options:
+> - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
 - __[mail]__: Shows icons of new mail. There must be at least one maildir section defined.
 
 > Options:
+> - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
 - __[memused]__: Shows current used memory and swap usage if applicable.
 
 > Options:
+> - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
@@ -176,19 +184,22 @@ Clicking on it opens a window showing current weather conditions.
 
 > Options:
 > - _code_: 4 characters code of the METAR station.
+> - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
 - __[mixer]__: Shows an icon and the volume level of _/dev/mixer_.
 
 > Options:
+> - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __[musicpd]__: Shows an icon when the music player daemon is in use. Hovering on
+- __[music]__: Shows an icon when the music player daemon is in use. Hovering on
 it shows the currently playing track.
 
 > Options:
+> - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
@@ -196,6 +207,7 @@ it shows the currently playing track.
 
 > Options:
 > - _interface_: Network interface to monitor
+> - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
@@ -203,6 +215,7 @@ it shows the currently playing track.
 
 > Options:
 > - _interface_: Network interface to monitor
+> - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
@@ -216,6 +229,7 @@ it shows the currently playing track.
 
 > Options:
 >-  _maxlength_: Maximum length of text to display. (Default 110 characters)
+> - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 

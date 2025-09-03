@@ -160,7 +160,7 @@ The list of valid widgets are:
 \f[B]arcsize\f[R], \f[B]datetime\f[R], \f[B]desklist\f[R],
 \f[B]deskmode\f[R], \f[B]deskname\f[R], \f[B]devices\f[R],
 \f[B]loadavg\f[R], \f[B]mail\f[R], \f[B]memused\f[R], \f[B]metar\f[R],
-\f[B]mixer\f[R], \f[B]musicpd\f[R], \f[B]netin\f[R], \f[B]netout\f[R],
+\f[B]mixer\f[R], \f[B]music\f[R], \f[B]netin\f[R], \f[B]netout\f[R],
 \f[B]separator\f[R], \f[B]wintitle\f[R]
 .RE
 .PP
@@ -178,42 +178,54 @@ Options: \- \f[I]light\f[R]: color in light mode.
 .RS
 .PP
 Options: \- \f[I]format\f[R]: Format of the date and time (as defined in
-strftime(3)) \- \f[I]light\f[R]: color in light mode.
+strftime(3)) \- \f[I]font\f[R]: font to use for text (normal, italic or
+bold).
+\- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
 \f[B][desklist]\f[R]: List of desktops currently in use.
 .RS
 .PP
-Options: \- \f[I]light\f[R]: color in light mode.
+Options: \- \f[I]font\f[R]: font to use for text (normal, italic or
+bold).
+\- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
 \f[B][deskmode]\f[R]: Mode of the active desktop.
 .RS
 .PP
-Options: \- \f[I]light\f[R]: color in light mode.
+Options: \- \f[I]font\f[R]: font to use for text (normal, italic or
+bold).
+\- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
 \f[B][deskname]\f[R]: Name of the active desktop.
 .RS
 .PP
-Options: \- \f[I]light\f[R]: color in light mode.
+Options: \- \f[I]font\f[R]: font to use for text (normal, italic or
+bold).
+\- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
 \f[B][devices]\f[R]: Show transient devices connected to the machine.
 .RS
 .PP
-Options: \- \f[I]light\f[R]: color in light mode.
+Options: \- \f[I]font\f[R]: font to use for text (normal, italic or
+bold).
+\- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
 \f[B][loadavg]\f[R]: Shows current CPU load average.
 .RS
 .PP
-Options: \- \f[I]light\f[R]: color in light mode.
+Options: \- \f[I]font\f[R]: font to use for text (normal, italic or
+bold).
+\- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
@@ -221,7 +233,9 @@ Options: \- \f[I]light\f[R]: color in light mode.
 There must be at least one maildir section defined.
 .RS
 .PP
-Options: \- \f[I]light\f[R]: color in light mode.
+Options: \- \f[I]font\f[R]: font to use for text (normal, italic or
+bold).
+\- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
@@ -229,7 +243,9 @@ Options: \- \f[I]light\f[R]: color in light mode.
 applicable.
 .RS
 .PP
-Options: \- \f[I]light\f[R]: color in light mode.
+Options: \- \f[I]font\f[R]: font to use for text (normal, italic or
+bold).
+\- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
@@ -239,6 +255,7 @@ Clicking on it opens a window showing current weather conditions.
 .RS
 .PP
 Options: \- \f[I]code\f[R]: 4 characters code of the METAR station.
+\- \f[I]font\f[R]: font to use for text (normal, italic or bold).
 \- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
@@ -247,16 +264,19 @@ Options: \- \f[I]code\f[R]: 4 characters code of the METAR station.
 \f[I]/dev/mixer\f[R].
 .RS
 .PP
-Options: \- \f[I]light\f[R]: color in light mode.
+Options: \- \f[I]font\f[R]: font to use for text (normal, italic or
+bold).
+\- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
-\f[B][musicpd]\f[R]: Shows an icon when the music player daemon is in
-use.
+\f[B][music]\f[R]: Shows an icon when the music player daemon is in use.
 Hovering on it shows the currently playing track.
 .RS
 .PP
-Options: \- \f[I]light\f[R]: color in light mode.
+Options: \- \f[I]font\f[R]: font to use for text (normal, italic or
+bold).
+\- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
@@ -265,7 +285,8 @@ network interface.
 .RS
 .PP
 Options: \- \f[I]interface\f[R]: Network interface to monitor \-
-\f[I]light\f[R]: color in light mode.
+\f[I]font\f[R]: font to use for text (normal, italic or bold).
+\- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
@@ -274,7 +295,8 @@ network interface.
 .RS
 .PP
 Options: \- \f[I]interface\f[R]: Network interface to monitor \-
-\f[I]light\f[R]: color in light mode.
+\f[I]font\f[R]: font to use for text (normal, italic or bold).
+\- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .IP \(bu 2
@@ -290,7 +312,9 @@ Options: \- \f[I]light\f[R]: color in light mode.
 .RS
 .PP
 Options: \- \f[I]maxlength\f[R]: Maximum length of text to display.
-(Default 110 characters) \- \f[I]light\f[R]: color in light mode.
+(Default 110 characters) \- \f[I]font\f[R]: font to use for text
+(normal, italic or bold).
+\- \f[I]light\f[R]: color in light mode.
 \- \f[I]dark\f[R]: color in dark mode.
 .RE
 .SS OTHER SECTIONS
