@@ -23,88 +23,90 @@ namespace eval zstatus::metar::decode {
 		kp_mmhg			0.133322}
 
 	array set remixicons {\
-		inconnu		\ueba2\
-		nuage0-jour	\uf155\
-		nuage0-nuit	\uef1f\
-		nuage1-jour	\uf154\
-		nuage1-nuit	\uef24\
-		nuage2-jour	\uf151\
-		nuage2-nuit	\uef21\
-		couvert		\ueb9d\
-		brume		\ued29\
-		pluie		\uec4a\
-		averse		\uede0\
-		neige		\uf0f8\
-		grêle		\uedc0\
-		orage		\uf196}
+		unknown		\ueb97\
+		cloud0_day	\uf155\
+		cloud0_night	\uef25\
+		cloud1_day	\uf154\
+		cloud1_night	\uef24\
+		cloud2_day	\uf151\
+		cloud2_night	\uef21\
+		overcast	\ueb9d\
+		fog		\ued29\
+		rain		\uec4a\
+		hail		\uedc0\
+		dust		\ueb99\
+		shower		\uede0\
+		snow		\uf0f8\
+		thunder		\uf196\
+		tornado		\uf1aa}
 
 	array set precip_notes {\
 		VC	{C {in the vicinity} fr {au voisinage}}\
 		RE	{C {(recent)} fr {(récent)}} }
 
 	array set precip_codes {\
-		DZ	{C drizzle fr bruine}\
-		FZDZ	{C {freezing drizzle} fr {bruine verglaçante}}\
-		RA	{C rain fr pluie}\
-		+RA	{C {heavy rain} fr {pluie forte}}\
-		-RA	{C {light rain} fr {pluie légère}}\
-		SHRA	{C {showers} fr {averses}}\
-		-SHRA	{C {light showers} fr {averses légères}}\
-		+SHRA	{C {heavy showers} fr {averses fortes}}\
-		TSRA	{C {thunderstorms} fr {orages}}\
-		-TSRA	{C {light thunderstorms} fr {orages faibles}}\
-		+TSRA	{C {heavy thunderstorms} fr {orages forts}}\
-		FZRA	{C {freezing rain} fr {pluie verglacante}}\
-		-FZRA	{C {light freezing rain} fr {faible pluie verglaçante}}\
-		+FZRA	{C {heavy freezing rain} fr {forte pluie verglaçante}}\
-		SN	{C snow fr neige}\
-		DRSN	{C {low drifting snow} fr {chasse basse de neige}}\
-		BLSN	{C {blowing snow} fr {chasse haute de neige}}\
-		+SN	{C {heavy snow} fr {neige forte}}\
-		-SN	{C {light snow} fr {neige légère}}\
-		SHSN	{C {snow showers} fr {averses de neige}}\
-		-SHSN	{C {light snow showers} fr {légères averses de neige}}\
-		+SHSN	{C {heavy snow showers} fr {fortes averses de neige}}\
-		SG	{C {snow grains} fr {neige en grains}}\
-		IC	{C {ice crystals} fr {cristaux de glace}}\
-		PL	{C {ice pellets} fr {granules de glace}}\
-		GR	{C hail fr grêle}\
-		+GR	{C {heavy hail} fr {grêle forte}}\
-		-GR	{C {light hail} fr {grêle légère}}\
-		GS	{C {small hail} fr {petite grêle}}\
-		UP	{C {unknown precipitations} fr {précipitations inconnues}}\
-		BR	{C mist fr brume}\
-		FG	{C fog fr brouillard}\
-		BCFG	{C {patches of fog} fr {bancs de brouillard}}\
-		FZDZ	{C {freezing fog} fr {brouillard verglaçant}}\
-		MIFG	{C {shallow fog} fr {brouillard mince}}\
-		PRFG	{C {partial fog} fr {brouillard partiel}}\
-		FU	{C smoke fr fumée}\
-		VA	{C {volcanic ash} fr {cendre volcanique}}\
-		DU	{C dust fr poussière}\
-		DRDU	{C {low drifting dust} fr {chasse basse de poussière}}\
-		BLDU	{C {blowing dust} fr {chasse haute de poussière}}\
-		SA	{C sand fr sable}\
-		DRSA	{C {low drifting sand} fr {chasse basse de sable}}\
-		BLSA	{C {blowing sand} fr {chasse haute de sable}}\
-		HZ	{C haze fr {brume sèche}}\
-		PO	{C {dust whirls} fr {tourbillons de poussière}}\
-		SQ	{C squalls fr grains}\
-		+FC	{C tornadoes fr tornades}\
-		FC	{C {funnel clouds} fr entonnoirs}\
-		SS	{C {sand storm} fr {tempête de sable}}\
-		DS	{C {dust storm} fr {tempête de poussière}} }
+		DZ	{C drizzle fr bruine} icon rain\
+		FZDZ	{C {freezing drizzle} fr {bruine verglaçante} icon rain}\
+		RA	{C rain fr pluie icon rain}\
+		+RA	{C {heavy rain} fr {pluie forte} icon shower}\
+		-RA	{C {light rain} fr {pluie légère} icon rain}\
+		SHRA	{C showers fr averses icon shower}\
+		-SHRA	{C {light showers} fr {averses légères} icon rain}\
+		+SHRA	{C {heavy showers} fr {averses fortes} icon shower}\
+		TSRA	{C {thunderstorms} fr {orages} icon thunder}\
+		-TSRA	{C {light thunderstorms} fr {orages faibles} icon thunder}\
+		+TSRA	{C {heavy thunderstorms} fr {orages forts} icon thunder}\
+		FZRA	{C {freezing rain} fr {pluie verglacante} icon rain}\
+		-FZRA	{C {light freezing rain} fr {faible pluie verglaçante} icon rain}\
+		+FZRA	{C {heavy freezing rain} fr {forte pluie verglaçante} icon shower}\
+		SN	{C snow fr neige icon snow}\
+		DRSN	{C {low drifting snow} fr {chasse basse de neige} icon snow}\
+		BLSN	{C {blowing snow} fr {chasse haute de neige} icon snow}\
+		+SN	{C {heavy snow} fr {neige forte} icon snow}\
+		-SN	{C {light snow} fr {neige légère} icon snow}\
+		SHSN	{C {snow showers} fr {averses de neige} icon snow}\
+		-SHSN	{C {light snow showers} fr {légères averses de neige} icon snow}\
+		+SHSN	{C {heavy snow showers} fr {fortes averses de neige} icon snow}\
+		SG	{C {snow grains} fr {neige en grains} icon snow}\
+		IC	{C {ice crystals} fr {cristaux de glace} icon snow}\
+		PL	{C {ice pellets} fr {granules de glace} icon snow}\
+		GR	{C hail fr grêle icon hail}\
+		+GR	{C {heavy hail} fr {grêle forte} icon hail}\
+		-GR	{C {light hail} fr {grêle légère} icon hail}\
+		GS	{C {small hail} fr {petite grêle} icon hail}\
+		UP	{C {unknown precipitations} fr {précipitations inconnues} icon unknown}\
+		BR	{C mist fr brume icon fog}\
+		FG	{C fog fr brouillard icon fog}\
+		BCFG	{C {patches of fog} fr {bancs de brouillard} icon fog}\
+		FZDZ	{C {freezing fog} fr {brouillard verglaçant} icon fog}\
+		MIFG	{C {shallow fog} fr {brouillard mince} icon fog}\
+		PRFG	{C {partial fog} fr {brouillard partiel} icon fog}\
+		FU	{C smoke fr fumée icon dust}\
+		VA	{C {volcanic ash} fr {cendre volcanique} icon dust}\
+		DU	{C dust fr poussière icon dust}\
+		DRDU	{C {low drifting dust} fr {chasse basse de poussière} icon dust}\
+		BLDU	{C {blowing dust} fr {chasse haute de poussière} icon dust}\
+		SA	{C sand fr sable icon dust}\
+		DRSA	{C {low drifting sand} fr {chasse basse de sable} icon dust}\
+		BLSA	{C {blowing sand} fr {chasse haute de sable} icon dust}\
+		HZ	{C haze fr {brume sèche} icon dust}\
+		PO	{C {dust whirls} fr {tourbillons de poussière} icon tornado}\
+		SQ	{C squalls fr grains icon shower}\
+		+FC	{C tornadoes fr tornades icon tornado}\
+		FC	{C {funnel clouds} fr entonnoirs icon tornado}\
+		SS	{C {sand storm} fr {tempête de sable} icon dust}\
+		DS	{C {dust storm} fr {tempête de poussière} icon dust} }
 
 	array set cloud_codes {\
-		SKC	{C {Clear sky} fr {Ciel dégagé}}\
-		FEW	{C {Few clouds} fr {Quelques nuages}}\
-		SCT	{C {Scattered clouds} fr {Nuages dispersés}}\
-		BKN	{C {Broken clouds} fr {Éclaircies}}\
-		OVC	{C {Overcast} fr {Couvert}}\
-		CLR	{C {No low clouds} fr {Aucun nuage bas}}\
-		NSC	{C {No low clouds} fr {Aucun nuage bas}}\
-		NCD	{C {No clouds} fr {Aucun nuage}}\
-		VV	{C {Darkened sky} fr {Ciel obscurci}} }
+		SKC	{C {Clear sky} fr {Ciel dégagé} icon cloud0}\
+		FEW	{C {Few clouds} fr {Quelques nuages} icon cloud1}\
+		SCT	{C {Scattered clouds} fr {Nuages dispersés} icon cloud2}\
+		BKN	{C {Broken clouds} fr {Éclaircies} icon cloud2}\
+		OVC	{C {Overcast} fr {Couvert} icon overcast}\
+		CLR	{C {No low clouds} fr {Aucun nuage bas} icon cloud0}\
+		NSC	{C {No low clouds} fr {Aucun nuage bas} icon cloud0}\
+		NCD	{C {No clouds} fr {Aucun nuage} icon cloud0}\
+		VV	{C {Darkened sky} fr {Ciel obscurci} icon cloud2} }
 
 	array set cloud_types {\
 		CB	{C {Cumulonimbus} fr {Cumulonimbus}}\
@@ -428,22 +430,23 @@ proc zstatus::metar::decode::decode_clouds { code alt type } {
 	variable locale
 
 	array set cloud_desc $cloud_codes($code)
-	set current(cloud_code) $code
 	set current(cloud_desc) $cloud_desc($locale)
+	set current(cloud_code) $code
+
 	if {[string length $alt]} {
 		set altitude [expr 100 * round([scan $alt %d] * $const(cm_feet) / 100)]
 		set description "$cloud_desc($locale), $altitude m"
-		if {[info exists current(clouds)]} {
-			set current(clouds) "$current(clouds)\n$description"
-		} else {
+		if {![info exists current(clouds)]} {
 			set current(clouds) "$description"
+		} else {
+			set current(clouds) "$current(clouds)\n$description"
 		}
 	} else {
 		set description "$cloud_desc($locale)"
-		if {[info exists current(clouds)]} {
-			set current(clouds) "$current(clouds)\n$description"
-		} else {
+		if {![info exists current(clouds)]} {
 			set current(clouds) "$description"
+		} else {
+			set current(clouds) "$current(clouds)\n$description"
 		}
 	}
 	if {[string length $type]} {
@@ -451,7 +454,7 @@ proc zstatus::metar::decode::decode_clouds { code alt type } {
 	}
 }
 
-proc zstatus::metar::decode::decode_precips { intensity qualifier codes } {
+proc zstatus::metar::decode::decode_precips { intensity qualifier precips } {
 	variable precip_codes
 	variable precip_notes
 	variable locale
@@ -465,10 +468,9 @@ proc zstatus::metar::decode::decode_precips { intensity qualifier codes } {
 	}
 
 	set codes {}
-	set remain $codes
-	while [string length $remain] {
-		if {[regexp {^(DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|VA|DU|SA|HZ|PO|SQ|[+]FC|FC|SS|DS)([A-Z+]{2,})?$}\
-			$remain -> pcode remain]} {
+	while [string length $precips] {
+		if [regexp {^(DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|VA|DU|SA|HZ|PO|SQ|[+]FC|FC|SS|DS)([A-Z+]{2,})?$}\
+			$precips -> pcode precips] {
 			lappend codes $pcode
 		}
 		break
@@ -477,10 +479,14 @@ proc zstatus::metar::decode::decode_precips { intensity qualifier codes } {
 	foreach pcode $codes {
 		set fullcode "${intensity}${qualifier}${pcode}"
 		array set pdesc $precip_codes($fullcode)
-		set description "$pdesc($locale) $suffix"
+		if [info exists pdesc($locale)] {
+			set description "$pdesc($locale) $suffix"
+		} else {
+			set description "No description for $fullcode"
+		}
 		if {![info exists current(precips)]} {
 			set current(precips) $description
-			set current(precip_code) $pcode
+			set current(precip_code) $fullcode
 		} else {
 			set current(precips) "$current(precips)\n$description"
 		}
@@ -518,6 +524,7 @@ proc zstatus::metar::decode::decode_metar_report {message} {
 	set tokens [split $message " "]
 	foreach token $tokens {
 		if {$token == "RMK"} break
+		if {$token == "SPECI"} continue
 		if {$token == $station(code)} continue
 
 		if [regexp {^([0-9]{6})Z$} $token -> datetime] {
@@ -553,60 +560,36 @@ proc zstatus::metar::decode::decode_metar_report {message} {
 }
 
 proc zstatus::metar::decode::get_weather_icon {} {
-	variable station
-	variable current
 	variable remixicons
+	variable current
 
+	variable precip_codes
+	if {[info exists current(precip_code)]} {
+		set code $current(precip_code)
+		array set precip_code $precip_codes($code)
+		set icon $precip_codes(icon)
+		return $remixicons($icon)
+	}
+
+	variable station
 	if {$station(daylight) == 1} {
-		set suffix jour
+		set suffix "day"
 	} else {
-		set suffix nuit
+		set suffix "night"
 	}
 
 	if {[info exists current(cloud_code)]} {
 		set code $current(cloud_code)
-		if {$code == "OVC"} {
-			set icon $remixicons(couvert)
-		} elseif {$code == "BKN"} {
-			set icon $remixicons(nuage2-$suffix)
-		} elseif {$code == "SCT" || $code == "FEW"} {
-			set icon $remixicons(nuage1-$suffix)
-		} elseif {$code == "SKC" || $code == "CLR"} {
-			set icon $remixicons(nuage0-$suffix)
+		variable cloud_codes
+		array set cloud_code $cloud_codes($code)
+		if {$cloud_code(icon) == "overcast"} {
+			set icon "overcast"
+		} else {
+			set icon "$cloud_code(icon)_$suffix"
 		}
-	} else {
-		set icon $remixicons(inconnu)
+		return $remixicons($icon)
 	}
-
-	if {[info exists current(precip_code)]} {
-		set code $current(precip_code)
-		if {$code == "RA" || $code == "DZ"} {
-			set icon $remixicons(pluie)
-		} elseif {$code == "SN" || $code == "SG" || $code == "IC" || $code == "PL"
-			|| $code == "GS"} {
-			set icon $remixicons(neige)
-		} elseif {$code == "GR"} {
-			set icon $remixicons(grêle)
-		} elseif {$code == "BR" || $code == "FG" || $code == "FU" || $code == "VA"
-			|| $code == "DU" || $code == "SA" || $code == "HZ"} {
-			set icon $remixicons(brume)
-		} elseif {$code == "SS" || $code == "DS" || $code == "PO"} {
-			set icon $remixicons(averse)
-		} elseif {$code == "UP"} {
-			set icon $remixicons(inconnu)
-		}
-	}
-
-	if {[info exists current(precip_qcode)]} {
-		set qcode $current(precip_qcode)
-		if {$qcode == "SH"} {
-			set icon $remixicons(averse)
-		} elseif {$qcode == "TS"} {
-			set icon $remixicons(orage)
-		}
-	}
-
-	return $icon
+	return  $remixicons(unknown)
 }
 
 proc zstatus::metar::decode::get_report {lang} {
