@@ -179,8 +179,7 @@ proc zstatus::metar::decode::fetch_station_info {code} {
 	variable station
 	array set station {}
 	foreach pair $pairs {
-		set fields [split $pair ":"]
-		lassign $fields key value
+		lassign [split $pair ":"] key value
 		set station($key) $value
 	}
 
