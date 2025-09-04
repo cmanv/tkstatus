@@ -357,7 +357,7 @@ proc zstatus::metar::decode::decode_datetime { datetime } {
 	set date [clock format $currenttime -format {%Y-%m} -timezone :UTC]
 	set date "$date-$day $hour:$minute:00"
 	set rtime [clock scan $date -format {%Y-%m-%d %H:%M:%S} -timezone :UTC]
-	set date [clock format $rtime -format {%d %B %H:%M %z} -locale $locale \
+	set date [clock format $rtime -format {%d %B %H:%M %Z} -locale $locale \
 			-timezone $::config(timezone)]
 	set current(date) $date
 }
