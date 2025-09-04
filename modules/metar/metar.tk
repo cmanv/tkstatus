@@ -228,7 +228,7 @@ proc zstatus::metar::setup_header { header } {
 	pack [frame $header.values] -padx 10 -side left -fill x
 	pack [frame $header.values.station] -side top -anchor w
 	pack [label $header.values.station.text -font $value1(font)\
-		-textvar zstatus::metar::station(Site)]
+		-textvar zstatus::metar::station(site)]
 	pack [frame $header.values.date] -side top -anchor w
 	pack [label $header.values.date.text -font $value1(font)\
 		-textvar zstatus::metar::report(date)]

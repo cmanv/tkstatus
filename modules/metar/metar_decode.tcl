@@ -144,7 +144,6 @@ proc zstatus::metar::decode::calc_timezone_offset {} {
 
 proc zstatus::metar::decode::fetch_station_info {code} {
 	variable station_api
-	variable station
 
 	if [catch {set message [exec -ignorestderr -- curl -s \
 		$station_api?ids=$code]}] {
@@ -154,17 +153,38 @@ proc zstatus::metar::decode::fetch_station_info {code} {
 		return {KO}
 	}
 
-	array set station {}
-	set lines [split $message "\n"]
-	foreach line $lines {
-		if [regexp -nocase {([A-Z][a-z ]+): (.+)} $line -> key value] {
-			set station($key) $value
+	regsub {^\[\{} $message {} message
+	regsub {\}\]$} $message {} message
+	regsub -all {\"} $message {} message
+
+	set pairs {}
+	set incomplete 0
+	foreach token [split $message ","] {
+		if {$incomplete} {
+			set frag [join [list $frag $token] ","]
+			if [regexp {[A-Z]+]$} $token] {
+				set incomplete 0
+				lappend pairs $frag
+			}
+			continue
 		}
+		if [regexp {\[[A-Z]+$} $token] {
+			set incomplete 1
+			set frag $token
+			continue
+		}
+		lappend pairs $token
 	}
-	if ![info exists station(Latitude)] {
-		return {KO}
+
+	variable station
+	array set station {}
+	foreach pair $pairs {
+		set fields [split $pair ":"]
+		lassign $fields key value
+		set station($key) $value
 	}
-	if ![info exists station(Longitude)] {
+
+	if {![info exists station(lat)] || ![info exists station(lon)]} {
 		return {KO}
 	}
 	set station(code) $code
@@ -200,7 +220,7 @@ proc zstatus::metar::decode::update_station {} {
 
 	set sun_dec [expr asin(sin($const(obliquity)*$const(pi)/180.0)\
 			 *sin($LE*$const(pi)/180.0))]
-	set station_lat [expr $station(Latitude)*$const(pi)/180.0]
+	set station_lat [expr $station(lat)*$const(pi)/180.0]
 
 	set cos_station_lat [expr cos($station_lat)]
 	if {$cos_station_lat == 0} {
@@ -230,9 +250,9 @@ proc zstatus::metar::decode::update_station {} {
 	} else {
 		set H0 [expr acos($cos_H0) *180.0/$const(pi)]
 		set tzoffset [calc_timezone_offset]
-		set sunrise [expr (180.0 - $H0 + $EQT - $station(Longitude))/15.0\
+		set sunrise [expr (180.0 - $H0 + $EQT - $station(lon))/15.0\
 				+ $tzoffset]
-		set sunset [expr (180.0 + $H0 + $EQT - $station(Longitude))/15.0\
+		set sunset [expr (180.0 + $H0 + $EQT - $station(lon))/15.0\
 				 + $tzoffset]
 
 		set hour1 [expr int(floor($sunrise))]
