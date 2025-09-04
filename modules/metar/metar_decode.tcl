@@ -6,6 +6,11 @@ namespace eval zstatus::metar::decode {
 	set report(prev_date)		""
 	set report(prev_pressure)	""
 
+	array set windchill_label {C {Wind chill:} fr {Refroidissment éolien :}}
+	array set humidex_label {C {Humidex:} fr {Humidex :}}
+	array set success_label {C {Request completed at} fr {Requête complétée à}}
+	array set failed_label {C {Request failed at} fr {Requête échouée à}}
+
 	array set const {\
 		pi			3.14159265358979\
 		obliquity 		23.4363\
@@ -73,38 +78,38 @@ namespace eval zstatus::metar::decode {
 		DS	{descr {tempête de poussière} genre f nombre s}}
 
 	array set cloud_codes {\
-		SKC	{Ciel dégagé}\
-		FEW	{Quelques nuages}\
-		SCT	{Nuages dispersés}\
-		BKN	{Éclaircies}\
-		OVC	{Couvert}\
-		CLR	{Aucun nuage bas}\
-		VV	{Ciel obscurci}}
+		SKC	{C {Clear sky} fr {Ciel dégagé}}\
+		FEW	{C {Few clouds} fr {Quelques nuages}}\
+		SCT	{C {Scattered clouds} fr {Nuages dispersés}}\
+		BKN	{C {Clearings} fr {Éclaircies}}\
+		OVC	{C {Overcast} fr {Couvert}}\
+		CLR	{C {No low clouds} fr {Aucun nuage bas}}\
+		VV	{C {Darkened sky} fr {Ciel obscurci}} }
 
 	array set cloud_types {\
-		CB	{Cumulonimbus}\
-		TCU	{Cumulus bourgeonnant}}
+		CB	{C {Cumulonimbus} fr {Cumulonimbus}}\
+		TCU	{C {Towering cumulus} fr {Cumulus bourgeonnant}} }
 
 	array set direction {\
-		{000}	N  	{010}	N\
-		{020}	NNE  	{030}	NNE\
-		{040}	NE 	{050}	NE\
-		{060}	ENE 	{070}	ENE\
-		{080}	E	{090}	E\
-		{100}	E	{110}	ESE\
-		{120}	ESE	{130}	SE\
-		{140}	SE	{150}	SSE\
-		{160}	SSE	{170}	S\
-		{180}	S	{190}	S\
-		{200}	SSO	{210}	SSO\
-		{220}	SO	{230}	SO\
-		{240}	OSO	{250}	OSO\
-		{260}	O	{270}	O\
-		{280}	O	{290}	ONO\
-		{300}	ONO	{310}	NO\
-		{320}	NO	{330}	NNO\
-		{340}	NNO	{350}	N\
-		{360}	N}
+		{000}	{C N fr N}  	{010}	{C N fr N}\
+		{020}	{C NNE fr NNE} 	{030}	{C NNE fr NNE}\
+		{040}	{C NE fr NE}	{050}	{C NE fr NE}\
+		{060}	{C ENE fr ENE} 	{070}	{C ENE fr ENE}\
+		{080}	{C E fr E}	{090}	{C E fr E}\
+		{100}	{C E fr E}	{110}	{C ESE fr ESE}\
+		{120}	{C ESE fr ESE}	{130}	{C SE fr SE}\
+		{140}	{C SE fr SE}	{150}	{C SSE fr SSE}\
+		{160}	{C SSE fr SSE}	{170}	{C S fr S}\
+		{180}	{C S fr S}	{190}	{C S fr S}\
+		{200}	{C SSW fr SSE}	{210}	{C SSW fr SSE}\
+		{220}	{C SW fr SO}	{230}	{C SW fr SO}\
+		{240}	{C WSW fr OSO}	{250}	{C WSW fr OSO}\
+		{260}	{C W fr O}	{270}	{C W fr O}\
+		{280}	{C W fr O}	{290}	{C WNW fr ONO}\
+		{300}	{C WNW fr ONO}	{310}	{C NW fr NO}\
+		{320}	{C NW fr NO}	{330}	{C NNW fr NNO}\
+		{340}	{C NNW fr NNO}	{350}	{C N fr N}\
+		{360}	{C N fr N}}
 
 	namespace export fetch_station_info update_station get_report
 }
@@ -322,6 +327,7 @@ proc zstatus::metar::decode::calc_humidex { temperature dew } {
 proc zstatus::metar::decode::decode_datetime { datetime } {
 	variable station
 	variable current
+	variable locale
 
 	set day [string range $datetime 0 1]
 	set hour [string range $datetime 2 3]
@@ -331,7 +337,7 @@ proc zstatus::metar::decode::decode_datetime { datetime } {
 	set date [clock format $currenttime -format {%Y-%m} -timezone :UTC]
 	set date "$date-$day $hour:$minute:00"
 	set rtime [clock scan $date -format {%Y-%m-%d %H:%M:%S} -timezone :UTC]
-	set date [clock format $rtime -format {%d %B %H:%M %Z} -locale fr \
+	set date [clock format $rtime -format {%d %B %H:%M %Z} -locale $locale \
 			-timezone $::config(timezone)]
 	set current(date) $date
 }
@@ -340,12 +346,14 @@ proc zstatus::metar::decode::decode_wind { wdir wspeed wgust } {
 	variable const
 	variable current
 	variable direction
+	variable locale
 
 	set current(speed) [expr round([scan $wspeed %d] * $const(km_nautical_mile))]
 	if {[string length $wgust]} {
 		set current(gust) [expr round([scan $wgust %d] * $const(km_nautical_mile))]
 	}
-	set current(direction) $direction($wdir)
+	array set winddir $direction($wdir)
+	set current(direction) $winddir($locale)
 }
 
 proc zstatus::metar::decode::decode_lightwind { wspeed } {
@@ -397,22 +405,25 @@ proc zstatus::metar::decode::decode_clouds { code alt type } {
 	variable cloud_types
 	variable const
 	variable current
+	variable locale
 
-	set desc $cloud_codes($code)
+	array set cloud_desc $cloud_codes($code)
 	set current(cloud_code) $code
-	set current(cloud_desc) $desc
+	set current(cloud_desc) $cloud_desc($locale)
 	if {[string length $alt]} {
 		set altitude [expr 100 * round([scan $alt %d] * $const(cm_feet) / 100)]
+		set description "$cloud_desc($locale), $altitude m"
 		if {[info exists current(clouds)]} {
-			set current(clouds) "$current(clouds)\n$desc, $altitude m"
+			set current(clouds) "$current(clouds)\n$description"
 		} else {
-			set current(clouds) "$desc, $altitude m"
+			set current(clouds) "$description"
 		}
 	} else {
+		set description "$cloud_desc($locale)"
 		if {[info exists current(clouds)]} {
-			set current(clouds) "$current(clouds)\n$desc"
+			set current(clouds) "$current(clouds)\n$description"
 		} else {
-			set current(clouds) $desc
+			set current(clouds) "$description"
 		}
 	}
 	if {[string length $type]} {
@@ -613,16 +624,24 @@ proc zstatus::metar::decode::get_weather_icon {} {
 	return $icon
 }
 
-proc zstatus::metar::decode::get_report {} {
+proc zstatus::metar::decode::get_report {lang} {
 	variable request_status
 	variable current
 	variable report
 	variable station
 
+	variable locale
+	variable winchill_label
+	variable humidex_label
+	variable success_label
+	variable failed_label
+
+	set locale $lang
 	decode_metar_report [fetch_metar_report]
 
 	set now [clock seconds]
 	set currenttime [clock format $now -format {%H:%M} -timezone $::config(timezone)]
+
 	if {$request_status == {OK}} {
 		set report(date) $current(date)
 		set report(temperature) "$current(temp)°C"
@@ -649,8 +668,8 @@ proc zstatus::metar::decode::get_report {} {
 		set report(note) ""
 		set report(note_val) ""
 		if {[string length $windchill]} {
-			set report(note) "Refroidissement éolien :"
-			set report(note_val)  "$windchill°C"
+			set report(note) "$windchill_label($locale)"
+			set report(note_val) "$windchill°C"
 		}
 
 		set report(pressure) ""
@@ -673,8 +692,8 @@ proc zstatus::metar::decode::get_report {} {
 
 		set humidex [calc_humidex $current(temp) $current(dew)]
 		if {[string length $humidex]} {
-			set report(note) "Facteur humidex :"
-			set report(note_val)  "$humidex°C"
+			set report(note) "$humidex_label($locale)"
+			set report(note_val) "$humidex°C"
 		}
 
 		set report(rel_humidity) "[calc_rel_humidity $current(temp) $current(dew)]%"
@@ -702,11 +721,11 @@ proc zstatus::metar::decode::get_report {} {
 			set report(summary) "$current(temp)°C, $precipitation"
 		}
 
-		set report(request_message) "Requête complétée à $currenttime"
+		set report(request_message) "$success_label($locale) $currenttime"
 		set report(request_status) "OK"
 	} else {
 		set report(statusbar) \ueba4
-		set report(request_message) "Requête échouée à $currenttime"
+		set report(request_message) "$failed_label($locale) $currenttime"
 		set report(request_status) "KO"
 	}
 

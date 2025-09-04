@@ -9,6 +9,20 @@ namespace eval zstatus::metar {
 	font create m_large -family Sans -size 13
 	font create m_icon -family Remix -size 15
 
+	set metar_locales {C fr}
+	array set weather_label {C "Weather conditions:" fr "Conditions météorologiques :"}
+	array set station_label {C "Station:" fr "Station :"}
+	array set issued_label {C "Issued on:" fr "Émis le :"}
+	array set status_label {C "Status:" fr "Statut :"}
+	array set wind_label {C "Wind:" fr "Vent :"}
+	array set gust_label {C "Gust:" fr "Rafale :"}
+	array set dew_label {C "Dew point:" fr "Point de rosée :"}
+	array set rhumidity_label {C "Relative humidity:" fr "Humidité relative :"}
+	array set pressure_label {C "Pressure:" fr "Pression :"}
+	array set visibility_label {C "Visibility:" fr "Visibilité :"}
+	array set clouds_label {C "Clouds:" fr "Nuages :"}
+	array set precips_label {C "Precipitations:" fr "Précipitations :"}
+
 	array set header1 { font m_large light black dark gray80 }
 	array set header2 { font m_italic light black dark gray80 }
 	array set value1 { font m_normal light DarkBlue dark CadetBlue3 }
@@ -195,6 +209,7 @@ proc zstatus::metar::update {} {
 	variable metar
 	variable station
 	variable report
+	variable locale
 
 	if ![info exists station(code)] {
 		set status [decode::fetch_station_info $metar(station)]
@@ -205,7 +220,7 @@ proc zstatus::metar::update {} {
 	}
 
 	array set station [decode::update_station]
-	array set report [decode::get_report]
+	array set report [decode::get_report $locale]
 
 	update_grid .metar.window.grid
 }
@@ -215,16 +230,22 @@ proc zstatus::metar::setup_header { header } {
 	variable header2
 	variable value1
 	variable report
+	variable locale
+	variable station_label
+	variable issued_label
+	variable status_label
 
 	pack [frame $header] -anchor w -padx 15 -pady 5 -side top
 	pack [frame $header.keys] -side left
 	pack [frame $header.keys.station] -side top -anchor w
-	pack [label $header.keys.station.text -font $header2(font) -text "Station :" ]
+	pack [label $header.keys.station.text -font $header2(font)\
+			-text $station_label($locale) ]
 	pack [frame $header.keys.date]  -side top -anchor w
-	pack [label $header.keys.date.text -font $header2(font) -text "Émis le :"]
+	pack [label $header.keys.date.text -font $header2(font)\
+			-text $issued_label($locale)]
 	pack [frame $header.keys.status] -side top -anchor w
-	pack [label $header.keys.status.text -font $header2(font) -text "Statut :"]
-
+	pack [label $header.keys.status.text -font $header2(font)\
+			-text $status_label($locale)]
 	pack [frame $header.values] -padx 10 -side left -fill x
 	pack [frame $header.values.station] -side top -anchor w
 	pack [label $header.values.station.text -font $value1(font)\
@@ -278,57 +299,66 @@ proc zstatus::metar::setup_info_grid { grid } {
 	variable header2
 	variable value2
 	variable report
+	variable locale
+	variable wind_label
+	variable gust_label
+	variable dew_label
+	variable rhumidity_label
+	variable pressure_label
+	variable visibility_label
+	variable clouds_label
+	variable precips_label
 
 	pack [frame $grid] -anchor w -padx 15 -side top
 	grid columnconfigure $grid 1 -weight 1
 
-	label $grid.wind -font $header2(font) -text "Vent :"
+	label $grid.wind -font $header2(font) -text $wind_label($locale)
 	label $grid.wind_val -font $value2(font) -textvar zstatus::metar::report(wind)
 	set row 0
 	grid configure $grid.wind -row $row -column 0 -sticky w
 	grid configure $grid.wind_val -row $row -column 1 -sticky w
 
-	label $grid.gust -font $header2(font) -text "Rafale :"
+	label $grid.gust -font $header2(font) -text $gust_label($locale)
 	label $grid.gust_val -font $value2(font) -textvar zstatus::metar::report(gust)
 	incr row
 	grid configure $grid.gust -row $row -column 0 -sticky w
 	grid configure $grid.gust_val -row $row -column 1 -sticky w
 
-	label $grid.dew -font $header2(font) -text "Point de rosée :"
+	label $grid.dew -font $header2(font) -text $dew_label($locale)
 	label $grid.dew_val -font $value2(font) -textvar zstatus::metar::report(dew)
 	incr row
 	grid configure $grid.dew -row $row -column 0 -sticky w
 	grid configure $grid.dew_val -row $row -column 1 -sticky w
 
-	label $grid.rhumidity -font $header2(font) -text "Humidité relative :"
+	label $grid.rhumidity -font $header2(font) -text $rhumidity_label($locale)
 	label $grid.rhumidity_val -font $value2(font) \
 		-textvar zstatus::metar::report(rel_humidity)
 	incr row
 	grid configure $grid.rhumidity -row $row -column 0 -sticky w
 	grid configure $grid.rhumidity_val -row $row -column 1 -sticky w
 
-	label $grid.pressure -font $header2(font) -text "Pression :"
+	label $grid.pressure -font $header2(font) -text $pressure_label($locale)
 	label $grid.pressure_val -font $value2(font) \
 		-textvar zstatus::metar::report(pressure)
 	incr row
 	grid configure $grid.pressure -row $row -column 0 -sticky w
 	grid configure $grid.pressure_val -row $row -column 1 -sticky w
 
-	label $grid.visibility -font $header2(font) -text "Visibilité :"
+	label $grid.visibility -font $header2(font) -text $visibility_label($locale)
 	label $grid.visibility_val -font $value2(font) \
 		-textvar zstatus::metar::report(visibility)
 	incr row
 	grid configure $grid.visibility -row $row -column 0 -sticky w
 	grid configure $grid.visibility_val -row $row -column 1 -sticky w
 
-	label $grid.clouds -font $header2(font) -text "Nuages :"
+	label $grid.clouds -font $header2(font) -text $clouds_label($locale)
 	text $grid.clouds_val -font $value2(font) -borderwidth 0 -highlightthickness 0\
 			 -wrap none
 	incr row
 	grid configure $grid.clouds -row $row -column 0 -sticky nw
 	grid configure $grid.clouds_val -row $row -column 1 -sticky w
 
-	label $grid.precips -font $header2(font) -text "Précipitations :"
+	label $grid.precips -font $header2(font) -text $precips_label($locale)
 	text $grid.precips_val -font $value2(font) -borderwidth 0 -highlightthickness 0\
 			 -wrap none
 	incr row
@@ -340,18 +370,22 @@ proc zstatus::metar::setup_window {} {
 	variable state_visible
 	variable header1
 	variable theme
+	variable locale
+	variable weather_label
 
 	set state_visible 0
 	pack [frame .metar.window -bd 1 ] -fill both -ipady 5
 	setup_header .metar.window.header
 	setup_summary .metar.window.summary
 	pack [label .metar.window.title2 -font $header1(font) \
-		-text "Conditions météorologiques :" ] \
+		-text $weather_label($locale) ] \
 		-side top -anchor w -pady 5 -padx 15
 	setup_info_grid .metar.window.grid
 }
 
 proc zstatus::metar::setup {} {
+	variable metar_locales
+	variable locale
 	variable metar
 	array set metar $::widgetarray(metar)
 
@@ -365,6 +399,13 @@ proc zstatus::metar::setup {} {
 	variable separator
 	array set statusbar $::widgetarray(statusbar)
 	array set separator $::widgetarray(separator)
+
+	set index [lsearch $metar_locales [lindex [split $::config(lang) "_"] 0]]
+	if {$index < 0} {
+		set locale C
+	} else {
+		set locale [lindex $metar_locales $index]
+	}
 
 	toplevel .metar -class Metar
 	wm attributes .metar -type dialog
