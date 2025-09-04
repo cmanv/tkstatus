@@ -99,9 +99,11 @@ namespace eval zstatus::metar::decode {
 		SKC	{C {Clear sky} fr {Ciel dégagé}}\
 		FEW	{C {Few clouds} fr {Quelques nuages}}\
 		SCT	{C {Scattered clouds} fr {Nuages dispersés}}\
-		BKN	{C {Clearings} fr {Éclaircies}}\
+		BKN	{C {Broken clouds} fr {Éclaircies}}\
 		OVC	{C {Overcast} fr {Couvert}}\
 		CLR	{C {No low clouds} fr {Aucun nuage bas}}\
+		NSC	{C {No low clouds} fr {Aucun nuage bas}}\
+		NCD	{C {No clouds} fr {Aucun nuage}}\
 		VV	{C {Darkened sky} fr {Ciel obscurci}} }
 
 	array set cloud_types {\
