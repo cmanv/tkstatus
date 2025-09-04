@@ -38,44 +38,62 @@ namespace eval zstatus::metar::decode {
 		grêle		\uedc0\
 		orage		\uf196}
 
-	array set intensities {\
-		{-} 	{type pre m {faible_} f {faible_}}\
-		{+} 	{type pre m {fort_} f {forte_}}\
-		{VC} 	{type post m {au voisinage} f {au voisinage}}}
-
-	array set qualifiers {\
-		MI	{type pre m {mince_} f {mince_}}\
-		BC	{type pre m {bancs de} genre m nombre p}\
-		PR	{type post m {dispersé} f { dispersée_} }\
-		DR	{type pre f {chasse basse de} genre f nombre s}\
-		BL	{type pre f {chasse haute de} genre f nombre s}\
-		SH	{type pre f {averses de} genre f nombre p}\
-		TS	{type pre m {orages de} genre m nombre p}\
-		FZ	{type post m {verglaçant_} f {verglaçante_}}}
+	array set precip_notes {\
+		VC	{C {in the vicinity} fr {au voisinage}}\
+		RE	{C {(recent)} fr {(récent)}} }
 
 	array set precip_codes {\
-		DZ	{descr {bruine} genre f nombre s}\
-		RA	{descr {pluie} genre f nombre s}\
-		SN	{descr {neige} genre f nombre s}\
-		SG	{descr {neige en grain} genre f nombre s}\
-		IC	{descr {cristaux de glace} genre m nombre p}\
-		PL	{descr {granules de neige} genre m nombre p}\
-		GR	{descr {grêle} genre f nombre s}\
-		GS	{descr {neige roulée} genre f nombre s}\
-		UP	{descr {inconnue} genre f nombre s}\
-		BR	{descr {brume} genre f nombre s}\
-		FG	{descr {brouillard} genre m nombre s}\
-		FU	{descr {fumée} genre f nombre s}\
-		VA	{descr {cendre volcanique} genre f nombre s}\
-		DU	{descr {poussière} genre f nombre s}\
-		SA	{descr {sable} genre m nombre s}\
-		HZ	{descr {brume sèche} genre f nombre s}\
-		PO	{descr {tourbillons de poussière} genre m nombre p}\
-		SQ	{descr {grains} genre m nombre p}\
-		{+FC}	{descr {tornades} genre f nombre p}\
-		FC	{descr {entonnoirs} genre m nombre p}\
-		SS	{descr {tempête de sable} genre f nombre s}\
-		DS	{descr {tempête de poussière} genre f nombre s}}
+		DZ	{C drizzle fr bruine}\
+		FZDZ	{C {freezing drizzle} fr {bruine verglaçante}}\
+		RA	{C rain fr pluie}\
+		+RA	{C {heavy rain} fr {pluie forte}}\
+		-RA	{C {light rain} fr {pluie légère}}\
+		SHRA	{C {showers} fr {averses}}\
+		-SHRA	{C {light showers} fr {averses légères}}\
+		+SHRA	{C {heavy showers} fr {averses fortes}}\
+		TSRA	{C {thunderstorms} fr {orages}}\
+		-TSRA	{C {light thunderstorms} fr {orages faibles}}\
+		+TSRA	{C {heavy thunderstorms} fr {orages forts}}\
+		FZRA	{C {freezing rain} fr {pluie verglacante}}\
+		-FZRA	{C {light freezing rain} fr {faible pluie verglaçante}}\
+		+FZRA	{C {heavy freezing rain} fr {forte pluie verglaçante}}\
+		SN	{C snow fr neige}\
+		DRSN	{C {low drifting snow} fr {chasse basse de neige}}\
+		BLSN	{C {blowing snow} fr {chasse haute de neige}}\
+		+SN	{C {heavy snow} fr {neige forte}}\
+		-SN	{C {light snow} fr {neige légère}}\
+		SHSN	{C {snow showers} fr {averses de neige}}\
+		-SHSN	{C {light snow showers} fr {légères averses de neige}}\
+		+SHSN	{C {heavy snow showers} fr {fortes averses de neige}}\
+		SG	{C {snow grains} fr {neige en grains}}\
+		IC	{C {ice crystals} fr {cristaux de glace}}\
+		PL	{C {ice pellets} fr {granules de glace}}\
+		GR	{C hail fr grêle}\
+		+GR	{C {heavy hail} fr {grêle forte}}\
+		-GR	{C {light hail} fr {grêle légère}}\
+		GS	{C {small hail} fr {petite grêle}}\
+		UP	{C {unknown precipitations} fr {précipitations inconnues}}\
+		BR	{C mist fr brume}\
+		FG	{C fog fr brouillard}\
+		BCFG	{C {patches of fog} fr {bancs de brouillard}}\
+		FZDZ	{C {freezing fog} fr {brouillard verglaçant}}\
+		MIFG	{C {shallow fog} fr {brouillard mince}}\
+		PRFG	{C {partial fog} fr {brouillard partiel}}\
+		FU	{C smoke fr fumée}\
+		VA	{C {volcanic ash} fr {cendre volcanique}}\
+		DU	{C dust fr poussière}\
+		DRDU	{C {low drifting dust} fr {chasse basse de poussière}}\
+		BLDU	{C {blowing dust} fr {chasse haute de poussière}}\
+		SA	{C sand fr sable}\
+		DRSA	{C {low drifting sand} fr {chasse basse de sable}}\
+		BLSA	{C {blowing sand} fr {chasse haute de sable}}\
+		HZ	{C haze fr {brume sèche}}\
+		PO	{C {dust whirls} fr {tourbillons de poussière}}\
+		SQ	{C squalls fr grains}\
+		+FC	{C tornadoes fr tornades}\
+		FC	{C {funnel clouds} fr entonnoirs}\
+		SS	{C {sand storm} fr {tempête de sable}}\
+		DS	{C {dust storm} fr {tempête de poussière}} }
 
 	array set cloud_codes {\
 		SKC	{C {Clear sky} fr {Ciel dégagé}}\
@@ -431,73 +449,38 @@ proc zstatus::metar::decode::decode_clouds { code alt type } {
 	}
 }
 
-proc zstatus::metar::decode::decode_precips { icode qcode pcodes } {
-	variable intensities
-	variable qualifiers
+proc zstatus::metar::decode::decode_precips { intensity qualifier codes } {
 	variable precip_codes
+	variable precip_notes
+	variable locale
 	variable current
 
-	if {[string length $icode]} {
-		array set intensity $intensities($icode)
-	}
-	if {[string length $qcode]} {
-		array set qualifier $qualifiers($qcode)
-		if {![info exists current(precip_qcode)]} {
-			set current(precip_qcode) $qcode
-		}
+	set suffix ""
+	if {$intensity == "VC" || $intensity == "RE"} {
+		array set note precip_notes($intensity)
+		set suffix $note($locale)
+		set intensity ""
 	}
 
 	set codes {}
-	set remaining $pcodes
-	while {[string length $remaining]} {
+	set remain $codes
+	while [string length $remain] {
 		if {[regexp {^(DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|VA|DU|SA|HZ|PO|SQ|[+]FC|FC|SS|DS)([A-Z+]{2,})?$}\
-			$remaining -> code remaining]} {
-			if {![info exists current(precip_code)]} {
-				set current(precip_code) $code
-			}
-			lappend codes $code
+			$remain -> pcode remain]} {
+			lappend codes $pcode
 		}
 		break
 	}
 
-	foreach code $codes {
-		set post1 ""
-		set post2 ""
-		set pre1 ""
-		set pre2 ""
-
-		array set precip $precip_codes($code);
-		set genre $precip(genre)
-		set nombre $precip(nombre)
-		if {[string length $qcode]} {
-			if {[info exists qualifier(genre)]} {
-				set genre $qualifier(genre)
-				set nombre $qualifier(nombre)
-			}
-			if {$qualifier(type) == "post"} {
-				set post2 $qualifier($genre)
-			} else {
-				set pre2 $qualifier($genre)
-			}
-		}
-		if {[string length $icode]} {
-			if {$intensity(type) == "post"} {
-				set post1 $intensity($genre)
-			} else {
-				set pre1 $intensity($genre)
-			}
-		}
-
-		set description [string trim "$pre1$pre2$precip(descr)$post2$post1"]
-		if {$nombre == "p"} {
-			set description [string map {_ s} $description]
-		} else {
-			set description [string map {_ {}} $description]
-		}
-		if {[info exists current(precips)]} {
-			set current(precips) "$current(precips)\n$description"
-		} else {
+	foreach pcode $codes {
+		set fullcode "${intensity}${qualifier}${pcode}"
+		array set pdesc $precip_codes($fullcode)
+		set description "$pdesc($locale) $suffix"
+		if {![info exists current(precips)]} {
 			set current(precips) $description
+			set current(precip_code) $pcode
+		} else {
+			set current(precips) "$current(precips)\n$description"
 		}
 	}
 }
@@ -559,9 +542,9 @@ proc zstatus::metar::decode::decode_metar_report {message} {
 			$token -> descr altitude type ] {
 			decode_clouds $descr $altitude $type
 			continue
-		} elseif [regexp {^(-|[+]|VC)?(BC|DR|BL|FZ|MI|PR|SH|TS)?([A-Z+]{2,9})$}\
-			$token -> pre1 pre2 codes] {
-			decode_precips $pre1 $pre2 $codes
+		} elseif [regexp {^(-|[+]|RE|VC)?(BC|DR|BL|FZ|MI|PR|SH|TS)?([A-Z+]{2,9})$}\
+			$token -> intensity quality precips] {
+			decode_precips $intensity $quality $precips
 			continue
 		}
 	}
@@ -631,7 +614,7 @@ proc zstatus::metar::decode::get_report {lang} {
 	variable station
 
 	variable locale
-	variable winchill_label
+	variable windchill_label
 	variable humidex_label
 	variable success_label
 	variable failed_label
