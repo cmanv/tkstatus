@@ -60,7 +60,7 @@ These are the options can be specified in the __[main]__ section.
 
 * __timezone__
 
-> This should be set to the user's timezone. (Default _UTC_)
+> Select a timezone. (Default: _date +%Z_)
 
 * __delay__
 
@@ -185,7 +185,9 @@ Each of these widgets can be customized in its own section:
 Clicking on it opens a window showing current weather conditions.
 
 > Options:
-> - _code_: 4 characters code of the METAR station.
+> - _code_: The 4 characters code of the METAR station.
+> - _delay_: Time between updates in minutes. (Default 10)
+> - _geometry_: Position of the metar popup window.
 > - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.

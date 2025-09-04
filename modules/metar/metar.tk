@@ -418,6 +418,7 @@ proc zstatus::metar::setup {} {
 	setup_window
 	bind .metar <3> { zstatus::metar::toggle_window }
 
-	zstatus::utils::every $metar(delay) zstatus::metar::update
+	set delay [expr $metar(delay) * 60000]
+	zstatus::utils::every $delay zstatus::metar::update
 }
 package provide @PACKAGE_NAME@ @PACKAGE_VERSION@

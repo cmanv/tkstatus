@@ -21,7 +21,7 @@ namespace eval zstatus::config {
 	variable defaultfile "$config_prefix/zstatus/config"
 
 	array set config [ list \
-		timezone	UTC\
+		timezone	[exec date +%Z]\
 		delay		2000\
 		fontname	NotoSans\
 		fontsize	11\
@@ -51,7 +51,7 @@ namespace eval zstatus::config {
 	    memused { type var source zstatus::memused proc set_memused\
 			font normal light black dark LightGray }\
 	    metar { type var source zstatus::metar::report(statusbar)\
-			delay 600000 geometry {-1+26}\
+			delay 10 geometry {-1+26}\
 			font normal light black dark LightGray }\
 	    mixer { type var source zstatus::mixer proc set_mixer\
 			font normal light black dark LightGray }\
