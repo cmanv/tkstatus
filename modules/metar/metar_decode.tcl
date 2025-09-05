@@ -486,6 +486,7 @@ proc zstatus::metar::decode::decode_precips { intensity qualifier precips } {
 		}
 		if {![info exists current(precips)]} {
 			set current(precips) $description
+			set current(precip_desc) $cloud_desc($locale)
 			set current(precip_code) $fullcode
 		} else {
 			set current(precips) "$current(precips)\n$description"
@@ -609,7 +610,10 @@ proc zstatus::metar::decode::get_report {lang} {
 	decode_metar_report [fetch_metar_report]
 
 	set now [clock seconds]
-	set currenttime [clock format $now -format {%H:%M} -timezone $::config(timezone)]
+	set reporttime [clock format $now -format {%H:%M}\
+			 -timezone $::config(timezone)]
+	set tooltiptime [clock format $now -format {%a %H:%M} -locale $locale\
+			 -timezone $::config(timezone)]
 
 	if {$request_status == {OK}} {
 		set report(date) $current(date)
@@ -679,22 +683,23 @@ proc zstatus::metar::decode::get_report {lang} {
 		if {[info exists current(precips)]} {
 			set report(precips) $current(precips)
 		}
+
 		set report(weather_icon) [get_weather_icon]
 		set report(statusbar) "$report(weather_icon) $current(temp)°C"
-		set report(summary) "$current(temp)°C"
-		if {[info exists current(cloud_desc)]} {
-			set report(summary) "$current(temp)°C, $current(cloud_desc)"
-		}
-		if {[string length $report(precips)]} {
-			set precipitation [lindex [split $report(precips) \n] 0]
-			set report(summary) "$current(temp)°C, $precipitation"
-		}
 
-		set report(request_message) "$success_label($locale) $currenttime"
+		set report(summary) "$current(temp)°C"
+		if {[info exists current(precip_desc)]} {
+			set report(summary) "$report(summary), $current(precip_desc)"
+		} elseif {[info exists current(cloud_desc)]} {
+			set report(summary) "$report(summary), $current(cloud_desc)"
+		}
+		set report(tooltip) "$tooltiptime: $report(weather_icon) $report(summary)"
+
+		set report(request_message) "$success_label($locale) $reporttime"
 		set report(request_status) "OK"
 	} else {
 		set report(statusbar) \ueba4
-		set report(request_message) "$failed_label($locale) $currenttime"
+		set report(request_message) "$failed_label($locale) $reporttime"
 		set report(request_status) "KO"
 	}
 

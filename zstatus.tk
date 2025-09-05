@@ -337,6 +337,8 @@ proc zstatus::setup {} {
 		if [info exists metar(station)] {
 			bind $bar.metar <1> { zstatus::metar::toggle_window }
 			bind $bar.metar <2> { zstatus::metar::update }
+			bind $bar.metar <Enter> { zstatus::metar::show_tooltip }
+			bind $bar.metar <Leave> { zstatus::metar::hide_tooltip }
 		}
 	}
 
