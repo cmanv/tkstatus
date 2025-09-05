@@ -693,7 +693,7 @@ proc zstatus::metar::decode::get_report {lang} {
 		} elseif {[info exists current(cloud_desc)]} {
 			set report(summary) "$report(summary), $current(cloud_desc)"
 		}
-		set report(tooltip) "$tooltiptime: $report(weather_icon) $report(summary)"
+		set report(tooltip) "$tooltiptime:  $report(summary)"
 
 		set report(request_message) "$success_label($locale) $reporttime"
 		set report(request_status) "OK"

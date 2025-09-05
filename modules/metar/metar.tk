@@ -37,9 +37,11 @@ namespace eval zstatus::metar {
 proc zstatus::metar::show_tooltip {} {
 	variable statusbar
 	variable metar
+	variable header1
 	variable theme
 
-	set window [toplevel .metartooltip -background $statusbar($theme)]
+	set window [toplevel .metartooltip -highlightthickness 0\
+			-background $statusbar($theme)]
 	wm title $window "Metar Summary"
 	wm attributes $window -type dialog
 	wm overrideredirect $window 1
@@ -47,7 +49,7 @@ proc zstatus::metar::show_tooltip {} {
 
 	set width [string length zstatus::metar::report(tooltip)]
 	pack [label $window.text -font $metar(font) -width $width\
-		-fg $metar($theme) -bg $statusbar($theme)\
+		-fg $header1($theme) -bg $statusbar($theme)\
 		-textvar zstatus::metar::report(tooltip)]\
 		-side left -padx 1 -pady 3
 }
@@ -398,7 +400,7 @@ proc zstatus::metar::setup_window {window} {
 	variable weather_label
 
 	set metarframe $window.frame
-	pack [frame $metarframe -bd 1 ] -fill both -ipady 5
+	pack [frame $metarframe -bd 1 -relief solid] -fill both -ipady 5
 	setup_header $metarframe.header
 	setup_summary $metarframe.summary
 	pack [label $metarframe.title2 -font $header1(font) \
