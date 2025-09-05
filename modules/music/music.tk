@@ -3,11 +3,11 @@ package require zstatus::music::mpd
 
 namespace eval zstatus::music {
 	variable music_active 0
-	variable activepopup 0
+	variable tooltip_active 0
 
 	array set icons { 0 \ueb92 1 \ueb78 2 \uef32 3 \uef82 }
 
-	namespace export setup update set_theme
+	namespace export setup update set_theme show_tooltip hide_tooltip
 }
 
 # Set the theme for the devices
@@ -32,7 +32,7 @@ proc zstatus::music::update {} {
 	variable musicpos
 	variable musicside
 	variable music_active
-	variable activepopup
+	variable tooltip_active
 	variable music
 	variable icons
 
@@ -52,8 +52,8 @@ proc zstatus::music::update {} {
 			set music_active 0
 		}
 	}
-	if { $music_active && $activepopup } {
-		update_info
+	if { $music_active && $tooltip_active } {
+		update_tooltip
 	}
 }
 
@@ -83,13 +83,8 @@ proc zstatus::music::setup { widget position side } {
 	label $musicframe -font $music(font)
 	frame $musicsep -width 1
 
-	bind $musicframe <Enter> {
-		zstatus::music::show_info
-	}
-	bind $musicframe <Leave> {
-		destroy .musicpopup
-		set zstatus::music::activepopup 0
-	}
+	bind $musicframe <Enter> { zstatus::music::show_tooltip }
+	bind $musicframe <Leave> { zstatus::music::hide_tooltip }
 	bind $musicframe <1> {
 		if {![catch {exec mpc toggle}]} { zstatus::music::update }
 	}
@@ -101,9 +96,9 @@ proc zstatus::music::setup { widget position side } {
 	}
 	bind $musicframe <MouseWheel> {
 		if {%D < 0} {
-			if {![catch {exec mpc next}]} { zstatus::music::update_info }
+			if {![catch {exec mpc next}]} { zstatus::music::update_tooltip }
 		} else {
-			if {![catch {exec mpc prev}]} { zstatus::music::update_info }
+			if {![catch {exec mpc prev}]} { zstatus::music::update_tooltip }
 		}
 	}
 
@@ -117,29 +112,36 @@ proc zstatus::music::setup { widget position side } {
 }
 
 # Show info on current track
-proc zstatus::music::show_info { } {
-	variable activepopup
+proc zstatus::music::show_tooltip {} {
+	variable tooltip_active
 	variable mpdtext
 	variable music
 	variable statusbar
 	variable theme
 
-	set activepopup 1
-	toplevel .musicpopup -background $statusbar($theme) -class NowPlaying
-	wm title .musicpopup "Now Playing"
-	wm attributes .musicpopup -type dialog
-	wm overrideredirect .musicpopup 1
+	set tooltip_active 1
+	set tooltip [toplevel .musictooltip -background $statusbar($theme)]
+	wm title $tooltip "Now Playing"
+	wm attributes $tooltip -type dialog
+	wm overrideredirect $tooltip 1
 	set xpos [tcl::mathfunc::max [expr [winfo pointerx .] - 120] 1]
-	wm geometry .musicpopup +$xpos+27
+	wm geometry $tooltip +$xpos+27
 
-	set mpdtext [text .musicpopup.text -font $music(font) -height 2 \
+	set mpdtext [text $tooltip.text -font $music(font) -height 2 \
 			-borderwidth 1 -highlightthickness 0 ]
 	pack $mpdtext -side left -padx 5 -pady 3
-	update_info
+	update_tooltip
+}
+
+proc zstatus::music::hide_tooltip {} {
+	variable tooltip_active
+
+	set tooltip_active 0
+	destroy .musictooltip
 }
 
 # Update info on current track
-proc zstatus::music::update_info { } {
+proc zstatus::music::update_tooltip { } {
 	variable music
 	variable mpdtext
 	variable statusbar
