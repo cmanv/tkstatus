@@ -78,7 +78,7 @@ namespace eval zstatus::metar::decode {
 		BR	{C mist fr brume icon fog}\
 		FG	{C fog fr brouillard icon fog}\
 		BCFG	{C {patches of fog} fr {bancs de brouillard} icon fog}\
-		FZDZ	{C {freezing fog} fr {brouillard verglaçant} icon fog}\
+		FZFG	{C {freezing fog} fr {brouillard verglaçant} icon fog}\
 		MIFG	{C {shallow fog} fr {brouillard mince} icon fog}\
 		PRFG	{C {partial fog} fr {brouillard partiel} icon fog}\
 		FU	{C smoke fr fumée icon dust}\
@@ -106,7 +106,7 @@ namespace eval zstatus::metar::decode {
 		CLR	{C {No low clouds} fr {Aucun nuage bas} icon cloud0}\
 		NSC	{C {No low clouds} fr {Aucun nuage bas} icon cloud0}\
 		NCD	{C {No clouds} fr {Aucun nuage} icon cloud0}\
-		VV	{C {Darkened sky} fr {Ciel obscurci} icon cloud2} }
+		VV	{C {Darkened sky} fr {Ciel obscurci} icon overcast} }
 
 	array set cloud_types {\
 		CB	{C {Cumulonimbus} fr {Cumulonimbus}}\
