@@ -359,9 +359,10 @@ proc zstatus::metar::decode::decode_datetime { datetime } {
 	set date [clock format $currenttime -format {%Y-%m} -timezone :UTC]
 	set date "$date-$day $hour:$minute:00"
 	set rtime [clock scan $date -format {%Y-%m-%d %H:%M:%S} -timezone :UTC]
-	set date [clock format $rtime -format {%d %B %H:%M %Z} -locale $locale \
-			-timezone $::config(timezone)]
-	set current(date) $date
+	set current(date) [clock format $rtime -format {%d %B %H:%M %Z}\
+			 -locale $locale -timezone $::config(timezone)]
+	set current(daytime) [clock format $rtime -format {%a %H:%M}\
+			 -locale $locale -timezone $::config(timezone)]
 }
 
 proc zstatus::metar::decode::decode_wind { wdir wspeed wgust } {
@@ -612,8 +613,6 @@ proc zstatus::metar::decode::get_report {lang} {
 	set now [clock seconds]
 	set reporttime [clock format $now -format {%H:%M}\
 			 -timezone $::config(timezone)]
-	set tooltiptime [clock format $now -format {%a %H:%M} -locale $locale\
-			 -timezone $::config(timezone)]
 
 	if {$request_status == {OK}} {
 		set report(date) $current(date)
@@ -693,7 +692,7 @@ proc zstatus::metar::decode::get_report {lang} {
 		} elseif {[info exists current(cloud_desc)]} {
 			set report(summary) "$report(summary), $current(cloud_desc)"
 		}
-		set report(tooltip) "$tooltiptime:  $report(summary)"
+		set report(tooltip) "$current(daytime):  $report(summary)"
 
 		set report(request_message) "$success_label($locale) $reporttime"
 		set report(request_status) "OK"
