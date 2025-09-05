@@ -31,6 +31,28 @@ namespace eval zstatus {
 	    set_theme {widget none action set_theme arg 1}}
 }
 
+proc zstatus::map_window {window} {
+	set rootw [winfo vrootwidth .]
+	set width [winfo width $window]
+
+	set xpos [expr [winfo pointerx .] - ($width/2)]
+	set right [expr $xpos + $width]
+	if {$rootw <= $right} {
+		set xpos [expr $rootw - $width - 2]
+	}
+
+	set hbar [winfo height .]
+	if [winfo rooty .] {
+		set rooth [winfo vrootheight .]
+		set height [winfo height $window]
+		set ypos [expr $rooth - $hbar - $height - 1]
+	} else {
+		set ypos [expr $hbar + 1]
+	}
+
+	wm geometry $window +$xpos+$ypos
+}
+
 # Set the theme on the alements of the bar
 proc zstatus::set_theme {theme} {
 	variable currenttheme

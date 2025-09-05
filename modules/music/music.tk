@@ -125,12 +125,12 @@ proc zstatus::music::show_tooltip {} {
 	wm title $tooltip "Now Playing"
 	wm attributes $tooltip -type dialog
 	wm overrideredirect $tooltip 1
-	set xpos [tcl::mathfunc::max [expr [winfo pointerx .] - 120] 1]
-	wm geometry $tooltip +$xpos+27
 
 	set mpdtext [text $tooltip.text -font $music(font) \
 			-bd 0 -highlightthickness 0 -height 2]
 	pack $mpdtext -side left -padx 5 -pady 3
+
+	bind $tooltip <Map> { zstatus::map_window .musictooltip }
 	update_tooltip
 }
 

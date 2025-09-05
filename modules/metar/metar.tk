@@ -45,13 +45,14 @@ proc zstatus::metar::show_tooltip {} {
 	wm title $window "Metar Summary"
 	wm attributes $window -type dialog
 	wm overrideredirect $window 1
-	wm geometry $window -1+27
 
 	set width [string length zstatus::metar::report(tooltip)]
 	pack [label $window.text -font $metar(font) -width $width\
 		-fg $header1($theme) -bg $statusbar($theme)\
 		-textvar zstatus::metar::report(tooltip)]\
 		-side left -padx 1 -pady 3
+
+	bind $window <Map> { zstatus::map_window .metartooltip }
 }
 
 proc zstatus::metar::hide_tooltip {} {
@@ -60,15 +61,16 @@ proc zstatus::metar::hide_tooltip {} {
 
 proc zstatus::metar::toggle_window {} {
 	variable station
+	variable metarwin
 	if ![info exists station(code)] { return }
 
 	variable state_visible
 	if {$state_visible} {
-		wm state .metarreport withdrawn
+		wm state $metarwin withdrawn
 		set state_visible 0
 	} else {
-		wm state .metarreport normal
-		raise .metarreport
+		wm state $metarwin normal
+		raise $metarwin
 		set state_visible 1
 	}
 }
@@ -155,16 +157,16 @@ proc zstatus::metar::set_theme {newtheme} {
 	if ![info exists station(code)] { return }
 
 	variable statusbar
-	variable metarframe
+	variable metarwin
 	variable header1
 	variable theme
 
 	set theme $newtheme
-	$metarframe configure -background $statusbar($theme)
-	set_theme_header $metarframe.header
-	set_theme_summary $metarframe.summary
-	$metarframe.title2 configure -bg $statusbar($theme) -fg $header1($theme)
-	set_theme_grid $metarframe.grid
+	$metarwin configure -background $statusbar($theme)
+	set_theme_header $metarwin.header
+	set_theme_summary $metarwin.summary
+	$metarwin.title2 configure -bg $statusbar($theme) -fg $header1($theme)
+	set_theme_grid $metarwin.grid
 }
 
 proc zstatus::metar::update_grid { grid } {
@@ -233,6 +235,7 @@ proc zstatus::metar::update_grid { grid } {
 
 proc zstatus::metar::update {} {
 	variable metar
+	variable metarwin
 	variable station
 	variable report
 	variable locale
@@ -248,7 +251,7 @@ proc zstatus::metar::update {} {
 	array set station [decode::update_station]
 	array set report [decode::get_report $locale]
 
-	update_grid .metarreport.frame.grid
+	update_grid $metarwin.grid
 }
 
 proc zstatus::metar::setup_header { header } {
@@ -392,27 +395,15 @@ proc zstatus::metar::setup_info_grid { grid } {
 	grid configure $grid.precips_val -row $row -column 1 -sticky w
 }
 
-proc zstatus::metar::setup_window {window} {
-	variable metarframe
-	variable header1
-	variable theme
-	variable locale
-	variable weather_label
-
-	set metarframe $window.frame
-	pack [frame $metarframe -bd 1 -relief solid] -fill both -ipady 5
-	setup_header $metarframe.header
-	setup_summary $metarframe.summary
-	pack [label $metarframe.title2 -font $header1(font) \
-		-text $weather_label($locale) ] \
-		-side top -anchor w -pady 5 -padx 15
-	setup_info_grid $metarframe.grid
-}
-
 proc zstatus::metar::setup {} {
 	variable metar_locales
 	variable locale
+	variable theme
 	variable metar
+	variable metarwin
+	variable weather_label
+	variable header1
+
 	array set metar $::widgetarray(metar)
 
 	if ![info exists metar(station)] {
@@ -433,16 +424,21 @@ proc zstatus::metar::setup {} {
 		set locale [lindex $metar_locales $index]
 	}
 
-	set window [toplevel .metarreport -class Metar]
-	wm attributes $window -type dialog
-	wm overrideredirect $window 1
-	wm resizable $window 0 0
-	wm title $window {Metar Report}
-	wm geometry $window $metar(geometry)
-	wm state $window withdrawn
+	set metarwin [toplevel .metarreport -class Metar -bd 1 -relief solid]
+	setup_header $metarwin.header
+	setup_summary $metarwin.summary
+	pack [label $metarwin.title2 -font $header1(font)\
+		-text $weather_label($locale)] -side top -anchor w -pady 5 -padx 15
+	setup_info_grid $metarwin.grid
 
-	setup_window $window
-	bind $window <3> { zstatus::metar::toggle_window }
+	wm attributes $metarwin -type dialog
+	wm overrideredirect $metarwin 1
+	wm resizable $metarwin 0 0
+	wm title $metarwin {Metar Report}
+	wm state $metarwin withdrawn
+
+	bind $metarwin <3> { zstatus::metar::toggle_window }
+	bind $metarwin <Map> { zstatus::map_window .metarreport }
 	set delay [expr $metar(delay) * 60000]
 	zstatus::utils::every $delay zstatus::metar::update
 }
