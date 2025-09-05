@@ -50,9 +50,9 @@ namespace eval zstatus::metar::decode {
 		RA	{C rain fr pluie icon rain}\
 		+RA	{C {heavy rain} fr {pluie forte} icon shower}\
 		-RA	{C {light rain} fr {pluie légère} icon rain}\
-		SHRA	{C showers fr averses icon shower}\
-		-SHRA	{C {light showers} fr {averses légères} icon rain}\
-		+SHRA	{C {heavy showers} fr {averses fortes} icon shower}\
+		SHRA	{C {rain showers} fr {averses de pluie} icon shower}\
+		-SHRA	{C {light rain showers} fr {légères averses de pluie} icon rain}\
+		+SHRA	{C {heavy rain showers} fr {fortes averses de pluie} icon shower}\
 		TSRA	{C {thunderstorms} fr {orages} icon thunder}\
 		-TSRA	{C {light thunderstorms} fr {orages faibles} icon thunder}\
 		+TSRA	{C {heavy thunderstorms} fr {orages forts} icon thunder}\
@@ -60,13 +60,13 @@ namespace eval zstatus::metar::decode {
 		-FZRA	{C {light freezing rain} fr {faible pluie verglaçante} icon rain}\
 		+FZRA	{C {heavy freezing rain} fr {forte pluie verglaçante} icon shower}\
 		SN	{C snow fr neige icon snow}\
-		DRSN	{C {low drifting snow} fr {chasse basse de neige} icon snow}\
-		BLSN	{C {blowing snow} fr {chasse haute de neige} icon snow}\
 		+SN	{C {heavy snow} fr {neige forte} icon snow}\
 		-SN	{C {light snow} fr {neige légère} icon snow}\
 		SHSN	{C {snow showers} fr {averses de neige} icon snow}\
 		-SHSN	{C {light snow showers} fr {légères averses de neige} icon snow}\
 		+SHSN	{C {heavy snow showers} fr {fortes averses de neige} icon snow}\
+		DRSN	{C {low drifting snow} fr {chasse basse de neige} icon snow}\
+		BLSN	{C {blowing snow} fr {chasse haute de neige} icon snow}\
 		SG	{C {snow grains} fr {neige en grains} icon snow}\
 		IC	{C {ice crystals} fr {cristaux de glace} icon snow}\
 		PL	{C {ice pellets} fr {granules de glace} icon snow}\
@@ -524,6 +524,7 @@ proc zstatus::metar::decode::decode_metar_report {message} {
 	set tokens [split $message " "]
 	foreach token $tokens {
 		if {$token == "RMK"} break
+		if {$token == "METAR"} continue
 		if {$token == "SPECI"} continue
 		if {$token == $station(code)} continue
 

@@ -7,7 +7,7 @@ namespace eval zstatus::metar {
 	font create m_italic -family Sans -size 12 -slant italic
 	font create m_normal -family Sans -size 12
 	font create m_large -family Sans -size 13
-	font create m_icon -family Remix -size 17
+	font create m_icon -family Remix -size 16
 
 	set metar_locales {C fr}
 	array set weather_label {C "Weather conditions:" fr "Conditions météorologiques :"}
