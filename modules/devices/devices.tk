@@ -1,62 +1,71 @@
 #!/usr/bin/env wish9.0
 namespace eval zstatus::devices {
-	variable devicelist { da0 da1 mmcsd0 ulpt0 }
-	variable deviceicons { \uf1cc \uf1cc \uf066 \uefd2 }
+	variable searchlist {{da[0-9]} {ulpt[0-9]}}
 	namespace export setup update set_theme
 }
 
-# Set the theme for musicpd
-proc zstatus::devices::set_theme {theme} {
+proc zstatus::devices::set_theme {newtheme} {
 	variable devices
-	variable devicearray
 	variable statusbar
 	variable separator
 	variable devframe
 	variable devsep
-
+	variable devicelist
+	variable theme
+	set theme $newtheme
 
 	$devframe configure -background $statusbar($theme)
 	$devsep configure -background $separator($theme)
-	foreach device [array names devicearray] {
+	foreach device $devicelist {
 		$devframe.$device configure -fg $devices($theme) -bg $statusbar($theme)
 	}
 }
 
-# Check the presence of removable devices.
 proc zstatus::devices::update {} {
-	variable devicearray
+	variable devices
+	variable statusbar
+	variable theme
+	variable searchlist
+	variable devicelist
+
 	variable devframe
 	variable devsep
 	variable devpos
 	variable devside
 
-	foreach devid [array names devicearray] {
-		array set device $devicearray($devid)
-		if [file exists $device(path)] {
-			if {!$device(visible)} {
-				if {![string length [pack slaves $devframe]]} {
-					pack $devframe -after $devpos -side $devside
-					pack $devsep -after $devframe -fill y \
-						-padx 5 -side $devside
-				}
-				pack $devframe.$devid -in $devframe -side left
-				set device(visible) 1
-				set devicearray($devid) [array get device]
+	set currentlist {}
+	foreach pattern $searchlist {
+		lappend currentlist {*}[glob -nocomplain -tails -dir "/dev" $pattern]
+	}
+
+	foreach device $currentlist {
+		if {[lsearch $devicelist $device] == -1} {
+			if {![string length [pack slaves $devframe]]} {
+				pack $devframe -after $devpos -side $devside
+				pack $devsep -after $devframe -fill y \
+					-padx 5 -side $devside
 			}
-		} elseif {$device(visible)} {
-			pack forget $devframe.$devid
+			pack [label $devframe.$device -font $devices(font)\
+				 -text "$device"] -side left
+			$devframe.$device configure -fg $devices($theme)\
+				 -bg $statusbar($theme)
+		}
+	}
+
+	foreach device $devicelist {
+		if {[lsearch $currentlist $device] == -1} {
+			pack forget $devframe.$device
 			if {![string length [pack slaves $devframe]]} {
 				pack forget $devframe $devsep
 			}
-			set device(visible) 0
-			set devicearray($devid) [array get device]
 		}
-		array unset device
 	}
+	set devicelist $currentlist
 }
 
-# Setup the removable devices
 proc zstatus::devices::setup { base position side } {
+	variable devices
+	variable searchlist
 	variable statusbar
 	variable separator
 	variable devframe
@@ -64,6 +73,7 @@ proc zstatus::devices::setup { base position side } {
 	variable devpos
 	variable devside
 
+	array set devices $::widgetarray(devices)
 	array set statusbar $::widgetarray(statusbar)
 	array set separator $::widgetarray(separator)
 	set devframe $base.devices
@@ -74,37 +84,14 @@ proc zstatus::devices::setup { base position side } {
 	frame $devframe
 	frame $devsep -width 1
 
-	variable devices
 	variable devicelist
-	variable deviceicons
-	array set devices $::widgetarray(devices)
-	if [info exists device(watchlist)] {
-		set value $devices(watchlist)
+	set devicelist {}
+	if [info exists devices(searchlist)] {
+		set value $devices(searchlist)
 		regsub -all {\"} $value {} value
 		regsub -all {,} $value { } value
 		regsub -all {[ ]+} $value { } value
-		set devicelist [ split $value ]
-		set deviceicons {}
-	}
-	if [info exists device(iconlist)] {
-		set value $devices(iconlist)
-		regsub -all {\"} $value {} value
-		regsub -all {,} $value { } value
-		regsub -all {[ ]+} $value { } value
-		set deviceicons [ split $value ]
-	}
-
-	variable devicearray
-	array set devicearray {}
-	foreach devid $devicelist icon $deviceicons {
-		array set device {}
-		set device(path) "/dev/$devid"
-		set device(icons) $icon
-		set device(visible) 0
-		set devicearray($devid) [array get device]
-
-		label $devframe.$devid
-		$devframe.$devid configure -font $devices(font) -text "$icon $devid"
+		set searchlist [split $value]
 	}
 }
 

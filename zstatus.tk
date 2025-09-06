@@ -32,8 +32,6 @@ array set remixicons {
 namespace eval zstatus {
 	variable currenttheme	none
 	variable proclist	{}
-
-
 	array set modes {Monocle M VTiled V HTiled H Stacked S}
 
 	# Array of messages that can be accepted
@@ -380,6 +378,16 @@ proc zstatus::setup {} {
 		}
 	}
 
+	set theme ""
+	if [info exists ::config(theme)] {
+		set theme $::config(theme)
+	} elseif [info exists ::params(theme)] {
+		set theme $::params(theme)
+	}
+	if {$theme != "light" && $theme != "dark"} {
+		set theme "light"
+	}
+	set_theme $theme
 	zstatus::utils::every $::config(delay) zstatus::update
 }
 
@@ -397,39 +405,22 @@ try {
 	exit 1
 }
 
-# Read configuration
-array set config [zstatus::config::read $params(config)]
-array set widgetarray $::config(widgets)
-
-set theme ""
-if [info exists config(theme)] {
-	set theme $config(theme)
-} elseif [info exists params(theme)] {
-	set theme $params(theme)
-}
-if {$theme != "light" && $theme != "dark"} {
-	set theme light
-}
-
 # Setup tk app
 tk appname "@PACKAGE_NAME@"
 wm title . "@PACKAGE_NAME@ @PACKAGE_VERSION@"
+array set config [zstatus::config::read $params(config)]
+array set widgetarray $::config(widgets)
+set config(xscreen) [lindex [split [winfo screen .] "."] 1]
 if ![info exists config(geometry)] {
 	set config(geometry) "[winfo vrootwidth .]x26+0+0"
 }
-set config(xscreen) [lindex [split [winfo screen .] "."] 1]
 wm geometry . $config(geometry)
 wm attributes . -topmost 1 -type dock
+font create normal -family $config(fontname) -size $config(fontsize)
+font create italic -family $config(fontname) -size $config(fontsize) -slant italic
+font create bold -family $config(fontname) -size $config(fontsize) -weight bold
+font create emoji -family $config(emojifontname) -size $config(emojifontsize)
 
-font create normal -family $config(fontname)\
-		 -size $config(fontsize)
-font create italic -family $config(fontname)\
-		-size $config(fontsize) -slant italic
-font create bold -family $config(fontname)\
-		-size $config(fontsize) -weight bold
-font create emoji -family $config(emojifontname)\
-		 -size $config(emojifontsize)
 zstatus::setup
-zstatus::set_theme $theme
 set listen [unix_sockets::listen $config(barsocket) zstatus::server_accept]
 vwait forever

@@ -151,11 +151,10 @@ Each of these widgets can be customized in its own section:
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.
 
-- __[devices]__: Show transient devices connected to the machine.
+- __[devices]__: Show some devices present under /dev.
 
 > Options:
-> - _watchlist_: List of removable devices to watch. (Default: _da0 da1 mmcsd0 ulpt0_)
-> - _iconlist_: List of unicode icons associated with the devices. (Default: _\uf1cc \uf1cc \uf066 \uefd2_)
+> - _searchlist_: List of devices to watch. (Default: _da[0-9] ulpt[0-9]_)
 > - _font_: font to use for text (normal, italic or bold).
 > - _light_: color in light mode.
 > - _dark_: color in dark mode.

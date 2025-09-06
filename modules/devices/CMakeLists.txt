@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.20)
 # Project identification
 project ("devices")
 set(PACKAGE_NAME "zstatus::devices")
-set(PACKAGE_VERSION "0.2")
+set(PACKAGE_VERSION "0.3")
 
 # Tcl version
 set(TCL_LIBRARY_VERSION "9.0")
