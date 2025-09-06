@@ -49,22 +49,30 @@ namespace eval zstatus {
 }
 
 proc zstatus::map_window {window} {
-	set rootw [winfo vrootwidth .]
+	set rwidth [winfo vrootwidth .]
+	set rheight [winfo vrootheight .]
 	set width [winfo width $window]
+	set height [winfo height $window]
+	set xpos [expr [winfo pointerx .] - 5]
+	set ypos [winfo pointery .]
 
-	set xpos [expr [winfo pointerx .] - ($width/2)]
 	set right [expr $xpos + $width]
-	if {$rootw <= $right} {
-		set xpos [expr $rootw - $width - 2]
+	if {$right >= $rwidth} {
+		set xpos [expr $rwidth - $width - 2]
+	}
+	if {$xpos < 1} { set xpos 1 }
+
+	set bottom [expr $ypos + $height]
+	if {$bottom >= $rheight} {
+		set ypos [expr $rheight - $height - 2]
 	}
 
 	set hbar [winfo height .]
 	if [winfo rooty .] {
-		set rooth [winfo vrootheight .]
-		set height [winfo height $window]
-		set ypos [expr $rooth - $hbar - $height - 1]
+		set limit [expr $rooth - $hbar - $height - 1]
+		if {$ypos > $limit} { set ypos $limit }
 	} else {
-		set ypos [expr $hbar + 1]
+		if {$ypos <= $hbar} { set ypos [expr $hbar + 1] }
 	}
 
 	wm geometry $window +$xpos+$ypos
@@ -258,8 +266,8 @@ proc zstatus::add_widgets {side} {
 		set widgets $::config(rightside)
 	}
 	# Sanitize the provided list
-	regsub -all {\"} $widgets {} widgets 
-	regsub -all {,} $widgets { } widgets 
+	regsub -all {\"} $widgets {} widgets
+	regsub -all {,} $widgets { } widgets
 	regsub -all {[ ]+} $widgets { } widgets
 
 	foreach item [split $widgets] {
