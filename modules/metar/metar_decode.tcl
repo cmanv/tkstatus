@@ -469,7 +469,7 @@ proc zstatus::metar::decode::decode_precips { intensity qualifier precips } {
 		}
 		if {![info exists current(precips)]} {
 			set current(precips) $description
-			set current(precip_desc) $cloud_desc($locale)
+			set current(precip_desc) $description
 			set current(precip_code) $fullcode
 		} else {
 			set current(precips) "$current(precips)\n$description"

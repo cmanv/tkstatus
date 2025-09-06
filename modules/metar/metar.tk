@@ -316,14 +316,14 @@ proc zstatus::metar::setup_summary { summary } {
 	pack [label $summary.time.sunrise.icon -font $value1(font)\
 		 -text $::remixicons(sunrise)] -side left
 	pack [label $summary.time.sunrise.arrow -font $value1(font)\
-		-text $::remixicons(up)] -side left
+		-text $::remixicons(arrowup)] -side left
 	pack [label $summary.time.sunrise.hour -font $value1(font)\
 		 -textvar zstatus::metar::station(sunrise)] -side left
 	pack [frame $summary.time.sunset] -anchor w -side top -pady 5
 	pack [label $summary.time.sunset.icon -font $value1(font)\
 		 -text $::remixicons(sunset)] -side left
 	pack [label $summary.time.sunset.arrow -font $value1(font)\
-		-text $::remixicons(down)] -side left
+		-text $::remixicons(arrowdown)] -side left
 	pack [label $summary.time.sunset.hour -font $value1(font)\
 		-textvar zstatus::metar::station(sunset)] -side left
 }
