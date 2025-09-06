@@ -22,42 +22,24 @@ namespace eval zstatus::metar::decode {
 		cm_feet			30.48\
 		kp_mmhg			0.133322}
 
-	array set remixicons {\
-		unknown		\ueb97\
-		cloud0_day	\uf155\
-		cloud0_night	\uef25\
-		cloud1_day	\uf154\
-		cloud1_night	\uef24\
-		cloud2_day	\uf151\
-		cloud2_night	\uef21\
-		overcast	\ueb9d\
-		fog		\ued29\
-		rain		\uec4a\
-		hail		\uedc0\
-		dust		\ueb99\
-		shower		\uede0\
-		snow		\uf0f8\
-		thunder		\uf196\
-		tornado		\uf1aa}
-
 	array set precip_notes {\
 		VC	{C {in the vicinity} fr {au voisinage}}\
 		RE	{C {(recent)} fr {(récent)}} }
 
 	array set precip_codes {\
-		DZ	{C drizzle fr bruine} icon rain\
-		FZDZ	{C {freezing drizzle} fr {bruine verglaçante} icon rain}\
-		RA	{C rain fr pluie icon rain}\
+		DZ	{C drizzle fr bruine} icon rain1\
+		FZDZ	{C {freezing drizzle} fr {bruine verglaçante} icon rain1}\
+		RA	{C rain fr pluie icon rain2}\
 		+RA	{C {heavy rain} fr {pluie forte} icon shower}\
-		-RA	{C {light rain} fr {pluie légère} icon rain}\
+		-RA	{C {light rain} fr {pluie légère} icon rain1}\
 		SHRA	{C {rain showers} fr {averses de pluie} icon shower}\
-		-SHRA	{C {light rain showers} fr {légères averses de pluie} icon rain}\
+		-SHRA	{C {light rain showers} fr {légères averses de pluie} icon rain2}\
 		+SHRA	{C {heavy rain showers} fr {fortes averses de pluie} icon shower}\
 		TSRA	{C {thunderstorms} fr {orages} icon thunder}\
 		-TSRA	{C {light thunderstorms} fr {orages faibles} icon thunder}\
 		+TSRA	{C {heavy thunderstorms} fr {orages forts} icon thunder}\
-		FZRA	{C {freezing rain} fr {pluie verglacante} icon rain}\
-		-FZRA	{C {light freezing rain} fr {faible pluie verglaçante} icon rain}\
+		FZRA	{C {freezing rain} fr {pluie verglacante} icon rain2}\
+		-FZRA	{C {light freezing rain} fr {faible pluie verglaçante} icon rain1}\
 		+FZRA	{C {heavy freezing rain} fr {forte pluie verglaçante} icon shower}\
 		SN	{C snow fr neige icon snow}\
 		+SN	{C {heavy snow} fr {neige forte} icon snow}\
@@ -68,8 +50,8 @@ namespace eval zstatus::metar::decode {
 		DRSN	{C {low drifting snow} fr {chasse basse de neige} icon snow}\
 		BLSN	{C {blowing snow} fr {chasse haute de neige} icon snow}\
 		SG	{C {snow grains} fr {neige en grains} icon snow}\
-		IC	{C {ice crystals} fr {cristaux de glace} icon snow}\
-		PL	{C {ice pellets} fr {granules de glace} icon snow}\
+		IC	{C {ice crystals} fr {cristaux de glace} icon crystal}\
+		PL	{C {ice pellets} fr {granules de glace} icon crystal}\
 		GR	{C hail fr grêle icon hail}\
 		+GR	{C {heavy hail} fr {grêle forte} icon hail}\
 		-GR	{C {light hail} fr {grêle légère} icon hail}\
@@ -89,9 +71,9 @@ namespace eval zstatus::metar::decode {
 		SA	{C sand fr sable icon dust}\
 		DRSA	{C {low drifting sand} fr {chasse basse de sable} icon dust}\
 		BLSA	{C {blowing sand} fr {chasse haute de sable} icon dust}\
-		HZ	{C haze fr {brume sèche} icon dust}\
+		HZ	{C haze fr {brume sèche} icon fog}\
 		PO	{C {dust whirls} fr {tourbillons de poussière} icon tornado}\
-		SQ	{C squalls fr grains icon shower}\
+		SQ	{C squalls fr grains icon squall}\
 		+FC	{C tornadoes fr tornades icon tornado}\
 		FC	{C {funnel clouds} fr entonnoirs icon tornado}\
 		SS	{C {sand storm} fr {tempête de sable} icon dust}\
@@ -563,7 +545,6 @@ proc zstatus::metar::decode::decode_metar_report {message} {
 }
 
 proc zstatus::metar::decode::get_weather_icon {} {
-	variable remixicons
 	variable current
 
 	variable precip_codes
@@ -571,7 +552,7 @@ proc zstatus::metar::decode::get_weather_icon {} {
 		set code $current(precip_code)
 		array set precip_code $precip_codes($code)
 		set icon $precip_codes(icon)
-		return $remixicons($icon)
+		return $::remixicons($icon)
 	}
 
 	variable station
@@ -590,9 +571,9 @@ proc zstatus::metar::decode::get_weather_icon {} {
 		} else {
 			set icon "$cloud_code(icon)_$suffix"
 		}
-		return $remixicons($icon)
+		return $::remixicons($icon)
 	}
-	return  $remixicons(unknown)
+	return  $::remixicons(unknown)
 }
 
 proc zstatus::metar::decode::get_report {lang} {
